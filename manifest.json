@@ -3,7 +3,7 @@
 	"name": "Slurp",
 	"version": "0.1.0",
 	"minAppVersion": "0.15.0",
-	"description": "Slurps webpages and saves them as clean, uncluttered Markdown. Think bookmarks, but better.",
+	"description": "Slurps webpages and saves them as clean, uncluttered Markdown.",
 	"author": "inhumantsar",
 	"authorUrl": "https://github.com/inhumantsar",
 	"isDesktopOnly": true
