@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <title>Building a Fly.io-like Scheduler Part 1: Basic Coordinator and Workers</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preload" as="style" href="https://www.aspiring.dev/assets/built/screen.css?v=47d382a7f5">
+    <link rel="preload" as="script" href="https://www.aspiring.dev/assets/built/source.js?v=47d382a7f5">
+
+    <link rel="stylesheet" type="text/css" href="https://www.aspiring.dev/assets/built/screen.css?v=47d382a7f5">
+
+    <style>
+        :root {
+            --background-color: #ffffff
+        }
+    </style>
+
+    <script>
+        /* The script for calculating the color contrast has been taken from
+        https://gomakethings.com/dynamically-changing-the-text-color-based-on-background-color-contrast-with-vanilla-js/ */
+        var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--background-color');
+        accentColor = accentColor.trim().slice(1);
+        var r = parseInt(accentColor.substr(0, 2), 16);
+        var g = parseInt(accentColor.substr(2, 2), 16);
+        var b = parseInt(accentColor.substr(4, 2), 16);
+        var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        var textColor = (yiq >= 128) ? 'dark' : 'light';
+
+        document.documentElement.className = `has-${textColor}-text`;
+    </script>
+
+    <link rel="icon" href="https://www.aspiring.dev/content/images/size/w256h256/2024/02/favicon-1.png"
+        type="image/png">
+    <link rel="canonical" href="https://www.aspiring.dev/fly-io-scheduler-part-1/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <meta property="og:site_name" content="aspiring.dev">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Building a Fly.io-like Scheduler Part 1: Basic Coordinator and Workers">
+    <meta property="og:description" content="Fly.io has built a very cool platform, allowing for super quick allocation and destruction of compute. That’s extremely useful in many use cases like serverless functions, background job execution, and more.
+
+In this post series, we’ll build our own basic compute scheduler that can be used for">
+    <meta property="og:url" content="https://www.aspiring.dev/fly-io-scheduler-part-1/">
+    <meta property="article:published_time" content="2024-02-22T12:17:47.000Z">
+    <meta property="article:modified_time" content="2024-02-22T16:06:15.000Z">
+    <meta property="article:publisher" content="https://www.facebook.com/ghost">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Building a Fly.io-like Scheduler Part 1: Basic Coordinator and Workers">
+    <meta name="twitter:description" content="Fly.io has built a very cool platform, allowing for super quick allocation and destruction of compute. That’s extremely useful in many use cases like serverless functions, background job execution, and more.
+
+In this post series, we’ll build our own basic compute scheduler that can be used for">
+    <meta name="twitter:url" content="https://www.aspiring.dev/fly-io-scheduler-part-1/">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="Dan Goodman">
+    <meta name="twitter:site" content="@ghost">
+
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "aspiring.dev",
+        "url": "https://www.aspiring.dev/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.aspiring.dev/content/images/size/w256h256/2024/02/favicon-1.png",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Dan Goodman",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://www.aspiring.dev/content/images/2024/02/dalle.jpg",
+            "width": 868,
+            "height": 868
+        },
+        "url": "https://www.aspiring.dev/author/dan/",
+        "sameAs": []
+    },
+    "headline": "Building a Fly.io-like Scheduler Part 1: Basic Coordinator and Workers",
+    "url": "https://www.aspiring.dev/fly-io-scheduler-part-1/",
+    "datePublished": "2024-02-22T12:17:47.000Z",
+    "dateModified": "2024-02-22T16:06:15.000Z",
+    "description": "Fly.io has built a very cool platform, allowing for super quick allocation and destruction of compute. That’s extremely useful in many use cases like serverless functions, background job execution, and more.\n\nIn this post series, we’ll build our own basic compute scheduler that can be used for anything from serverless functions, AI inference, SQL queries, and more!\n\nAll code from this post is available on Github.\n\n\nScheduling: sync vs. async\n\nA distinct difference between fly and other scheduler",
+    "mainEntityOfPage": "https://www.aspiring.dev/fly-io-scheduler-part-1/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 5.81">
+    <link rel="alternate" type="application/rss+xml" title="aspiring.dev" href="https://www.aspiring.dev/rss/">
+    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.37/umd/portal.min.js" data-i18n="false"
+        data-ghost="https://www.aspiring.dev/" data-key="f5d90fb73cf92d846862488e3a"
+        data-api="https://aspiring-dev.ghost.io/ghost/api/content/" crossorigin="anonymous"></script>
+    <style id="gh-members-styles">
+        .gh-post-upgrade-cta-content,
+        .gh-post-upgrade-cta {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            text-align: center;
+            width: 100%;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .gh-post-upgrade-cta-content {
+            border-radius: 8px;
+            padding: 40px 4vw;
+        }
+
+        .gh-post-upgrade-cta h2 {
+            color: #ffffff;
+            font-size: 28px;
+            letter-spacing: -0.2px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .gh-post-upgrade-cta p {
+            margin: 20px 0 0;
+            padding: 0;
+        }
+
+        .gh-post-upgrade-cta small {
+            font-size: 16px;
+            letter-spacing: -0.2px;
+        }
+
+        .gh-post-upgrade-cta a {
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 500;
+            box-shadow: none;
+            text-decoration: underline;
+        }
+
+        .gh-post-upgrade-cta a:hover {
+            color: #ffffff;
+            opacity: 0.8;
+            box-shadow: none;
+            text-decoration: underline;
+        }
+
+        .gh-post-upgrade-cta a.gh-btn {
+            display: block;
+            background: #ffffff;
+            text-decoration: none;
+            margin: 28px 0 0;
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .gh-post-upgrade-cta a.gh-btn:hover {
+            opacity: 0.92;
+        }
+    </style>
+    <script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~1.1/umd/sodo-search.min.js"
+        data-key="f5d90fb73cf92d846862488e3a" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.1/umd/main.css"
+        data-sodo-search="https://aspiring-dev.ghost.io/" crossorigin="anonymous"></script>
+
+    <link href="https://www.aspiring.dev/webmentions/receive/" rel="webmention">
+    <script defer src="/public/cards.min.js?v=47d382a7f5"></script>
+    <link rel="stylesheet" type="text/css" href="/public/cards.min.css?v=47d382a7f5">
+    <script defer src="/public/member-attribution.min.js?v=47d382a7f5"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8GF574G10D"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-8GF574G10D');
+    </script>
+
+    <script>
+        !function (t, e) { var o, n, p, r; e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) { function g(t, e) { var o = e.split("."); 2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } } (p = t.createElement("script")).type = "text/javascript", p.async = !0, p.src = s.api_host + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r); var u = e; for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e }, u.people.toString = function () { return u.toString(1) + ".people (stub)" }, o = "capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "), n = 0; n < o.length; n++)g(u, o[n]); e._i.push([i, s, a]) }, e.__SV = 1) }(document, window.posthog || []);
+        posthog.init('phc_8ndAi8WXCpt6kUt6xtx6K5k76e80ukfXgS0lq3GIkYg', { api_host: 'https://app.posthog.com' })
+    </script>
+
+    <style>
+        body {
+            color: #eee !important;
+            background-color: #242528 !important;
+
+            .gh-article-author-image {
+                display: none !important;
+            }
+
+            .gh-article-meta {
+                margin-left: 0px;
+            }
+
+            .gh-card-link {
+                padding: 16px;
+                border: 2px solid;
+                border-color: #666 !important;
+                border-radius: 14px;
+            }
+
+            div {
+                color: #eee !important;
+                background-color: #242528 !important;
+            }
+
+            a {
+                color: #eee !important;
+                background-color: #242528 !important;
+            }
+
+            header {
+                color: #eee !important;
+                background-color: #242528 !important;
+            }
+
+            time {
+                color: #eee !important;
+                background-color: #242528 !important;
+            }
+
+            input {
+                color: #eee;
+                background-color: #2c2d30 !important;
+                border-color: #eee;
+            }
+
+            input::placeholder {
+                color: #888 !important;
+            }
+
+            code {
+                padding: 6px;
+                border-radius: 6px;
+                background-color: #2d2d2d;
+            }
+
+            pre {
+                font-size: 15px !important;
+
+                code {
+                    padding: 0px;
+                }
+            }
+
+            .gh-footer-copyright {
+                display: none !important;
+            }
+        }
+
+
+        code[class*="language-"],
+        pre[class*="language-"] {
+            color: #e3eaf2;
+            background: none;
+            font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+            text-align: left;
+            white-space: pre;
+            word-spacing: normal;
+            word-break: normal;
+            word-wrap: normal;
+            line-height: 1.5;
+            -moz-tab-size: 4;
+            -o-tab-size: 4;
+            tab-size: 4;
+            -webkit-hyphens: none;
+            -moz-hyphens: none;
+            -ms-hyphens: none;
+            hyphens: none;
+        }
+
+        pre[class*="language-"]::-moz-selection,
+        pre[class*="language-"] ::-moz-selection,
+        code[class*="language-"]::-moz-selection,
+        code[class*="language-"] ::-moz-selection {
+            background: #3c526d;
+        }
+
+        pre[class*="language-"]::selection,
+        pre[class*="language-"] ::selection,
+        code[class*="language-"]::selection,
+        code[class*="language-"] ::selection {
+            background: #3c526d;
+        }
+
+        /* Code blocks */
+        pre[class*="language-"] {
+            padding: 1em;
+            margin: 0.5em 0;
+            overflow: auto;
+        }
+
+        :not(pre)>code[class*="language-"],
+        pre[class*="language-"] {
+            background: #111b27;
+        }
+
+        /* Inline code */
+        :not(pre)>code[class*="language-"] {
+            padding: 0.1em 0.3em;
+            border-radius: 0.3em;
+            white-space: normal;
+        }
+
+        .token.comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+            color: #8da1b9;
+        }
+
+        .token.punctuation {
+            color: #e3eaf2;
+        }
+
+        .token.delimiter.important,
+        .token.selector .parent,
+        .token.tag,
+        .token.tag .token.punctuation {
+            color: #66cccc;
+        }
+
+        .token.attr-name,
+        .token.boolean,
+        .token.boolean.important,
+        .token.number,
+        .token.constant,
+        .token.selector .token.attribute {
+            color: #e6d37a;
+        }
+
+        .token.class-name,
+        .token.key,
+        .token.parameter,
+        .token.property,
+        .token.property-access,
+        .token.variable {
+            color: #6cb8e6;
+        }
+
+        .token.attr-value,
+        .token.inserted,
+        .token.color,
+        .token.selector .token.value,
+        .token.string,
+        .token.string .token.url-link {
+            color: #91d076;
+        }
+
+        .token.builtin,
+        .token.keyword-array,
+        .token.package,
+        .token.regex {
+            color: #f4adf4;
+        }
+
+        .token.function,
+        .token.selector .token.class,
+        .token.selector .token.id {
+            color: #c699e3;
+        }
+
+        .token.atrule .token.rule,
+        .token.combinator,
+        .token.keyword,
+        .token.operator,
+        .token.pseudo-class,
+        .token.pseudo-element,
+        .token.selector,
+        .token.unit {
+            color: #e9ae7e;
+        }
+
+        .token.deleted,
+        .token.important {
+            color: #cd6660;
+        }
+
+        .token.keyword-this,
+        .token.this {
+            color: #6cb8e6;
+        }
+
+        .token.important,
+        .token.keyword-this,
+        .token.this,
+        .token.bold {
+            font-weight: bold;
+        }
+
+        .token.delimiter.important {
+            font-weight: inherit;
+        }
+
+        .token.italic {
+            font-style: italic;
+        }
+
+        .token.entity {
+            cursor: help;
+        }
+
+        .language-markdown .token.title,
+        .language-markdown .token.title .token.punctuation {
+            color: #6cb8e6;
+            font-weight: bold;
+        }
+
+        .language-markdown .token.blockquote.punctuation {
+            color: #f4adf4;
+        }
+
+        .language-markdown .token.code {
+            color: #66cccc;
+        }
+
+        .language-markdown .token.hr.punctuation {
+            color: #6cb8e6;
+        }
+
+        .language-markdown .token.url .token.content {
+            color: #91d076;
+        }
+
+        .language-markdown .token.url-link {
+            color: #e6d37a;
+        }
+
+        .language-markdown .token.list.punctuation {
+            color: #f4adf4;
+        }
+
+        .language-markdown .token.table-header {
+            color: #e3eaf2;
+        }
+
+        .language-json .token.operator {
+            color: #e3eaf2;
+        }
+
+        .language-scss .token.variable {
+            color: #66cccc;
+        }
+
+        /* overrides color-values for the Show Invisibles plugin
+   * https://prismjs.com/plugins/show-invisibles/
+   */
+        .token.token.tab:not(:empty):before,
+        .token.token.cr:before,
+        .token.token.lf:before,
+        .token.token.space:before {
+            color: #8da1b9;
+        }
+
+        /* overrides color-values for the Toolbar plugin
+   * https://prismjs.com/plugins/toolbar/
+   */
+        div.code-toolbar>.toolbar.toolbar>.toolbar-item>a,
+        div.code-toolbar>.toolbar.toolbar>.toolbar-item>button {
+            color: #111b27;
+            background: #6cb8e6;
+        }
+
+        div.code-toolbar>.toolbar.toolbar>.toolbar-item>a:hover,
+        div.code-toolbar>.toolbar.toolbar>.toolbar-item>a:focus,
+        div.code-toolbar>.toolbar.toolbar>.toolbar-item>button:hover,
+        div.code-toolbar>.toolbar.toolbar>.toolbar-item>button:focus {
+            color: #111b27;
+            background: #6cb8e6da;
+            text-decoration: none;
+        }
+
+        div.code-toolbar>.toolbar.toolbar>.toolbar-item>span,
+        div.code-toolbar>.toolbar.toolbar>.toolbar-item>span:hover,
+        div.code-toolbar>.toolbar.toolbar>.toolbar-item>span:focus {
+            color: #111b27;
+            background: #8da1b9;
+        }
+
+        /* overrides color-values for the Line Highlight plugin
+   * http://prismjs.com/plugins/line-highlight/
+   */
+        .line-highlight.line-highlight {
+            background: #3c526d5f;
+            background: linear-gradient(to right, #3c526d5f 70%, #3c526d55);
+        }
+
+        .line-highlight.line-highlight:before,
+        .line-highlight.line-highlight[data-end]:after {
+            background-color: #8da1b9;
+            color: #111b27;
+            box-shadow: 0 1px #3c526d;
+        }
+
+        pre[id].linkable-line-numbers.linkable-line-numbers span.line-numbers-rows>span:hover:before {
+            background-color: #8da1b918;
+        }
+
+        /* overrides color-values for the Line Numbers plugin
+   * http://prismjs.com/plugins/line-numbers/
+   */
+        .line-numbers.line-numbers .line-numbers-rows {
+            border-right: 1px solid #0b121b;
+            background: #0b121b7a;
+        }
+
+        .line-numbers .line-numbers-rows>span:before {
+            color: #8da1b9da;
+        }
+
+        /* overrides color-values for the Match Braces plugin
+   * https://prismjs.com/plugins/match-braces/
+   */
+        .rainbow-braces .token.token.punctuation.brace-level-1,
+        .rainbow-braces .token.token.punctuation.brace-level-5,
+        .rainbow-braces .token.token.punctuation.brace-level-9 {
+            color: #e6d37a;
+        }
+
+        .rainbow-braces .token.token.punctuation.brace-level-2,
+        .rainbow-braces .token.token.punctuation.brace-level-6,
+        .rainbow-braces .token.token.punctuation.brace-level-10 {
+            color: #f4adf4;
+        }
+
+        .rainbow-braces .token.token.punctuation.brace-level-3,
+        .rainbow-braces .token.token.punctuation.brace-level-7,
+        .rainbow-braces .token.token.punctuation.brace-level-11 {
+            color: #6cb8e6;
+        }
+
+        .rainbow-braces .token.token.punctuation.brace-level-4,
+        .rainbow-braces .token.token.punctuation.brace-level-8,
+        .rainbow-braces .token.token.punctuation.brace-level-12 {
+            color: #c699e3;
+        }
+
+        /* overrides color-values for the Diff Highlight plugin
+   * https://prismjs.com/plugins/diff-highlight/
+   */
+        pre.diff-highlight>code .token.token.deleted:not(.prefix),
+        pre>code.diff-highlight .token.token.deleted:not(.prefix) {
+            background-color: #cd66601f;
+        }
+
+        pre.diff-highlight>code .token.token.inserted:not(.prefix),
+        pre>code.diff-highlight .token.token.inserted:not(.prefix) {
+            background-color: #91d0761f;
+        }
+
+        /* overrides color-values for the Command Line plugin
+   * https://prismjs.com/plugins/command-line/
+   */
+        .command-line .command-line-prompt {
+            border-right: 1px solid #0b121b;
+        }
+
+        .command-line .command-line-prompt>span:before {
+            color: #8da1b9da;
+        }
+    </style>
+    <style>
+        :root {
+            --ghost-accent-color: #a31aff;
+        }
+    </style>
+
+</head>
+
+<body class="post-template has-sans-title has-sans-body">
+
+    <div class="gh-viewport">
+
+        <header id="gh-navigation" class="gh-navigation is-middle-logo gh-outer">
+            <div class="gh-navigation-inner gh-inner">
+
+                <div class="gh-navigation-brand">
+                    <a class="gh-navigation-logo is-title" href="https://www.aspiring.dev">
+                        aspiring.dev
+                    </a>
+                    <button class="gh-search gh-icon-button" aria-label="Search this site" data-ghost-search>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg></button> <button class="gh-burger gh-icon-button" aria-label="Menu">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                            viewBox="0 0 256 256">
+                            <path
+                                d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z">
+                            </path>
+                        </svg> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                            viewBox="0 0 256 256">
+                            <path
+                                d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z">
+                            </path>
+                        </svg> </button>
+                </div>
+
+                <nav class="gh-navigation-menu">
+                    <ul class="nav">
+                        <li class="nav-home"><a href="https://www.aspiring.dev/">Home</a></li>
+                        <li class="nav-about"><a href="https://www.aspiring.dev/about/">About</a></li>
+                    </ul>
+
+                </nav>
+
+                <div class="gh-navigation-actions">
+                    <button class="gh-search gh-icon-button" aria-label="Search this site" data-ghost-search>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg></button>
+                    <div class="gh-navigation-members">
+                        <a href="#/portal/signin" data-portal="signin">Sign in</a>
+                        <a class="gh-button" href="#/portal/signup" data-portal="signup">Subscribe</a>
+                    </div>
+                </div>
+
+            </div>
+        </header>
+
+
+
+        <main class="gh-main">
+
+            <article class="gh-article post no-image">
+
+                <header class="gh-article-header gh-canvas">
+
+                    <h1 class="gh-article-title is-title">Building a Fly.io-like Scheduler Part 1: Basic Coordinator and
+                        Workers</h1>
+
+                    <div class="gh-article-meta">
+                        <div class="gh-article-author-image">
+                            <a href="/author/dan/">
+                                <img class="author-profile-image" src="/content/images/size/w160/2024/02/dalle.jpg"
+                                    alt="Dan Goodman" />
+                            </a>
+                        </div>
+                        <div class="gh-article-meta-wrapper">
+                            <h4 class="gh-article-author-name"><a href="/author/dan/">Dan Goodman</a></h4>
+                            <div class="gh-article-meta-content">
+                                <time class="gh-article-meta-date" datetime="2024-02-22">Feb 22, 2024</time>
+                                <span class="gh-article-meta-length"><span class="bull">—</span> 7 min read</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </header>
+
+                <section class="gh-content gh-canvas is-body">
+                    <p><a href="https://fly.io/?ref=aspiring.dev" rel="noopener noreferrer nofollow">Fly.io</a> has
+                        built a very cool platform, allowing for super quick allocation and destruction of compute.
+                        That’s extremely useful in many use cases like serverless functions, background job execution,
+                        and more.</p>
+                    <p>In this post series, we’ll build our own basic compute scheduler that can be used for anything
+                        from serverless functions, AI inference, SQL queries, and more!</p>
+                    <p>All code from this post is <a
+                            href="https://github.com/danthegoodman1/ComputeSchedulerPost?ref=aspiring.dev"
+                            rel="noopener noreferrer nofollow">available on Github</a>.</p>
+                    <h2 id="scheduling-sync-vs-async">Scheduling: sync vs. async</h2>
+                    <p>A distinct difference between fly and other schedulers such as Kubernetes is that they do
+                        scheduling synchronously: You either get the machine when you ask for it, or you don’t and get
+                        an error. There’s no pending state with fly, which simplifies workloads like holding requests
+                        while a serverless function cold-boots.</p>
+                    <p>They have a <a
+                            href="https://fly.io/blog/carving-the-scheduler-out-of-our-orchestrator/?ref=aspiring.dev"
+                            rel="noopener noreferrer nofollow">great blog post about building this new scheduler</a>
+                        which dives into a lot of the details, but of course, it’s very specific to their architecture.
+                    </p>
+                    <p>The beauty of this scheduling model, besides being able to synchronously scheduling workloads, is
+                        that <strong>the workers are the source of truth for their availability.</strong> There’s no
+                        worrying about desync from a database on what resources a worker has available (in fact we don’t
+                        even use a DB to build this!), and nodes can just join and leave the cluster as they wish.</p>
+                    <p>As mentioned in the above post, building a scheduler can be very simple, or very complex,
+                        depending on the requirements. We’ll start super simple, and add more functionality in
+                        subsequent posts</p>
+                    <h2 id="how-the-scheduler-works">How the scheduler works</h2>
+                    <p>Let’s first describe how the scheduler will work.</p>
+                    <p>The scheduler performs a simple flow to find a worker node:</p>
+                    <ol>
+                        <li><strong>Coordinator gets a scheduling request (with some constraint like location, available
+                                resources, etc.)</strong></li>
+                    </ol>
+                    <figure class="kg-card kg-image-card"><img
+                            src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F3ee89dc4-75e4-43e4-b5fc-dbcab137867e_862x363.png"
+                            class="kg-image" alt="" loading="lazy" width="862" height="363"></figure>
+                    <p>Using a similar analogy as the fly article, you can think of this like a customer going to a
+                        broker seeking to buy something.</p>
+                    <p></p>
+                    <ol start="2">
+                        <li><strong>Coordinator broadcasts a request for a worker node that can fulfill the
+                                requirements</strong></li>
+                    </ol>
+                    <figure class="kg-card kg-image-card"><img
+                            src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fcc686c8d-6adb-4e95-a4ce-0fc9f9850e18_1059x903.png"
+                            class="kg-image" alt="" loading="lazy" width="1059" height="903"></figure>
+                    <p>This is like the broker now going to direct providers, and getting bids for a contract, with the
+                        “best deal” being the node that responds first.</p>
+                    <p>Like fly, and to support polyglot workers, we’ll use <a
+                            href="https://docs.nats.io/using-nats/developer/sending/request_reply?ref=aspiring.dev"
+                            rel="noopener noreferrer nofollow">NATS request-reply</a> to handle broadcasting and getting
+                        the first response.</p>
+                    <p></p>
+                    <ol start="3">
+                        <li><strong>All workers nodes that can fulfill the requirements respond</strong></li>
+                    </ol>
+                    <figure class="kg-card kg-image-card"><img
+                            src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1022309e-5f49-405f-bf5c-2aea834106e8_1149x1070.png"
+                            class="kg-image" alt="" loading="lazy" width="1149" height="1070"></figure>
+                    <p>This is like providers submitting bids for the contract.</p>
+                    <p>Typically, the workers will briefly hold a reservation for the resources, say for 5 seconds, to
+                        make sure that if they are selected by this request another request hasn’t already claimed those
+                        resources.</p>
+                    <p></p>
+                    <ol start="4">
+                        <li><strong>The coordinator uses the first response, and schedules some workload on the selected
+                                worker node</strong></li>
+                    </ol>
+                    <figure class="kg-card kg-image-card"><img
+                            src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F43212a74-ff14-4686-9730-ffb53d6ae56e_1055x877.png"
+                            class="kg-image" alt="" loading="lazy" width="1055" height="877"></figure>
+                    <p>The coordinator can also send out a cancel message for a specific request, which will tell the
+                        worker nodes to free their temporarily reserved resources.</p>
+                    <p></p>
+                    <ol start="5">
+                        <li><strong>The worker completes the task, and tells the coordinator</strong></li>
+                    </ol>
+                    <figure class="kg-card kg-image-card"><img
+                            src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff8ebd659-d17c-493a-adbb-ce4652e99177_1035x772.png"
+                            class="kg-image" alt="" loading="lazy" width="1035" height="772"></figure>
+                    <p></p>
+                    <ol start="6">
+                        <li>Finally, the coordinator returns to the client what it needs to know:</li>
+                    </ol>
+                    <figure class="kg-card kg-image-card"><img
+                            src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8bccfd4c-a756-46cd-a32f-1313e57b2306_1181x387.png"
+                            class="kg-image" alt="" loading="lazy" width="1181" height="387"></figure>
+                    <p></p>
+                    <p>In the case of fly, you’ve now scheduled a machine, but in our world this could be anything:</p>
+                    <ul>
+                        <li>Docker container</li>
+                        <li>Serverless function invocation</li>
+                        <li>SQL query</li>
+                        <li>AI inference</li>
+                        <li>anything, really!</li>
+                    </ul>
+                    <p>We can additionally put limitations on our request for resources, like a specific set of regions,
+                        nodes that have GPUs, nodes that are have ARM CPUs, nodes with 1vCPU and 2GB of memory available
+                        to reserve, what ever we want :)</p>
+                    <h2 id="set-up-nats">Set up NATS</h2>
+                    <p>Now that we know how the scheduler needs to work, let’s set up the one dependency we will need,
+                        <a href="https://nats.io/?ref=aspiring.dev" rel="noopener noreferrer nofollow">NATS</a>, which
+                        will handle the messaging between coordinator nodes and worker nodes.</p>
+                    <p>NATS has great multi-language support, and native clustering for both regional and multi-region
+                        clusters, meaning if we scaled out we could have one logical NATS cluster for everything.</p>
+                    <p>We’ll create just a single node with docker compose for now:</p>
+                    <pre><code class="language-yaml">version: "3.7"
+services:
+  nats:
+    image: nats
+    ports:
+      - "8222:8222"
+      - "4222:4222"
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222"</code></pre>
+                    <h2 id="building-the-coordinator">Building the coordinator</h2>
+                    <p>With NATS set up, we can dive into building the coordinator.</p>
+                    <p><em>(Code at </em><a
+                            href="https://github.com/danthegoodman1/ComputeSchedulerPost/blob/8b5a6bd31fe21bd9708d3b2d9af14371b7042f66/http_server/schedule.go?ref=aspiring.dev"
+                            rel="noopener noreferrer nofollow"><em>http_server/schedule.go</em></a><em>)</em></p>
+                    <p>To keep it simple, we’ll make an HTTP server with an endpoint for invoking workloads. My language
+                        of choice is Go, so we’ll build in that.</p>
+                    <p>We will build an endpoint that will take a request from a client, execute the task on a worker
+                        node, and return the response.</p>
+                    <p>The first thing we need to do is validate the incoming request, and ask for available worker
+                        nodes:</p>
+                    <pre><code class="language-go">var body PostScheduleRequest
+if err := ValidateRequest(c, &amp;body); err != nil {
+    return c.String(http.StatusBadRequest, err.Error())
+}
+
+// Request resources from workers
+logger.Debug().Msgf("Asking workers to schedule '%s'", body.Task)
+msg, err := s.NatsClient.Request(fmt.Sprintf("scheduling.request.%s", body.Task), utils.JSONMustMarshal(scheduling.ScheduleRequest{
+    RequestID:    c.RequestID, // use the unique request ID
+    Task:         body.Task,
+    Requirements: body.Requirements,
+}), time.Second*5)</code></pre>
+                    <p>Next, we can reserve the worker that responded first, and release other worker nodes:</p>
+                    <pre><code class="language-go">var workerRes scheduling.ScheduleResponse
+utils.JSONMustUnmarshal(msg.Data, &amp;workerRes)
+
+logger.Debug().Msgf("Worker %s responded to schedule request", workerRes.WorkerID)
+// tell other workers to release resources
+s.mustEmitRelease(c.RequestID, workerRes.WorkerID)
+
+// Tell the worker that they are reserved, and to do the task
+msg, err = s.NatsClient.Request(fmt.Sprintf("scheduling.reserve_task.%s", workerRes.WorkerID), utils.JSONMustMarshal(scheduling.ReserveRequest{
+    Task:    body.Task,
+    Payload: body.Payload,
+}), time.Second*5)</code></pre>
+                    <p><code>mustEmitRelease</code> just tells all workers except the <code>workerRes.WorkerID</code> to
+                        release their temporary resource reservation so they can accept new tasks.</p>
+                    <p>Finally, we can respond to the client with the output of the worker node task execution:</p>
+                    <pre><code class="language-go">var reserveRes scheduling.ReserveResponse
+utils.JSONMustUnmarshal(msg.Data, &amp;reserveRes)
+
+if reserveRes.Error != nil {
+    c.String(http.StatusInternalServerError, *reserveRes.Error)
+}
+
+return c.JSON(http.StatusOK, reserveRes.Payload)</code></pre>
+                    <p>At this point, we have our coordinator reserving resources on a worker node, executing a task,
+                        and returning the result to the client.</p>
+                    <h2 id="building-a-basic-worker">Building a basic worker</h2>
+                    <p>We have the coordinator ready, but we need to make the worker nodes to actually respond to
+                        requests and task executions, so we’ll build a simple worker node that can increment a number.
+                    </p>
+                    <p>In <code>main.go</code>, we’ll have different entrypoints based on whether the first argument is
+                        <code>worker</code> or <code>coordinator</code>.</p>
+                    <p><em>(Code at </em><a
+                            href="https://github.com/danthegoodman1/ComputeSchedulerPost/blob/8b5a6bd31fe21bd9708d3b2d9af14371b7042f66/main.go?ref=aspiring.dev"
+                            rel="noopener noreferrer nofollow"><em>main.go</em></a><em>)</em></p>
+                    <p>Within the worker entrypoint, we first want to listen for scheduling requests:</p>
+                    <pre><code class="language-go">available := atomic.NewBool(true) // because different goroutines will be accessing
+
+// Scheduling loop
+_, err := nc.Subscribe("scheduling.request.*", func(msg *nats.Msg) {
+    logger.Debug().Msgf("Worker %s got scheduling request, reserving resources", utils.WORKER_ID)
+    // At the moment we don't care about resources, so we just reserve
+    if !available.Load() {
+        // just ignore
+        return
+    }
+    available.Store(false)
+
+    err := msg.Respond(utils.JSONMustMarshal(scheduling.ScheduleResponse{
+        WorkerID: utils.WORKER_ID,
+    }))
+    if err != nil {
+        logger.Fatal().Err(err).Msg("failed to respond to resource request message")
+    }
+
+})</code></pre>
+                    <p>We also need to listen for resources releases (when we aren’t the first responder):</p>
+                    <pre><code class="language-go">// Release loop
+_, err = nc.Subscribe("scheduling.release", func(msg *nats.Msg) {
+    var payload scheduling.ReleaseResourcesMessage
+    utils.JSONMustUnmarshal(msg.Data, &amp;payload)
+    if payload.ExemptWorker == utils.WORKER_ID {
+        // We are exempt from this
+        return
+    }
+
+    available.Store(true)
+    logger.Debug().Msgf("Worker %s releasing resources", utils.WORKER_ID)
+})</code></pre>
+                    <p>And finally, when we are reserved, we need to execute the task:</p>
+                    <pre><code class="language-go">_, err = nc.Subscribe(fmt.Sprintf("scheduling.reserve_task.%s", utils.WORKER_ID), func(msg *nats.Msg) {
+    // Listen for our own reservations
+    var reservation scheduling.ReserveRequest
+    utils.JSONMustUnmarshal(msg.Data, &amp;reservation)
+    logger.Debug().Msgf("Got reservation on worker node %s with payload %+v", utils.WORKER_ID, reservation)
+
+    err = msg.Respond(utils.JSONMustMarshal(scheduling.ReserveResponse{
+        Error: nil,
+        Payload: map[string]any{ // float64 because of JSON
+            "Num": reservation.Payload["Num"].(float64) + 1,
+        },
+    }))
+    if err != nil {
+        logger.Fatal().Err(err).Msg("failed to respond to reservation request")
+    }
+
+    available.Store(true) // we are done, we can release resources
+})</code></pre>
+                    <p>Now we are ready to try scheduling some tasks!</p>
+                    <h2 id="testing-with-a-client">Testing with a client</h2>
+                    <p>After running <code>docker compose up -d</code> to get NATS running, in one terminal, we can
+                        start the coordinator:</p>
+                    <pre><code class="language-text">go run . coordinator</code></pre>
+                    <p>In two more terminals, we can start two worker nodes:</p>
+                    <pre><code class="language-text">WORKER_ID=a go run . worker</code></pre>
+                    <pre><code class="language-text">WORKER_ID=b go run . worker</code></pre>
+                    <p>Finally, from a fourth terminal, we can make a request to the coodinator to increment our number:
+                    </p>
+                    <pre><code class="language-text">curl -d '{"Task": "increment", "Payload": {"Num": 1}}' -H 'Content-Type: application/json' http://localhost:8080/schedule</code></pre>
+                    <p>We get the data back from the coordinator:</p>
+                    <pre><code class="language-text">{"Num":2}</code></pre>
+                    <p>Our number was incremented!</p>
+                    <p>Obviously incrementing a number is trivial, but imagine this being AI inference output, a SQL
+                        query result, or connection info for a container instance! The possibilites are immense with
+                        this foundation :D</p>
+                    <p>In the terminal for worker a, we can see it was the chosen worker node:</p>
+                    <pre><code class="language-text">&gt; Worker a got scheduling request, reserving resources
+&gt; Got reservation on worker node a with payload {Task:increment Payload:map[Num:1]}</code></pre>
+                    <p>In the worker `b` terminal, we can see it was not chosen, and resources released:</p>
+                    <pre><code class="language-text">&gt; Worker b got scheduling request, reserving resources
+&gt; Worker b releasing resources</code></pre>
+                    <p>If we run the curl command a few more times, we can see worker b gets chosen occasionally:</p>
+                    <pre><code class="language-text">&gt; Worker b got scheduling request, reserving resources
+&gt; Got reservation on worker node b with payload {Task...</code></pre>
+                    <p>Success! We can now add as many workers as we like as well to increment numbers :)</p>
+                    <p>Keep in mind there is a lot missing from these workers, like reservation timeouts, ensuring
+                        reservations are a previously known request (id), and proper error handling. You can also
+                        totally run multiple coordinator processes as well.</p>
+                    <h2 id="stay-tuned-for-part-2-resource-requirements-and-regional-workloads">Stay tuned for Part 2:
+                        Resource Requirements and Regional Workloads</h2>
+                    <p>Worker availability was as simple as could be in this post: it either was available, or it wasn’t
+                        because it was already executing something.</p>
+                    <p>In the next post, we’ll put some more resource limitations on the worker nodes so that scheduling
+                        requests can only apply to specific worker nodes based on their capabilities (e.g. available CPU
+                        or memory) and locality (e.g. what cloud region).</p>
+                    <p>This means with one logical cluster you can have different workers that can:</p>
+                    <ul>
+                        <li>Run a docker container</li>
+                        <li>Invoke a JS serverless function</li>
+                        <li>Run AI inference</li>
+                        <li>Manage persistent services (VM, stateful object, etc.)</li>
+                        <li>Talk to physically connected hardware</li>
+                    </ul>
+                    <p>Subscribe to get notified!</p>
+                </section>
+
+            </article>
+
+
+        </main>
+
+
+        <section class="gh-container is-grid gh-outer">
+            <div class="gh-container-inner gh-inner">
+                <h2 class="gh-container-title">Read more</h2>
+                <div class="gh-feed">
+                    <article class="gh-card post no-image">
+                        <a class="gh-card-link" href="/range-partitioning/">
+                            <div class="gh-card-wrapper">
+                                <h3 class="gh-card-title is-title">Range Partitioning: Zero to One</h3>
+                                <p class="gh-card-excerpt is-body">Of the many partitioning methods used to build
+                                    distributed systems, range partitioning (dividing data into logical key ranges), is
+                                    quickly becoming the preferred method to build the most scalable systems.
+
+                                    Yet if you go searching, there&#39;s a clear lack of resources on how to implement
+                                    this: It&#39;</p>
+                                <footer class="gh-card-meta">
+                                    <!--
+             --> <time class="gh-card-date" datetime="2024-03-16">Mar 16, 2024</time>
+                                    <!--
+         -->
+                                </footer>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="gh-card post no-image">
+                        <a class="gh-card-link" href="/building-aws-sigv4-into-your-app/">
+                            <div class="gh-card-wrapper">
+                                <h3 class="gh-card-title is-title">How To Build AWS-Compatible APIs: AWS Sigv4</h3>
+                                <p class="gh-card-excerpt is-body">Nearly all requests that touch an AWS service like
+                                    S3, DynamoDB, and the entire AWS API use AWS Sigv4 authentication.
+
+                                    Sigv4 is the authentication process AWS clients use to sign the request content,
+                                    using a combination of metadata including the Access Key ID and Secret Access Key.
+                                    It&#39;s</p>
+                                <footer class="gh-card-meta">
+                                    <!--
+             --> <time class="gh-card-date" datetime="2024-02-29">Feb 29, 2024</time>
+                                    <!--
+         -->
+                                </footer>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="gh-card post no-image">
+                        <a class="gh-card-link" href="/fly-io-scheduler-part-2/">
+                            <div class="gh-card-wrapper">
+                                <h3 class="gh-card-title is-title">Building a Fly.io-like Scheduler Part 2: Resource
+                                    Requirements and Multi-Region</h3>
+                                <p class="gh-card-excerpt is-body">In our the last post, we built a simple coordinator
+                                    and a worker that could increment a number from a client request. That simple
+                                    example introduced us to scheduling tasks on workers from a compute cluster in the
+                                    same style that fly.io uses to schedule machines on their compute</p>
+                                <footer class="gh-card-meta">
+                                    <!--
+             --> <time class="gh-card-date" datetime="2024-02-25">Feb 25, 2024</time>
+                                    <!--
+         -->
+                                </footer>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="gh-card post no-image">
+                        <a class="gh-card-link"
+                            href="/frontlink-react-realtime-collaboration-and-updates-with-your-backend/">
+                            <div class="gh-card-wrapper">
+                                <h3 class="gh-card-title is-title">Frontlink: React realtime collaboration and updates
+                                    with your backend</h3>
+                                <p class="gh-card-excerpt is-body">What if you could get that Github-like experience in
+                                    your React app, like where you see PR comments pop up in real time?
+
+                                    What if you could turn useState() into useSharedState() in React, or create a
+                                    function that when triggered, fires for all users looking at the same page?
+
+                                    Frontlink</p>
+                                <footer class="gh-card-meta">
+                                    <!--
+             --> <time class="gh-card-date" datetime="2024-02-21">Feb 21, 2024</time>
+                                    <!--
+         -->
+                                </footer>
+                            </div>
+                        </a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+
+        <footer class="gh-footer gh-outer">
+            <div class="gh-footer-inner gh-inner">
+
+                <div class="gh-footer-bar">
+                    <span class="gh-footer-logo is-title">
+                        aspiring.dev
+                    </span>
+                    <nav class="gh-footer-menu">
+                        <ul class="nav">
+                            <li class="nav-sign-up"><a href="#/portal/">Sign up</a></li>
+                        </ul>
+
+                    </nav>
+                    <div class="gh-footer-copyright">
+                        Powered by <a href="https://ghost.org/" target="_blank" rel="noopener">Ghost</a>
+                    </div>
+                </div>
+
+                <section class="gh-footer-signup">
+                    <h2 class="gh-footer-signup-header is-title">
+                        aspiring.dev
+                    </h2>
+                    <p class="gh-footer-signup-subhead is-body">
+                        Making complex systems simple
+                    </p>
+                    <form class="gh-form" data-members-form>
+                        <input class="gh-form-input" id="footer-email" type="email" placeholder="jamie@example.com"
+                            required data-members-email>
+                        <button class="gh-button" type="submit" aria-label="Subscribe">
+                            <span><span>Subscribe</span> <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                                    fill="currentColor" viewBox="0 0 256 256">
+                                    <path
+                                        d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z">
+                                    </path>
+                                </svg></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
+                                <g stroke-linecap="round" stroke-width="2" fill="currentColor" stroke="none"
+                                    stroke-linejoin="round" class="nc-icon-wrapper">
+                                    <g class="nc-loop-dots-4-24-icon-o">
+                                        <circle cx="4" cy="12" r="3"></circle>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                        <circle cx="20" cy="12" r="3"></circle>
+                                    </g>
+                                    <style data-cap="butt">
+                                        .nc-loop-dots-4-24-icon-o {
+                                            --animation-duration: 0.8s
+                                        }
+
+                                        .nc-loop-dots-4-24-icon-o * {
+                                            opacity: .4;
+                                            transform: scale(.75);
+                                            animation: nc-loop-dots-4-anim var(--animation-duration) infinite
+                                        }
+
+                                        .nc-loop-dots-4-24-icon-o :nth-child(1) {
+                                            transform-origin: 4px 12px;
+                                            animation-delay: -.3s;
+                                            animation-delay: calc(var(--animation-duration)/-2.666)
+                                        }
+
+                                        .nc-loop-dots-4-24-icon-o :nth-child(2) {
+                                            transform-origin: 12px 12px;
+                                            animation-delay: -.15s;
+                                            animation-delay: calc(var(--animation-duration)/-5.333)
+                                        }
+
+                                        .nc-loop-dots-4-24-icon-o :nth-child(3) {
+                                            transform-origin: 20px 12px
+                                        }
+
+                                        @keyframes nc-loop-dots-4-anim {
+
+                                            0%,
+                                            100% {
+                                                opacity: .4;
+                                                transform: scale(.75)
+                                            }
+
+                                            50% {
+                                                opacity: 1;
+                                                transform: scale(1)
+                                            }
+                                        }
+                                    </style>
+                                </g>
+                            </svg> <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                                <style>
+                                    .checkmark {
+                                        width: 40px;
+                                        height: 40px;
+                                        display: block;
+                                        stroke-width: 2.5;
+                                        stroke: currentColor;
+                                        stroke-miterlimit: 10;
+                                    }
+
+                                    .checkmark__check {
+                                        transform-origin: 50% 50%;
+                                        stroke-dasharray: 48;
+                                        stroke-dashoffset: 48;
+                                        animation: stroke .3s cubic-bezier(0.650, 0.000, 0.450, 1.000) forwards;
+                                    }
+
+                                    @keyframes stroke {
+                                        100% {
+                                            stroke-dashoffset: 0;
+                                        }
+                                    }
+                                </style>
+                            </svg> </button>
+                    </form>
+                </section>
+
+            </div>
+        </footer>
+    </div>
+
+    <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="pswp__bg"></div>
+
+        <div class="pswp__scroll-wrap">
+            <div class="pswp__container">
+                <div class="pswp__item"></div>
+                <div class="pswp__item"></div>
+                <div class="pswp__item"></div>
+            </div>
+
+            <div class="pswp__ui pswp__ui--hidden">
+                <div class="pswp__top-bar">
+                    <div class="pswp__counter"></div>
+
+                    <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                    <button class="pswp__button pswp__button--share" title="Share"></button>
+                    <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                    <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                    <div class="pswp__preloader">
+                        <div class="pswp__preloader__icn">
+                            <div class="pswp__preloader__cut">
+                                <div class="pswp__preloader__donut"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                    <div class="pswp__share-tooltip"></div>
+                </div>
+
+                <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>
+                <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>
+
+                <div class="pswp__caption">
+                    <div class="pswp__caption__center"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.aspiring.dev/assets/built/source.js?v=47d382a7f5"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"
+        integrity="sha512-9khQRAUBYEJDCDVP2yw3LRUQvjJ0Pjx0EShmaQjcHa6AXiOv6qHQu9lCAIR8O+/D8FtaCoJ2c0Tf9Xo7hYH01Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"
+        integrity="sha512-fTl/qcO1VgvKtOMApX2PdZzkziyr2stM65GYPLGuYMnuMm1z2JLJG6XVU7C/mR+E7xBUqCivykuhlzfqxXBXbg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</body>
+
+</html>

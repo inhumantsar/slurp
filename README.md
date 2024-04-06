@@ -52,8 +52,6 @@ Slurps webpages, cleans off all the crud, and saves them to Obsidian as nice, ti
 
 ## Development Environment
 
-Don't use your personal or any kind of sensitive Obsidian vault for development! Set up a fresh one!
-
 ### direnv (optional)
 
 There is a `direnv` config which can be used to quickly configure a completely isolated local environment. Setting it up requires a few extra steps though.
@@ -63,23 +61,28 @@ There is a `direnv` config which can be used to quickly configure a completely i
 2. Install `direnv`, adjusting or removing `bin_path` as needed: `curl -sfL https://direnv.net/install.sh | bin_path=~/.local/bin bash`
 3. `direnv` will instruct you to add a line to your `.bashrc`, once that's done, run `direnv allow`.
 
+### Building
+
+```
+npm install     # not required if using direnv
+npm run dev     # enable hot-rebuilds of main.js
+```
+
+### Test Vault
+
+[`test-resources/vault`](./test-resources/vault) is an Obisidian vault that can be used for testing. As a side-benefit, it's a place to keep development notes.
+
+There is a symlink in the vault's [plugins directory](./test-resources/vault/.obsidian/plugins/) which uses a relative path to reference the repository root. This may or may not work for you after cloning. Remove and recreate it if Obsidian doesn't see the plugin properly. 
+
+*NOTE*: The plugin won't work (and may not even be recognized) if you haven't [built](#building) the project yet!
+
 ### Hot Reload
 
-This hooks into Obsidian to reload plugins anytime a change is detected. This is *definitely* not recommended for use with production Obsidian vaults.
-
-https://github.com/pjeby/hot-reload
-
-### Linking the Slurp dev directory
+[Hot Reload](https://github.com/pjeby/hot-reload) is a commonly used plugin for Obsidian plugin development. It will watch for modified plugins and automatically reload it within a running Obsidian instance. It's included in the test vault as a submodule, so you will need to update it on first clone:
 
 ```
-cd /path/to/dev-vault/.obsidian/plugins
-ln -s /path/to/slurp ./
+git submodule update
 ```
-
-### Enable plugins
-
-Open up Obsidian, go into Settings > Community Plugins and hit Enable. You should see Slurp and Hot Reload under Installed Plugins. Turn them on and you should be good to go!
-
 
 ## Credits
 
