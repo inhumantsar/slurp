@@ -34,12 +34,13 @@ Slurps webpages, cleans off all the crud, and saves them to Obsidian as nice, ti
 * Slurp does *nothing* to bypass paywalls.
 * The conversion will leave a bit of jank behind sometimes, mainly in the form of wonky markup and line breaks.
 
-## Changelog
+## Notable Versions
 
-* 0.1.0 - Initial commit
+* 0.1.x - *IN PROGRESS* Initial public release 
 
 ## TODO
 
+* [ ] *IN PROGRESS* Browser extension for one-click slurps
 * [ ] Add settings to change the default save location, selectively disable properties, and more
 * [ ] Ensure video and other embeds are captured reliably
 * [ ] Import Pocket saves, manually and automagically
@@ -82,6 +83,16 @@ There is a symlink in the vault's [plugins directory](./test-resources/vault/.ob
 
 ```
 git submodule update
+```
+
+## Testing
+
+### URI Handler
+
+On Linux:
+
+```
+xdg-open "obsidian://slurp?url=https://..."
 ```
 
 ## Credits

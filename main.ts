@@ -1,8 +1,5 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, ProgressBarComponent, Setting, TextComponent, htmlToMarkdown, moment, normalizePath, requestUrl, sanitizeHTMLToDom } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, ProgressBarComponent, Setting, TFolder, TextComponent, htmlToMarkdown, moment, normalizePath, requestUrl, sanitizeHTMLToDom } from 'obsidian';
 import { Readability } from '@mozilla/readability';
-
-// @ts-ignore
-const electron = require("electron");
 
 interface SlurpArticle {
 	title: string;
@@ -14,8 +11,14 @@ interface SlurpArticle {
 }
 
 interface SlurpCallbackArgs {
+	url: string;
 	article?: SlurpArticle;
 	err?: string;
+}
+
+// overkill atm but hey
+interface SlurpUrlParams {
+	url: string
 }
 
 export default class SlurpPlugin extends Plugin {
@@ -25,52 +28,29 @@ export default class SlurpPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.addCommand({
-			id: 'replace-url',
-			name: 'Replace URL with article',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				const url = editor.getSelection();
-				this.slurp(url, (args) => {
-					if (args.err) {
-						new Notice(`Error! Unable to Slurp page: ${args.err}`);
-						return;
-					}
-
-					if (!args.article) {
-						new Notice(`Error! Unable to Slurp page for unknown reasons.`);
-						return;
-					}
-
-					// TODO: add some kind of templating or toggles for properties
-					let newContent: string = `# ${args.article.title}\n`;
-					newContent += `[Original Page](${url})\n`;
-					newContent += args.article.byline && `Written by: ${args.article.byline}\n` || "";
-					newContent += args.article.publishedTime && `Published at: ${args.article.publishedTime}\n` || "";
-					// newContent += args.article.excerpt && `${args.article.excerpt}\n` || ""; // TODO: pointless without toggles/template...
-					newContent += args.article.siteName && `${args.article.siteName}\n` || "";
-					newContent += "\n" + args.article.content;
-					editor.replaceSelection(newContent);
-				});
-			}
-		});
-
-		this.addCommand({
 			id: 'create-note-from-url',
 			name: 'Create note from URL',
 			callback: () => {
 				new SlurpNewNoteModal(this.app, this).open();
 			}
 		});
+
+		this.registerObsidianProtocolHandler("slurp", async (e) => {
+			if (!e.url || e.url == "") console.error("URI is empty or undefined");
+
+			try {
+				this.slurp(e.url);
+			} catch (err) { this.errorNotice(err); }
+		});
 	}
 
-	onunload() {
+	onunload() { }
 
-	}
+	async loadSettings() { }
 
-	async loadSettings() {
-	}
+	async saveSettings() { }
 
-	async saveSettings() {
-	}
+	errorNotice = (err: Error) => new Notice(`Slurp Error! ${err.message}`);
 
 	fixRelativeLinks(html: string, articleUrl: string) {
 		const url = new URL(articleUrl);
@@ -88,35 +68,92 @@ export default class SlurpPlugin extends Plugin {
 			});
 	}
 
-	async slurp(url: string, cb: (args: SlurpCallbackArgs) => void) {
-		const text = this.fixRelativeLinks(await requestUrl(url).text, url);
+	async fetchHtml(url: string) {
+		const html = await requestUrl(url).text;
+		if (!html) {
+			console.error(`[Slurp] Unable to fetch page from: ${url}.`);
+			throw `Unable to fetch page.`;
+		}
+		return this.fixRelativeLinks(html, url)
+	}
+
+	parsePage(html: string) {
 		const parser = new DOMParser();
-		const doc = parser.parseFromString(text, 'text/html');
+		const doc = parser.parseFromString(html, 'text/html');
 		const article = new Readability(doc).parse();
 
 		if (!article || !article.title || !article.content) {
 			console.error(`[Slurp] Parsed article missing critical content: ${article}.`);
-			cb({ err: "No title or content found." });
-			return;
+			throw "No title or content found.";
 		}
+		return article;
+	}
 
-		const md = htmlToMarkdown(sanitizeHTMLToDom(article.content));
+	parseMarkdown(content: string) {
+		const md = htmlToMarkdown(sanitizeHTMLToDom(content));
 		if (!md) {
 			console.error(`[Slurp] Parsed content resulted in falsey markdown: ${md}`);
-			cb({ err: "Unable to convert content to Markdown." });
+			throw "Unable to convert content to Markdown.";
+		}
+		return md;
+	}
+
+	async slurp(url: string) {
+		const html = await this.fetchHtml(url);
+		const articleRaw = this.parsePage(html);
+		await this.slurpNewNoteCallback({
+			url: url,
+			article: { ...articleRaw, content: this.parseMarkdown(articleRaw.content) }
+		});
+	}
+
+	async createFilePath(title: string) {
+		// increment suffix on duplicated file names... to a point.
+		const fpLoop = (p: string, fn: string, retries: number): string => {
+			if (retries == 100) throw "Cowardly refusing to increment past 100.";
+			const suffix = retries > 0 ? `-${retries}.md` : '.md';
+			const fp = normalizePath(`${p}/${fn}${suffix}`);
+			return this.app.vault.getFileByPath(fp) ? fpLoop(p, fn, retries + 1) : fp
 		}
 
-		let slurpArticle: SlurpArticle = {
-			title: article.title,
-			content: md,
+		// TODO: add setting for slurped pages folder
+		const folder = this.app.vault.getFolderByPath("Slurped Pages") ||
+			await this.app.vault.createFolder("Slurped Pages");
+
+		const fileName = title.replace(/[\\\/:]/g, '-');
+
+		return fpLoop(folder.path, fileName, 0);
+	}
+
+	createContent(url: string, article: SlurpArticle) {
+		const fmtDt = (dt?: string, time?: boolean) => {
+			return moment(dt || new Date()).format(time ? "YYYY-MM-DDTHH:mm" : "YYYY-MM-DD")
 		};
 
-		if (article.excerpt) slurpArticle.excerpt = article.excerpt;
-		if (article.byline) slurpArticle.byline = article.byline;
-		if (article.siteName) slurpArticle.siteName = article.siteName;
-		if (article.publishedTime) slurpArticle.publishedTime = article.publishedTime;
+		const notIfEmpty = (k: string, v?: string) => v ? `${k}: ${v}\n` : "";
 
-		cb({ article: slurpArticle });
+		const publishedTime = article.publishedTime ? fmtDt(article.publishedTime) : undefined;
+
+		// TODO: add toggles for properties
+		let noteProps: string = "---\n";
+		noteProps += `link: ${url}\n`;
+		noteProps += notIfEmpty('author', article.byline);
+		noteProps += notIfEmpty('date', publishedTime);
+		noteProps += notIfEmpty('site', article.siteName);
+		noteProps += `slurped: ${fmtDt()}\n`;
+		noteProps += "---\n";
+		return noteProps + article.content;
+	}
+
+	async slurpNewNoteCallback(args: SlurpCallbackArgs) {
+		if (args.err) throw args.err;
+		if (!args.article) throw "Article is empty.";
+
+		const filePath = await this.createFilePath(args.article.title)
+		const content = this.createContent(args.url, args.article)
+
+		const newFile = await this.app.vault.create(filePath, content);
+		this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.openFile(newFile);
 	}
 }
 
@@ -127,55 +164,6 @@ class SlurpNewNoteModal extends Modal {
 	constructor(app: App, plugin: SlurpPlugin) {
 		super(app);
 		this.plugin = plugin;
-	}
-
-	async callback(args: SlurpCallbackArgs) {
-		if (args.err) {
-			new Notice(`Error! Unable to Slurp page: ${args.err}`);
-			return;
-		}
-
-		if (!args.article) {
-			new Notice(`Error! Unable to Slurp page for unknown reasons.`);
-			return;
-		}
-
-		const fileName = args.article.title.replace(/[\\\/:]/g, '-');
-
-		// TODO: add setting for slurped pages folder
-		let folder = this.app.vault.getFolderByPath("Slurped Pages");
-		if (!folder) {
-			folder = await this.app.vault.createFolder("Slurped Pages");
-		}
-
-		const filePath = normalizePath(`${folder.path}/${fileName}.md`);
-		if (this.app.vault.getFileByPath(filePath)) {
-			new Notice("Slurp: A file with that name already exists!");
-			return;
-		}
-
-		// TODO: add toggles for properties
-		let noteProps: string = "---\n";
-		noteProps += `link: ${this.url}\n`;
-		noteProps += args.article.byline && `author: ${args.article.byline}\n` || "";
-
-		const fmtDtForObsidian = (dt?: string, time?: boolean) => {
-			return moment(dt || new Date()).format(time ? "YYYY-MM-DDTHH:mm" : "YYYY-MM-DD")
-		};
-
-		if (args.article.publishedTime) {
-			noteProps += `date: ${fmtDtForObsidian(args.article.publishedTime)}\n`;
-		}
-
-		// TODO: pointless without toggles/template...
-		// newContent += args.article.excerpt && `${args.article.excerpt}\n` || "";
-
-		noteProps += args.article.siteName && `site: ${args.article.siteName}\n` || "";
-		noteProps += `slurped: ${fmtDtForObsidian()}\n`;
-		noteProps += "---\n";
-
-		const newFile = await this.app.vault.create(filePath, noteProps + args.article.content);
-		this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.openFile(newFile);
 	}
 
 	onOpen() {
@@ -203,11 +191,13 @@ class SlurpNewNoteModal extends Modal {
 				progressBar.setValue(cur + progressIncrement);
 			}, 10)
 
-			this.plugin.slurp(this.url, (args) => this.callback(args).then(() => {
-				clearInterval(t);
-				this.close();
-			}));
-		}
+			try {
+				this.plugin.slurp(this.url);
+			} catch (err) { this.plugin.errorNotice(err); }
+
+			clearInterval(t);
+			this.close();
+		};
 
 		new Setting(contentEl)
 			.addButton((btn) => btn
