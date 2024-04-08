@@ -13,26 +13,25 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Slurped Pages/Reddit - Dive into anything.md",
+                "file": "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
                 "mode": "source",
                 "source": true
               }
             }
           },
           {
-            "id": "4ec61f4c4be004e4",
+            "id": "3ffcb702ebd060f1",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Tag Suggestion.md",
+                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
                 "mode": "source",
-                "source": true
+                "source": false
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -98,7 +97,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Tag Suggestion.md",
+                "file": "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +114,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Tag Suggestion.md",
+                "file": "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -138,7 +137,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Tag Suggestion.md"
+                "file": "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md"
               }
             }
           }
@@ -159,17 +158,20 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "4ec61f4c4be004e4",
+  "active": "bcb5d8d6e211f4b0",
   "lastOpenFiles": [
-    "Slurped Pages/Building a Fly.io-like Scheduler Part 1- Basic Coordinator and Workers.md",
-    "Tag Suggestion.md",
     "Slurped Pages/Reddit - Dive into anything.md",
-    "Welcome.md",
-    "Slurped Pages/Spark 3 and GPUs to Reduce Cloud cost by up to 70% | The PayPal Technology Blog.md",
     "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
-    "Slurped Pages/Image Stacks and iPhone Racks - Building an Internet Scale Meme Search Engine.md",
     "Slurped Pages/OpenNeRF- Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
+    "Slurped Pages/Spark 3 and GPUs to Reduce Cloud cost by up to 70% | The PayPal Technology Blog.md",
+    "Slurped Pages/Image Stacks and iPhone Racks - Building an Internet Scale Meme Search Engine.md",
+    "Slurped Pages/Building a Fly.io-like Scheduler Part 1- Basic Coordinator and Workers.md",
+    "Slurped Pages/Evolving from Rule-based Classifier- Machine Learning Powered Auto Remediation in Netflix Data Platform.md",
+    "Slurped Pages/Evolving from Rule-based Classifier- Machine Learning Powered Auto Remediation in Netflix Data Platform-.md",
+    "Slurped Pages/Evolving from Rule-based Classifier- Machine Learning Powered Auto Remediation in Netflix Data Platform-1.md",
+    "Tag Suggestion.md",
+    "Welcome.md",
     "Slurped Pages"
   ]
 }
