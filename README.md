@@ -25,6 +25,22 @@ Slurps webpages, cleans off all the crud, and saves them to Obsidian as nice, ti
 4. Paste the URL and hit _Enter_ or tap the _Slurp_ button
 5. Slurp will save the note to a folder called _Slurped Pages_ and open it up
 
+### Using Bookmarklets or the Browser Extension (Soon™️)
+
+Slurp exposes a custom URI which can be used for one-click saves.
+
+Bookmarklets are a simple option for those who prefer them. Simply create a new bookmark with the following URL set:
+
+```
+javascript:(() => document.location.href=`obsidian://slurp?url=${document.URL}`)();
+```
+
+Browser extensions are also available for Firefox, Chrome, and other browsers compatible with the standard web extension specification, though they are currently in beta and must be manually installed. See https://github.com/inhumantsar/slurp-extension for details.
+
+### Settings
+
+* `Show empty properties`: Should Slurp add all note properties even if they are empty? (Only affects new notes)
+
 ## Known Issues & Limitations
 
 * Social media links generally don't work well, for example:
@@ -36,7 +52,8 @@ Slurps webpages, cleans off all the crud, and saves them to Obsidian as nice, ti
 
 ## Notable Versions
 
-* 0.1.x - *IN PROGRESS* Initial public release 
+* 0.1.3 - Added mobile support, custom URI for bookmarklets, and the option to show all properties even when empty.
+* 0.1.2 - Initial public release
 
 ## TODO
 
@@ -98,3 +115,7 @@ xdg-open "obsidian://slurp?url=https://..."
 ## Credits
 
 * [Mozilla's Readability](https://github.com/mozilla/readability) powers the underlying conversion.
+
+## License
+
+[MIT](./LICENSE)

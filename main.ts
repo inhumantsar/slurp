@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, ProgressBarComponent, Setting, TFolder, TextComponent, htmlToMarkdown, moment, normalizePath, requestUrl, sanitizeHTMLToDom } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, ProgressBarComponent, Setting, TFolder, TextComponent, htmlToMarkdown, moment, normalizePath, requestUrl, sanitizeHTMLToDom } from 'obsidian';
 import { Readability } from '@mozilla/readability';
 
 interface SlurpArticle {
@@ -21,11 +21,21 @@ interface SlurpUrlParams {
 	url: string
 }
 
+interface SlurpSettings {
+	showEmptyProps: boolean
+}
+
+const DEFAULT_SETTINGS: SlurpSettings = {
+	showEmptyProps: false
+}
+
 export default class SlurpPlugin extends Plugin {
-	readabilityScript: string;
+	settings: SlurpSettings;
 
 	async onload() {
 		await this.loadSettings();
+
+		this.addSettingTab(new SlurpSettingsTab(this.app, this));
 
 		this.addCommand({
 			id: 'create-note-from-url',
@@ -40,17 +50,17 @@ export default class SlurpPlugin extends Plugin {
 
 			try {
 				this.slurp(e.url);
-			} catch (err) { this.errorNotice(err); }
+			} catch (err) { this.displayError(err); }
 		});
 	}
 
 	onunload() { }
 
-	async loadSettings() { }
+	async loadSettings() { this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()); }
 
-	async saveSettings() { }
+	async saveSettings() { await this.saveData(this.settings); }
 
-	errorNotice = (err: Error) => new Notice(`Slurp Error! ${err.message}`);
+	displayError = (err: Error) => new Notice(`Slurp Error! ${err.message}`);
 
 	fixRelativeLinks(html: string, articleUrl: string) {
 		const url = new URL(articleUrl);
@@ -126,11 +136,14 @@ export default class SlurpPlugin extends Plugin {
 	}
 
 	createContent(url: string, article: SlurpArticle) {
-		const fmtDt = (dt?: string, time?: boolean) => {
-			return moment(dt || new Date()).format(time ? "YYYY-MM-DDTHH:mm" : "YYYY-MM-DD")
+		const fmtDt = (dt?: string) => {
+			return moment(dt || new Date()).format("YYYY-MM-DDTHH:mm")
 		};
 
-		const notIfEmpty = (k: string, v?: string) => v ? `${k}: ${v}\n` : "";
+		const notIfEmpty = (k: string, v?: string) => {
+			if (v || this.settings.showEmptyProps) return `${k}: ${v || ""}\n`;
+			else return "";
+		}
 
 		const publishedTime = article.publishedTime ? fmtDt(article.publishedTime) : undefined;
 
@@ -193,7 +206,7 @@ class SlurpNewNoteModal extends Modal {
 
 			try {
 				this.plugin.slurp(this.url);
-			} catch (err) { this.plugin.errorNotice(err); }
+			} catch (err) { this.plugin.displayError(err); }
 
 			clearInterval(t);
 			this.close();
@@ -212,5 +225,31 @@ class SlurpNewNoteModal extends Modal {
 	onClose() {
 		const { contentEl } = this;
 		contentEl.empty();
+	}
+}
+
+class SlurpSettingsTab extends PluginSettingTab {
+	plugin: SlurpPlugin;
+
+	constructor(app: App, plugin: SlurpPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
+
+	display(): void {
+		const { containerEl } = this;
+
+		containerEl.empty();
+
+		new Setting(containerEl)
+			.setName('Show empty properties')
+			.setDesc("Should Slurp add all note properties even if they are empty? (Only affects new notes)")
+			.addToggle((toggle) => toggle
+				.setValue(this.plugin.settings.showEmptyProps)
+				.onChange(async (val) => {
+					this.plugin.settings.showEmptyProps = val;
+					await this.plugin.saveSettings();
+				})
+			)
 	}
 }

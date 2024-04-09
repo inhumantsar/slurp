@@ -1,11 +1,11 @@
 {
 	"id": "slurp",
 	"name": "Slurp",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"minAppVersion": "0.15.0",
 	"description": "Slurps webpages and saves them as clean, uncluttered Markdown.",
 	"author": "inhumantsar",
 	"authorUrl": "https://github.com/inhumantsar",
-	"isDesktopOnly": true,
-	"fundingUrl": "https://ko-fi.com/inhumantsar"
+	"fundingUrl": "https://ko-fi.com/inhumantsar",
+	"isDesktopOnly": false
 }

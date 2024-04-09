@@ -8,18 +8,6 @@
         "type": "tabs",
         "children": [
           {
-            "id": "bcb5d8d6e211f4b0",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
-                "mode": "source",
-                "source": true
-              }
-            }
-          },
-          {
             "id": "3ffcb702ebd060f1",
             "type": "leaf",
             "state": {
@@ -97,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
+                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -114,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
+                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -137,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md"
+                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md"
               }
             }
           }
@@ -158,11 +146,15 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "bcb5d8d6e211f4b0",
+  "active": "3ffcb702ebd060f1",
   "lastOpenFiles": [
-    "Slurped Pages/Reddit - Dive into anything.md",
-    "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
+    "Slurped Pages/Fear makes you a worse programmer-2.md",
+    "Slurped Pages/Fear makes you a worse programmer-1.md",
+    "Slurped Pages/Fear makes you a worse programmer.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
+    "Slurped Pages/She Built a Microcomputer Empire From Her Suburban Home.md",
+    "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
+    "Slurped Pages/Reddit - Dive into anything.md",
     "Slurped Pages/OpenNeRF- Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
     "Slurped Pages/Spark 3 and GPUs to Reduce Cloud cost by up to 70% | The PayPal Technology Blog.md",
     "Slurped Pages/Image Stacks and iPhone Racks - Building an Internet Scale Meme Search Engine.md",
