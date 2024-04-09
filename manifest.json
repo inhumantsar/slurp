@@ -6,5 +6,6 @@
 	"description": "Slurps webpages and saves them as clean, uncluttered Markdown.",
 	"author": "inhumantsar",
 	"authorUrl": "https://github.com/inhumantsar",
-	"isDesktopOnly": true
+	"isDesktopOnly": true,
+	"fundingUrl": "https://ko-fi.com/inhumantsar"
 }
