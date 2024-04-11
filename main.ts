@@ -203,9 +203,8 @@ export default class SlurpPlugin extends Plugin {
 
 		// Iterate over the keys of objB
 		for (const key in metadata) {
-			if (key !== 'tags' && isEmpty(merged[key]) && !isEmpty(metadata[key])) {
-				merged[key] = metadata[key];
-			}
+			// @ts-ignore
+			if (key !== 'tags' && isEmpty(merged[key]) && !isEmpty(metadata[key])) merged[key] = metadata[key];
 		}
 
 		return merged;
