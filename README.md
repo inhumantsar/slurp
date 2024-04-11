@@ -12,8 +12,17 @@ Slurps webpages, cleans off all the crud, and saves them to Obsidian as nice, ti
 
 ## Features
 
-* Use the command palette to create a new note, complete with properties.
-* Note properties include properly formatted dates so daily notes link up automatically
+* Use the command palette to create a new note.
+* Automatically sources a variety of note properties the page and its metadata, including:
+  * __Excerpt__ - Also used on some sites for a subtitle or description.
+  * __Byline__ - aka Author
+  * __Site name__
+  * __Published and Modified dates__
+  * __Permalink__
+  * __Page type__ - Usually "article", "page", or "post".
+  * __Twitter handle__
+  * __Tags and Keywords__
+  * __Onion link__
 
 ## Usage
 
@@ -39,16 +48,21 @@ Browser extensions are also available for Firefox, Chrome, and other browsers co
 
 ### Settings
 
-* `Show empty properties`: Should Slurp add all note properties even if they are empty? (Only affects new notes)
+* `Show empty properties`: Should Slurp add all note properties even if they are empty?
+* `Parse tags`: Use the tags and keywords discovered in slurped page metadata?
+  * WARNING: May result in a large number of new tags, prefixes are highly recommended. Some sites put entire sentences into the fields meant for comma-separated keywords. Yes, abc7news.com, I'm talking about you.
+* `Tag prefix`: Apply this prefix to all tags.
+* `Tag case`: Format multi-word tags using this style. The default (`iKebab-case`) will replace spaces with hyphens without changing case.
+
 
 ## Known Issues & Limitations
 
 * Social media links generally don't work well, for example:
   * Twitter links will simply fail because Twitter aggressively filters non-browsers.
   * Comments will be captured from HackerNews links (mostly), but all threading will be lost.
-  * Reddit links will be processed without error, but only the link, author, and Reddit sidebar content will be captured.
+  * Reddit links will be processed without error, but only the link, author, and subreddit sidebar content will be captured.
 * Slurp does *nothing* to bypass paywalls.
-* The conversion will leave a bit of jank behind sometimes, mainly in the form of wonky markup and line breaks.
+* The conversion will leave a bit of janky markup behind sometimes, mainly in the form of too many line breaks.
 
 ## Notable Versions
 
