@@ -1,73 +1,21 @@
-import { App, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, ProgressBarComponent, Setting, TextComponent, htmlToMarkdown, moment, normalizePath, requestUrl, sanitizeHTMLToDom } from 'obsidian';
 import { Readability } from '@mozilla/readability';
-
-interface SlurpArticleMetadata {
-	tags: Set<string>;
-	excerpt?: string;
-	byline?: string;
-	siteName?: string;
-	publishedTime?: string;
-	modifiedTime?: string;
-	type?: string;
-	twitter?: string;
-	onion?: string;
-	link?: string;
-}
-
-interface SlurpArticle extends SlurpArticleMetadata {
-	title: string;
-	content: string;
-}
-
-interface SlurpCallbackArgs {
-	url: string;
-	article?: SlurpArticle;
-	err?: string;
-}
-
-// overkill atm but hey
-interface SlurpUrlParams {
-	url: string
-}
-
-const TAG_CASES = ["camelCase", "PascalCase", "snake_case", "kebab-case", "iKebab-case"] as const;
-type TagCase = typeof TAG_CASES[number];
-
-interface SlurpSettings {
-	showEmptyProps: boolean
-	parseTags: boolean
-	tagPrefix: string
-	tagCase: TagCase
-}
-
-const DEFAULT_SETTINGS: SlurpSettings = {
-	showEmptyProps: false,
-	parseTags: true,
-	tagPrefix: "slurp/",
-	tagCase: "iKebab-case"
-}
+import { DEFAULT_SETTINGS } from 'const';
+import { App, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, ProgressBarComponent, Setting, TextComponent, htmlToMarkdown, moment, normalizePath, requestUrl, sanitizeHTMLToDom } from 'obsidian';
+import Sortable from 'sortablejs';
+import type { SlurpArticle, SlurpArticleMetadata, SlurpPropSetting, SlurpSettings, TagCase } from 'types';
+import { TAG_CASES } from 'types';
+import NotePropSettingList from "./NotePropSettingList.svelte";
+import store from "./store";
 
 function isEmpty(val: any): boolean {
 	return val == null || (typeof val === 'string' && val.trim() === '') || (Array.isArray(val) && val.length === 0);
 }
 
-// maps the attribute names in <meta> elements to slurp metadata fields in order of priority
-const META_FIELDS = new Map<string, Set<string>>([
-	['excerpt', new Set(['description', 'og:description', 'twitter:description'])],
-	['byline', new Set(['author', 'article:author', 'parsely-author', 'cXenseParse:author'])], // article:author is a think, but seems mostly for bio URLs
-	['title', new Set(['title', 'og:title', 'parsely-title', 'twitter:title', 'twitter:text:title'])],
-	['siteName', new Set(['og:site_name', 'page.content.source', 'application-name', 'apple-mobile-web-app-title', 'twitter:site'])],
-	['publishedTime', new Set(['article:published_time', 'parsely-pub-date', 'datePublished', 'article.published'])],
-	['modifiedTime', new Set(['article:modified_time', 'dateModified', 'dateLastPubbed'])],
-	['link', new Set(['url', 'og:url', 'parsely-link', 'twitter:url'])],
-	['type', new Set(['og:type', 'parsely-type', 'medium', 'page.content.type'])],
-	['twitter', new Set(['twitter:creator', 'twitter:site'])],
-	['tags', new Set(['tags', 'keywords', 'article:tag', 'parsely-tags', 'news_keywords'])],
-	['onion', new Set(['onion-location'])] // http-equiv
-]);
-
 export default class SlurpPlugin extends Plugin {
+	//@ts-ignore
 	settings: SlurpSettings;
+	//@ts-ignore
+	propSettingsById: Map<string, SlurpPropSetting>
 
 	async onload() {
 		await this.loadSettings();
@@ -87,13 +35,16 @@ export default class SlurpPlugin extends Plugin {
 
 			try {
 				this.slurp(e.url);
-			} catch (err) { this.displayError(err); }
+			} catch (err) { this.displayError(err as Error); }
 		});
+
 	}
 
 	onunload() { }
 
-	async loadSettings() { this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()); }
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
 
 	async saveSettings() { await this.saveData(this.settings); }
 
@@ -170,24 +121,24 @@ export default class SlurpPlugin extends Plugin {
 		return tags;
 	}
 
-	parseMetadata(doc: Document) {
+	parseMetadata(doc: Document): SlurpArticleMetadata {
 		const metadata: SlurpArticleMetadata = { tags: new Set() };
 		const tmpl = 'meta[name="{attr}"], meta[property="{attr}"], meta[itemprop="{attr}"], meta[http-equiv="{attr}"]';
 
-		META_FIELDS.forEach((attrs, k) => {
-			attrs.forEach((attr) => {
+		this.settings.propSettings.forEach((prop) => {
+			prop.metaFields.forEach((attr) => {
 				// tags need special handling, for everything else we just take the first result
-				if (k == "tags") {
+				if (prop.id == "tags") {
 					const elements: NodeListOf<HTMLMetaElement> = doc.querySelectorAll(tmpl.replace('{attr}', attr));
 					metadata.tags = new Set<string>([...metadata.tags, ...this.parseMetadataTags(elements)]);
 				} else {
 					// @ts-ignore
-					if (metadata[k] != undefined) return;
+					if (metadata[prop.id] != undefined) return;
 					const elements: NodeListOf<HTMLMetaElement> = doc.querySelectorAll(tmpl.replace('{attr}', attr));
 					if (elements.length == 0) return;
 
 					// @ts-ignore
-					metadata[k] = elements[0].content;
+					metadata[prop.id] = elements[0].content;
 				}
 			});
 		});
@@ -210,7 +161,7 @@ export default class SlurpPlugin extends Plugin {
 		return merged;
 	}
 
-	parseMarkdown(content: string) {
+	parseMarkdown(content: string): string {
 		const md = htmlToMarkdown(sanitizeHTMLToDom(content));
 		if (!md) {
 			console.error(`[Slurp] Parsed content resulted in falsey markdown: ${md}`);
@@ -219,7 +170,7 @@ export default class SlurpPlugin extends Plugin {
 		return md;
 	}
 
-	async slurp(url: string) {
+	async slurp(url: string): Promise<void> {
 		const html = await this.fetchHtml(url);
 		const doc = new DOMParser().parseFromString(html, 'text/html');
 		const article: SlurpArticle = { tags: new Set<string>(), ...this.parsePage(doc) };
@@ -228,7 +179,7 @@ export default class SlurpPlugin extends Plugin {
 		await this.slurpNewNoteCallback({ ...metadata, content: content, link: url });
 	}
 
-	async createFilePath(title: string) {
+	async createFilePath(title: string): Promise<string> {
 		// increment suffix on duplicated file names... to a point.
 		const fpLoop = (p: string, fn: string, retries: number): string => {
 			if (retries == 100) throw "Cowardly refusing to increment past 100.";
@@ -246,14 +197,15 @@ export default class SlurpPlugin extends Plugin {
 		return fpLoop(folder.path, fileName, 0);
 	}
 
-	createContent(article: SlurpArticle) {
+	createContent(article: SlurpArticle): string {
 		// TODO: replace hardcoded string with a template or add settings for toggles + custom props + ordering?
 		const fmtDt = (dt?: string) => {
+			// @ts-ignore
 			return moment(dt || new Date()).format("YYYY-MM-DDTHH:mm")
 		};
 
 		const maybe = (k: string, v?: string) => {
-			if (!isEmpty(v) || this.settings.showEmptyProps) return `${k}: ${v || ""}\n`;
+			if (this.propSettingsById.get(k)?.enabled && (!isEmpty(v) || this.settings.showEmptyProps)) return `${k}: ${v || ""}\n`;
 			else return "";
 		}
 
@@ -266,7 +218,7 @@ export default class SlurpPlugin extends Plugin {
 
 		const publishedTime = article.publishedTime ? fmtDt(article.publishedTime) : undefined;
 		const modifiedTime = article.modifiedTime ? fmtDt(article.modifiedTime) : undefined;
-		const twitter = article.twitter ? `https://twitter.com/${article.twitter.substring(1)}` : undefined;
+		const twitter = article.twitter ? `https://x.com/${article.twitter.substring(1)}` : undefined;
 		// tags: Set<string>;
 
 
@@ -302,6 +254,7 @@ class SlurpNewNoteModal extends Modal {
 	constructor(app: App, plugin: SlurpPlugin) {
 		super(app);
 		this.plugin = plugin;
+		this.url = "";
 	}
 
 	onOpen() {
@@ -331,7 +284,7 @@ class SlurpNewNoteModal extends Modal {
 
 			try {
 				this.plugin.slurp(this.url);
-			} catch (err) { this.plugin.displayError(err); }
+			} catch (err) { this.plugin.displayError(err as Error); }
 
 			clearInterval(t);
 			this.close();
@@ -341,8 +294,7 @@ class SlurpNewNoteModal extends Modal {
 			.addButton((btn) => btn
 				.setButtonText("Slurp")
 				.setCta()
-				.onClick(doSlurp)
-			)
+				.onClick(doSlurp))
 
 		contentEl.addEventListener("keypress", (k) => (k.key === "Enter") && doSlurp());
 	}
@@ -362,9 +314,12 @@ class SlurpSettingsTab extends PluginSettingTab {
 	}
 
 	display(): void {
+
 		const { containerEl } = this;
 
 		containerEl.empty();
+
+		containerEl.createEl("h3", { text: "Properties" });
 
 		new Setting(containerEl)
 			.setName('Show empty properties')
@@ -376,6 +331,38 @@ class SlurpSettingsTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 			);
+
+
+		store.propSettings.set(this.plugin.settings.propSettings);
+
+		new NotePropSettingList({ target: this.containerEl });
+
+		// could not get sortable and the svelte each loop to play nicely
+		//
+		// const swapProps = (from?: number, to?: number) => {
+		// 	console.log(`swapping ${from} and ${to}`);
+		// 	if (from !== undefined && to !== undefined) {
+		// 		// 0 -> 5
+		// 		const propSettings = new Array<SlurpPropSetting>(...this.plugin.settings.propSettings);
+		// 		propSettings[from].idx, propSettings[to].idx = propSettings[to].idx, propSettings[from].idx;
+		// 		console.log(`swapped ${propSettings[from].id} and ${propSettings[to].id}`)
+		// 		store.propSettings.set(propSettings);
+		// 	}
+		// }
+
+		// new Sortable(document.getElementById('notePropSettings') as HTMLElement, {
+		// 	animation: 300,
+		// 	forceFallback: true,
+		// 	onUpdate: (evt) => swapProps(evt.oldIndex, evt.newIndex)
+		// });
+
+		store.propSettings.subscribe((p) => {
+			console.log("saving...");
+			this.plugin.settings.propSettings = p;
+			this.plugin.saveSettings();
+		})
+
+		containerEl.createEl("h4", { text: "Tags" });
 
 		new Setting(containerEl)
 			.setName('Parse tags')
@@ -415,6 +402,7 @@ class SlurpSettingsTab extends PluginSettingTab {
 				.addOptions(tagCaseOptions)
 				.setValue(this.plugin.settings.tagCase)
 				.setDisabled(!this.plugin.settings.parseTags)
+				// @ts-ignore
 				.onChange(async (val: TagCase) => {
 					this.plugin.settings.tagCase = val;
 					await this.plugin.saveSettings();

@@ -11,8 +11,12 @@
             "id": "3ffcb702ebd060f1",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {}
+              "type": "markdown",
+              "state": {
+                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
+                "mode": "preview",
+                "source": true
+              }
             }
           }
         ]
@@ -81,6 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -97,6 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -118,7 +124,9 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {}
+              "state": {
+                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md"
+              }
             }
           }
         ]
@@ -140,6 +148,9 @@
   },
   "active": "3ffcb702ebd060f1",
   "lastOpenFiles": [
+    "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
+    "Slurped Pages/OpenNeRF- Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
+    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
     "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans.md",
     "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-4.md",
     "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-3.md",
@@ -147,14 +158,11 @@
     "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-1.md",
     "Slurped Pages/Consumers will finally see FCC-mandated ‘nutrition labels’ for most broadband plans-1.md",
     "Slurped Pages/Consumers will finally see FCC-mandated ‘nutrition labels’ for most broadband plans.md",
-    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
     "Slurped Pages/Fear makes you a worse programmer-2.md",
     "Slurped Pages/Fear makes you a worse programmer-1.md",
     "Slurped Pages/Fear makes you a worse programmer.md",
     "Slurped Pages/She Built a Microcomputer Empire From Her Suburban Home.md",
-    "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
     "Slurped Pages/Reddit - Dive into anything.md",
-    "Slurped Pages/OpenNeRF- Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
     "Slurped Pages/Spark 3 and GPUs to Reduce Cloud cost by up to 70% | The PayPal Technology Blog.md",
     "Slurped Pages/Image Stacks and iPhone Racks - Building an Internet Scale Meme Search Engine.md",
     "Slurped Pages/Building a Fly.io-like Scheduler Part 1- Basic Coordinator and Workers.md",

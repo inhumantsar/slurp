@@ -46,14 +46,16 @@ javascript:(() => document.location.href=`obsidian://slurp?url=${document.URL}`)
 
 Browser extensions are also available for Firefox, Chrome, and other browsers compatible with the standard web extension specification, though they are currently in beta and must be manually installed. See https://github.com/inhumantsar/slurp-extension for details.
 
-### Settings
+## Living on the Edge
 
-* `Show empty properties`: Should Slurp add all note properties even if they are empty?
-* `Parse tags`: Use the tags and keywords discovered in slurped page metadata?
-  * WARNING: May result in a large number of new tags, prefixes are highly recommended. Some sites put entire sentences into the fields meant for comma-separated keywords. Yes, abc7news.com, I'm talking about you.
-* `Tag prefix`: Apply this prefix to all tags.
-* `Tag case`: Format multi-word tags using this style. The default (`iKebab-case`) will replace spaces with hyphens without changing case.
+If you would like to help test new features before they are officially released:
 
+1. Install [BRAT](https://tfthacker.com/brat-quick-guide#Adding+a+beta+plugin) from the Community Plugins directory
+2. Open the command palette and run the command `BRAT: Add a beta plugin for testing`.
+  * Do not use a frozen version! I don't tag pre-releases.
+3. Enter this repository's URL, ie: `https://github.com/inhumantsar/slurp`.
+
+BRAT will regularly look for updates and install them. This can be configured/disabled in the BRAT settings menu.
 
 ## Known Issues & Limitations
 
@@ -64,8 +66,9 @@ Browser extensions are also available for Firefox, Chrome, and other browsers co
 * Slurp does *nothing* to bypass paywalls.
 * The conversion will leave a bit of janky markup behind sometimes, mainly in the form of too many line breaks.
 
-## Notable Versions
+## CHANGELOG
 
+* 0.1.4 - Improve identification of note properties by sourcing them from well-known meta elements.
 * 0.1.3 - Added mobile support, custom URI for bookmarklets, and the option to show all properties even when empty.
 * 0.1.2 - Initial public release
 
