@@ -337,27 +337,7 @@ class SlurpSettingsTab extends PluginSettingTab {
 
 		new NotePropSettingList({ target: this.containerEl });
 
-		// could not get sortable and the svelte each loop to play nicely
-		//
-		// const swapProps = (from?: number, to?: number) => {
-		// 	console.log(`swapping ${from} and ${to}`);
-		// 	if (from !== undefined && to !== undefined) {
-		// 		// 0 -> 5
-		// 		const propSettings = new Array<SlurpPropSetting>(...this.plugin.settings.propSettings);
-		// 		propSettings[from].idx, propSettings[to].idx = propSettings[to].idx, propSettings[from].idx;
-		// 		console.log(`swapped ${propSettings[from].id} and ${propSettings[to].id}`)
-		// 		store.propSettings.set(propSettings);
-		// 	}
-		// }
-
-		// new Sortable(document.getElementById('notePropSettings') as HTMLElement, {
-		// 	animation: 300,
-		// 	forceFallback: true,
-		// 	onUpdate: (evt) => swapProps(evt.oldIndex, evt.newIndex)
-		// });
-
 		store.propSettings.subscribe((p) => {
-			console.log("saving...");
 			this.plugin.settings.propSettings = p;
 			this.plugin.saveSettings();
 		})

@@ -1,33 +1,41 @@
 <script lang="ts">
 	import store from "store";
 	import type { SlurpPropSetting } from "types";
+	import {flip} from 'svelte/animate';
+	import { crossfade } from 'svelte/transition';
+	import { elasticOut } from 'svelte/easing';
 
 	const getSortedPropSettings = (p: SlurpPropSetting[]) => p.sort((a, b) => a.idx - b.idx);
 
 	let propSettings: SlurpPropSetting[];
 	store.propSettings.subscribe((p) => propSettings = getSortedPropSettings(p));
 
+	const save = () => store.propSettings.set(propSettings);
+	
+	const [send, receive] = crossfade({duration: 350, easing: elasticOut});
+
 	const toggleEnabled = (prop: SlurpPropSetting) => {
 		propSettings.forEach(e => {
 			if (prop.id == e.id) e.enabled = !prop.enabled;
 		});
-		store.propSettings.set(propSettings);
+		save();
 	};
 
 	const swapSettings = (from: number, to: number) => {
-		console.log(`swapping ${propSettings[from].id} (${propSettings[from].idx}) and ${propSettings[to].id} (${propSettings[to].idx})`)
 		propSettings[from].idx = to
 		propSettings[to].idx = from;
-		console.log(`swapped ${propSettings[from].id} (${propSettings[from].idx}) and ${propSettings[to].id} (${propSettings[to].idx})`)
-		store.propSettings.set(propSettings);
+		save();
 	};
 
-
+	const saveKey = (prop: SlurpPropSetting) => {
+		if (prop.key == null || prop.key.trim() === "") prop.key = prop.defaultKey;
+		save();
+	}
 </script>
 
 <div id="prop-settings">
-	{#each propSettings as prop}
-		<div class="prop-setting" data-id={prop.id}>
+	{#each propSettings as prop (prop.id)}
+		<div class="prop-setting" data-id={prop.id} animate:flip={{delay: 50, duration: 350, easing: elasticOut}} in:send={{key: prop.id}} out:receive={{key: prop.id}}>
 			<!-- <div class="shifters"> -->
 				{#if prop.idx != 0}
 				<button class="shifter up {prop.idx == propSettings.length-1 ? 'only' : ''}" on:click={() => swapSettings(prop.idx, prop.idx-1)}></button>
@@ -38,16 +46,17 @@
 			<!-- </div> -->
 			<input type="checkbox" class="prop-enable" title="{prop.enabled ? 'Check to include' : 'Uncheck to ignore'} this property"
 				bind:checked={prop.enabled} on:click={() => toggleEnabled(prop)} id={prop.id} />
-			<input
+			<input 
 				type="text"
 				class="prop-input"
 				title="Name used for this property. Defaults to '{prop.defaultKey}'"
 				placeholder={prop.defaultKey}
 				disabled={prop.enabled === false}
 				bind:value={prop.key}
+				on:blur={() => saveKey(prop)}
 			/>
 			<div class="right-section">
-				<span class="description">{prop.description}</span>
+				<span class="description {prop.enabled === false ? 'disabled' : ''}">{prop.description}</span>
 			</div>
 		</div>
 	{/each}
@@ -107,11 +116,9 @@
 		/* background-color: var(--background-modifier-hover); */
 		color: var(--text-accent-hover);
 	}
-	.disabled, .disabled:hover, .disabled:focus-visible {
-		background-color: var(--background-secondary);
-		color: var(--text-accent-normal);
-		box-shadow: 0 transparent;
-		opacity: 30%;
+	.prop-input:disabled, .disabled {
+		color: var(--text-muted);
+		opacity: 50%;
 	}
 	.up {
 		margin: 0 0 0 0.3em;

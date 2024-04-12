@@ -13,7 +13,7 @@ Slurps webpages, cleans off all the crud, and saves them to Obsidian as nice, ti
 ## Features
 
 * Use the command palette to create a new note.
-* Automatically sources a variety of note properties the page and its metadata, including:
+* Automatically sources a variety of note properties from the page and its metadata, including:
   * __Excerpt__ - Also used on some sites for a subtitle or description.
   * __Byline__ - aka Author
   * __Site name__
@@ -66,7 +66,7 @@ BRAT will regularly look for updates and install them. This can be configured/di
 * Slurp does *nothing* to bypass paywalls.
 * The conversion will leave a bit of janky markup behind sometimes, mainly in the form of too many line breaks.
 
-## CHANGELOG
+## Changelog
 
 * 0.1.4 - Improve identification of note properties by sourcing them from well-known meta elements.
 * 0.1.3 - Added mobile support, custom URI for bookmarklets, and the option to show all properties even when empty.
