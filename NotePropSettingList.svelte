@@ -1,62 +1,148 @@
 <script lang="ts">
 	import store from "store";
-	import type { SlurpPropSetting } from "types";
-	import {flip} from 'svelte/animate';
-	import { crossfade } from 'svelte/transition';
-	import { elasticOut } from 'svelte/easing';
+	import { SlurpProp } from "types";
+	import { flip } from "svelte/animate";
+	import { crossfade } from "svelte/transition";
+	import { elasticOut } from "svelte/easing";
 
-	const getSortedPropSettings = (p: SlurpPropSetting[]) => p.sort((a, b) => a.idx - b.idx);
+	const sortProps = (p: SlurpProp<any>[]) => {
+		p.sort((a, b) => a.idx - b.idx);
+	};
 
-	let propSettings: SlurpPropSetting[];
-	store.propSettings.subscribe((p) => propSettings = getSortedPropSettings(p));
+	const propKeys = new Map<string, string>();
+	let props: Array<SlurpProp<any>>;
+	store.slurpProps.subscribe((p) => {
+		if (!props) {
+			props = p;
+		}
+		sortProps(props);
+		// make temp copies of keys so validation can be applied
+		props.forEach((v) => {
+			propKeys.set(v.id, v.key);
+		});
+	});
 
-	const save = () => store.propSettings.set(propSettings);
-	
-	const [send, receive] = crossfade({duration: 350, easing: elasticOut});
+	const save = () => store.slurpProps.set(props);
 
-	const toggleEnabled = (prop: SlurpPropSetting) => {
-		propSettings.forEach(e => {
+	const [send, receive] = crossfade({ duration: 350, easing: elasticOut });
+
+	const toggleEnabled = (prop: SlurpProp<any>) => {
+		props.forEach((e) => {
 			if (prop.id == e.id) e.enabled = !prop.enabled;
 		});
 		save();
 	};
 
 	const swapSettings = (from: number, to: number) => {
-		propSettings[from].idx = to
-		propSettings[to].idx = from;
+		props[from].idx = to;
+		props[to].idx = from;
 		save();
 	};
 
-	const saveKey = (prop: SlurpPropSetting) => {
-		if (prop.key == null || prop.key.trim() === "") prop.key = prop.defaultKey;
+	const saveKey = (prop: SlurpProp<any>) => {
+		prop.key = prop.key.trim();
 		save();
-	}
+	};
+
+	const setValidationError = (err: string | null) => {
+		const ele = document.getElementById(
+			"validation-errors",
+		) as HTMLDivElement;
+		if (!ele) return;
+
+		if (err) {
+			ele.classList.remove("hidden");
+			ele.textContent = err;
+		} else {
+			ele.classList.add("hidden");
+			ele.textContent = "";
+		}
+	};
+
+	const isKeyValid = (v: string | undefined) => {
+		if (v?.match(/[{}\[\],&*#?|\-<>=!%@]/g) !== null) {
+			setValidationError(
+				"ERROR: Property keys cannot contain the following characters: {}[],&*#?|-<>=!%@",
+			);
+			return false;
+		} else {
+			setValidationError(null);
+			return true;
+		}
+	};
+
+	const getTooltip = (prop: SlurpProp<any>, setting: string) => {
+		switch (setting) {
+			case "enabled":
+				return `${prop.enabled ? "Check to include" : "Uncheck to ignore"} this property`;
+			case "key":
+				const def = prop.defaultKey
+					? ` Defaults to "${prop.defaultKey}"`
+					: "";
+				const err = isKeyValid(prop.key)
+					? null
+					: " ERROR: Cannot contain the following characters: {}[],&*#?|-<>=!%@";
+				return err || `Name used for this property.${def}`;
+			default:
+				break;
+		}
+	};
 </script>
 
+<div id="validation-errors" class="hidden"></div>
 <div id="prop-settings">
-	{#each propSettings as prop (prop.id)}
-		<div class="prop-setting" data-id={prop.id} animate:flip={{delay: 50, duration: 350, easing: elasticOut}} in:send={{key: prop.id}} out:receive={{key: prop.id}}>
-			<!-- <div class="shifters"> -->
-				{#if prop.idx != 0}
-				<button class="shifter up {prop.idx == propSettings.length-1 ? 'only' : ''}" on:click={() => swapSettings(prop.idx, prop.idx-1)}></button>
-				{/if}
-				{#if prop.idx != propSettings.length-1}
-				<button class="shifter down {prop.idx == 0 ? 'only' : ''}" on:click={() => swapSettings(prop.idx, prop.idx+1)}></button>
-				{/if}
-			<!-- </div> -->
-			<input type="checkbox" class="prop-enable" title="{prop.enabled ? 'Check to include' : 'Uncheck to ignore'} this property"
-				bind:checked={prop.enabled} on:click={() => toggleEnabled(prop)} id={prop.id} />
-			<input 
-				type="text"
-				class="prop-input"
-				title="Name used for this property. Defaults to '{prop.defaultKey}'"
-				placeholder={prop.defaultKey}
-				disabled={prop.enabled === false}
-				bind:value={prop.key}
-				on:blur={() => saveKey(prop)}
+	{#each props as prop (prop.id)}
+		<div
+			class="prop-setting"
+			data-id={prop.id}
+			animate:flip={{ delay: 50, duration: 350, easing: elasticOut }}
+			in:send={{ key: prop.id }}
+			out:receive={{ key: prop.id }}
+		>
+			{#if prop.idx != 0}
+				<button
+					class="shifter up {prop.idx == props.length - 1
+						? 'only'
+						: ''}"
+					on:click={() => swapSettings(prop.idx, prop.idx - 1)}
+				></button>
+			{/if}
+			{#if prop.idx != props.length - 1}
+				<button
+					class="shifter down {prop.idx == 0 ? 'only' : ''}"
+					on:click={() => swapSettings(prop.idx, prop.idx + 1)}
+				></button>
+			{/if}
+
+			<input
+				type="checkbox"
+				class="prop-enable"
+				title={getTooltip(prop, "enabled")}
+				bind:checked={prop.enabled}
+				on:click={() => toggleEnabled(prop)}
+				id={prop.id}
 			/>
+
+			<input
+				type="text"
+				class="prop-input {isKeyValid(prop.key) || 'validation-error'}"
+				title={getTooltip(prop, "key")}
+				placeholder={prop.defaultKey || ""}
+				disabled={prop.enabled === false}
+				on:input={() => isKeyValid(prop.key)}
+				bind:value={prop.key}
+				on:blur={() =>
+					isKeyValid(prop.key)
+						? saveKey(prop)
+						: (prop.key = propKeys.get(prop.id) || "")}
+			/>
+
 			<div class="right-section">
-				<span class="description {prop.enabled === false ? 'disabled' : ''}">{prop.description}</span>
+				<span
+					class="description {prop.enabled === false
+						? 'disabled'
+						: ''}">{prop.description || ""}</span
+				>
 			</div>
 		</div>
 	{/each}
@@ -65,6 +151,20 @@
 <style>
 	#prop-settings {
 		width: 100%;
+	}
+
+	#validation-errors {
+		font-size: small;
+		text-align: center;
+		/* height: 1em; */
+		/* background-color: var(--background-modifier-error); */
+		color: var(--text-error);
+		margin: 0.75em 0;
+	}
+
+	#validation-errors.hidden {
+		color: transparent;
+		background-color: transparent;
 	}
 
 	.prop-setting {
@@ -116,7 +216,8 @@
 		/* background-color: var(--background-modifier-hover); */
 		color: var(--text-accent-hover);
 	}
-	.prop-input:disabled, .disabled {
+	.prop-input:disabled,
+	.disabled {
 		color: var(--text-muted);
 		opacity: 50%;
 	}
@@ -126,7 +227,7 @@
 		border-radius: var(--button-radius) 0 0 var(--button-radius);
 	}
 	.up::after {
-		content: '↑';
+		content: "↑";
 	}
 	.down {
 		margin: 0 0.3em 0 0;
@@ -134,14 +235,19 @@
 		border-radius: 0 var(--button-radius) var(--button-radius) 0;
 	}
 	.down::after {
-		content: '↓';
+		content: "↓";
 	}
 
-	.up.only, .down.only {
+	.up.only,
+	.down.only {
 		width: 3.6em;
 		margin: 0 0.3em;
 		padding: 0 0.3em;
 		border-radius: var(--button-radius);
+	}
+
+	.validation-error {
+		background-color: darkred;
 	}
 
 	.prop-setting > *,

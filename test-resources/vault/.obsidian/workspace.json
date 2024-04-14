@@ -14,8 +14,8 @@
               "type": "markdown",
               "state": {
                 "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
-                "mode": "preview",
-                "source": true
+                "mode": "source",
+                "source": false
               }
             }
           }
@@ -149,8 +149,14 @@
   "active": "3ffcb702ebd060f1",
   "lastOpenFiles": [
     "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
-    "Slurped Pages/OpenNeRF- Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
+    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-3.md",
+    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-4.md",
+    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-2.md",
+    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-1.md",
+    "Slurped Pages/OpenNeRF- Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
+    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-5.md",
+    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-6.md",
     "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans.md",
     "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-4.md",
     "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-3.md",
@@ -168,9 +174,6 @@
     "Slurped Pages/Building a Fly.io-like Scheduler Part 1- Basic Coordinator and Workers.md",
     "Slurped Pages/Evolving from Rule-based Classifier- Machine Learning Powered Auto Remediation in Netflix Data Platform.md",
     "Slurped Pages/Evolving from Rule-based Classifier- Machine Learning Powered Auto Remediation in Netflix Data Platform-.md",
-    "Slurped Pages/Evolving from Rule-based Classifier- Machine Learning Powered Auto Remediation in Netflix Data Platform-1.md",
-    "Tag Suggestion.md",
-    "Welcome.md",
     "Slurped Pages"
   ]
 }

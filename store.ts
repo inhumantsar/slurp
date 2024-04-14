@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
-import type { SlurpPropSetting } from "types";
+import { SlurpProp } from "types";
 
-let propSettings = writable<SlurpPropSetting[]>();
+let slurpProps = writable<SlurpProp<any>[]>();
 
-export default { propSettings };
+export default { slurpProps };

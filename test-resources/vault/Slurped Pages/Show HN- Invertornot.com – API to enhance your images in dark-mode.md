@@ -2,9 +2,9 @@
 link: https://news.ycombinator.com/item?id=39821632&utm_source=pocket_saves
 slurped: true
 ---
-|   |   |   |
-|---|---|---|
-|![](app://obsidian.md/s.gif)|[](app://obsidian.md/vote?id=39822344&how=up&goto=item%3Fid%3D39821632)|Semi-related - I saw this on [https://v8.dev](https://v8.dev/) a while back, but `filter: hue-rotate(180deg) invert();` can be a neat CSS trick to 'dark mode' some kinds of graphics, while not screwing with the colours so much. The `hue-rotate` help a bit to keep 'blues blue' etc.<br><br>It's far from perfect, but it's a neat one to have in your back pocket.|
+|                              |                                                                         |                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![](app://obsidian.md/s.gif) | [](app://obsidian.md/vote?id=39822344&how=up&goto=item%3Fid%3D39821632) | Semi-related - I saw this on [https://v8.dev](https://v8.dev/) a while back, but `filter: hue-rotate(180deg) invert();` can be a neat CSS trick to 'dark mode' some kinds of graphics, while not screwing with the colours so much. The `hue-rotate` help a bit to keep 'blues blue' etc.<br><br>It's far from perfect, but it's a neat one to have in your back pocket. |
 
 |   |   |   |
 |---|---|---|

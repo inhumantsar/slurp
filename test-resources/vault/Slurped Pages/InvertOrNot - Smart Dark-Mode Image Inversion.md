@@ -1,8 +1,22 @@
 ---
 link: https://invertornot.com/
-author: Mattis Megevand
+byline: Mattis Megevand
 site: InvertOrNot
-slurped: true
+slurped: 2024-04-14T23:02:49.419Z
+type: website
+excerpt: >-
+  InvertOrNot.com is a website for classifying images by how to display in web
+  dark-mode
+twitter: https://twitter.com/mattismegevand
+tags:
+  - slurp/dark-mode
+  - slurp/image-inversion
+  - slurp/API
+  - slurp/open-source
+  - slurp/image-processing
+  - slurp/smart-inversion
+  - slurp/dark-mode-optimization
+
 ---
 Make your app's dark-mode smarter with InvertOrNot. Our API predicts if an image should be inverted for optimal dark-mode rendering.  
 This API is free, and is open source (both the code and the weights of the model are [available](https://github.com/mattismegevand/invertornot)).
