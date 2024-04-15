@@ -5,13 +5,9 @@ import type { SlurpArticle, ISlurpMetadata, SlurpProps, SlurpSettings, TagCase, 
 import { SlurpProp, TAG_CASES } from 'types';
 import NotePropSettingList from "./NotePropSettingList.svelte";
 import store from "./store";
-import { createFilePath } from './util';
+import { createFilePath, isEmpty } from './util';
 import { format, formatString } from 'formatters';
 import { dump } from 'js-yaml';
-
-function isEmpty(val: any): boolean {
-	return val == null || (typeof val === 'string' && val.trim() === '') || (Array.isArray(val) && val.length === 0);
-}
 
 export default class SlurpPlugin extends Plugin {
 	settings!: SlurpSettings;
@@ -137,7 +133,7 @@ export default class SlurpPlugin extends Plugin {
 
 		for (let i in this.slurpProps) {
 			const prop = this.slurpProps[i];
-			if (i == "slurped") console.log(prop);
+
 			const metaFields = new Set([...prop.metaFields || [], ...prop.extraMetaFields || []]);
 
 			metaFields.forEach((attr) => {
@@ -220,7 +216,7 @@ export default class SlurpPlugin extends Plugin {
 
 		for (let i in this.slurpProps) {
 			const prop = this.slurpProps[i];
-			if (!prop.enabled) return;
+			if (!prop.enabled) continue;
 
 			const val = this.getFrontMatterValue(prop, article, this.settings.showEmptyProps);
 			fm.set(prop.key, val);

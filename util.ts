@@ -1,6 +1,11 @@
 import { DEFAULT_PATH } from "const";
-import type SlurpPlugin from "main";
-import { Notice, Vault, normalizePath } from "obsidian";
+import { Vault, normalizePath } from "obsidian";
+
+export const isEmpty = (val: any): boolean => {
+    return val == null
+        || (typeof val === 'string' && val.trim().length == 0)
+        || (typeof val[Symbol.iterator] === 'function' && val.length === 0)
+}
 
 export const createFilePath = async (vault: Vault, title: string, path: string = DEFAULT_PATH): Promise<string> => {
     // increment suffix on duplicated file names... to a point.

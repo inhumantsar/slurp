@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
+                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
+                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
+                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md"
+                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md"
               }
             }
           }
@@ -146,10 +146,15 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "3ffcb702ebd060f1",
+  "active": "b5173136ec90db07",
   "lastOpenFiles": [
-    "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (with tags).md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-3.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-2.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-4.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
+    "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-3.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-4.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-2.md",
@@ -169,11 +174,6 @@
     "Slurped Pages/Fear makes you a worse programmer.md",
     "Slurped Pages/She Built a Microcomputer Empire From Her Suburban Home.md",
     "Slurped Pages/Reddit - Dive into anything.md",
-    "Slurped Pages/Spark 3 and GPUs to Reduce Cloud cost by up to 70% | The PayPal Technology Blog.md",
-    "Slurped Pages/Image Stacks and iPhone Racks - Building an Internet Scale Meme Search Engine.md",
-    "Slurped Pages/Building a Fly.io-like Scheduler Part 1- Basic Coordinator and Workers.md",
-    "Slurped Pages/Evolving from Rule-based Classifier- Machine Learning Powered Auto Remediation in Netflix Data Platform.md",
-    "Slurped Pages/Evolving from Rule-based Classifier- Machine Learning Powered Auto Remediation in Netflix Data Platform-.md",
     "Slurped Pages"
   ]
 }

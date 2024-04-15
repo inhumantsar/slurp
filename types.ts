@@ -76,17 +76,21 @@ export class SlurpProp<T> {
     defaultValue?: T | DefaultFunction<T>   // default value for custom and derived props
 
     constructor({ id, enabled, key, idx, format, defaultIdx, defaultKey, description, metaFields, defaultFormat, defaultValue }: ISlurpProp<T>) {
-        this.id = id
-        this.enabled = enabled || true
-        this.key = key || defaultKey || id
-        this.idx = idx || defaultIdx || 0
-        this.format = format
-        this.defaultIdx = defaultIdx
-        this.defaultKey = defaultKey
-        this.description = description
-        this.metaFields = metaFields
-        this.defaultFormat = defaultFormat
-        this.defaultValue = defaultValue
+        this.id = id;
+        this.enabled = enabled != null ? enabled : true;
+        this.key = key || defaultKey || id;
+        this.idx = idx != null
+            ? idx
+            : defaultIdx != null
+                ? defaultIdx
+                : 0;
+        this.format = format;
+        this.defaultIdx = defaultIdx;
+        this.defaultKey = defaultKey;
+        this.description = description;
+        this.metaFields = metaFields;
+        this.defaultFormat = defaultFormat;
+        this.defaultValue = defaultValue;
     }
 
     get key() { return this._key || this.defaultKey || this.id }
