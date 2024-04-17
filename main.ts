@@ -336,7 +336,7 @@ class SlurpSettingsTab extends PluginSettingTab {
 			target: this.containerEl, props: {
 				props: Object.values<SlurpProp<any>>(
 					SlurpProp.fromSettings(this.plugin.settings.propSettings, DEFAULT_SLURP_PROPS)),
-				onValidate: (props) => onValidate(props)
+				onValidate: (props: SlurpProp<any>[]) => onValidate(props)
 			}
 		});
 
