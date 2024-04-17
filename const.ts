@@ -7,52 +7,52 @@ import { formatString, formatDate } from 'formatters';
 export const DEFAULT_SLURP_PROPS: SlurpProps = {
     link: new SlurpProp<string>({
         id: "link", defaultIdx: 0, defaultKey: "link", enabled: true, description: 'Page URL provided or the discovered permalink.',
-        metaFields: ['url', 'og:url', 'parsely-link', 'twitter:url']
+        metaFields: ['url', 'og:url', 'parsely-link', 'twitter:url'], custom: false
     }),
     byline: new SlurpProp<string>({
         defaultIdx: 1, id: "byline", defaultKey: "byline", enabled: true, description: 'Name of the primary or first detected author.',
-        metaFields: ['author', 'article:author', 'parsely-author', 'cXenseParse:author']
+        metaFields: ['author', 'article:author', 'parsely-author', 'cXenseParse:author'], custom: false
     }),
     siteName: new SlurpProp<string>({
         defaultIdx: 2, id: "siteName", defaultKey: "site", enabled: true, description: 'Website or publication name.',
-        metaFields: ['og:site_name', 'page.content.source', 'application-name', 'apple-mobile-web-app-title', 'twitter:site']
+        metaFields: ['og:site_name', 'page.content.source', 'application-name', 'apple-mobile-web-app-title', 'twitter:site'], custom: false
     }),
     publishedTime: new SlurpProp<Date>({
         defaultIdx: 3, id: "publishedTime", defaultKey: "date", enabled: true, description: 'Date (and time when present) of initial publication.',
-        metaFields: ['article:published_time', 'parsely-pub-date', 'datePublished', 'article.published'], defaultFormat: "d|YYYY-MM-DDTHH:mm"
+        metaFields: ['article:published_time', 'parsely-pub-date', 'datePublished', 'article.published'], defaultFormat: "d|YYYY-MM-DDTHH:mm", custom: false
     }),
     modifiedTime: new SlurpProp<Date>({
         defaultIdx: 4, id: "modifiedTime", defaultKey: "updated", enabled: true,
         description: 'Date (and time when present) the page was last modified, if available.', metaFields: ['article:modified_time', 'dateModified', 'dateLastPubbed'],
-        defaultFormat: "d|YYYY-MM-DDTHH:mm"
+        defaultFormat: "d|YYYY-MM-DDTHH:mm", custom: false
     }),
     type: new SlurpProp<string>({
         defaultIdx: 5, id: "type", defaultKey: "type", enabled: true, description: 'Type of publication if available, eg: "page", "post", "article".',
-        metaFields: ['og:type', 'parsely-type', 'medium', 'page.content.type']
+        metaFields: ['og:type', 'parsely-type', 'medium', 'page.content.type'], custom: false
     }),
     excerpt: new SlurpProp<string>({
         defaultIdx: 6, id: "excerpt", defaultKey: "excerpt", enabled: true, description: 'Excerpt, summary, subtitle, or description.',
-        metaFields: ['description', 'og:description', 'twitter:description']
+        metaFields: ['description', 'og:description', 'twitter:description'], custom: false
     }),
     twitter: new SlurpProp<string>({
         defaultIdx: 7, id: "twitter", defaultKey: "twitter", enabled: true, description: 'Twitter/X link for the author or site.',
-        metaFields: ['twitter:creator', 'twitter:site'], defaultFormat: 's|https://twitter.com/{s}'
+        metaFields: ['twitter:creator', 'twitter:site'], defaultFormat: 's|https://twitter.com/{s}', custom: false
     }),
     tags: new SlurpProp<Iterable<string>>({
         defaultIdx: 8, id: "tags", defaultKey: "tags", enabled: true, description: 'Tags and keywords. See also Tag Prefix.',
-        metaFields: ['tags', 'keywords', 'article:tag', 'parsely-tags', 'news_keywords'], defaultFormat: "S|{prefix}/{tag}"
+        metaFields: ['tags', 'keywords', 'article:tag', 'parsely-tags', 'news_keywords'], defaultFormat: "S|{prefix}/{tag}", custom: false
     }),
     onion: new SlurpProp<string>({
         defaultIdx: 9, id: "onion", defaultKey: "onion", enabled: true, description: 'Link to a mirror of the content on Tor.',
-        metaFields: ['onion-location']
+        metaFields: ['onion-location'], custom: false
     }),
     slurped: new SlurpProp<Date>({
         defaultIdx: 10, id: "slurped", defaultKey: "slurped", enabled: true, description: 'Download date/time',
-        defaultFormat: 'd|YYYY-MM-DDTHH:mm', defaultValue: () => new Date()
+        defaultFormat: 'd|YYYY-MM-DDTHH:mm', defaultValue: () => new Date(), custom: false
     }),
     title: new SlurpProp<Date>({
         defaultIdx: 11, id: "title", defaultKey: "title", enabled: true, description: 'Page title',
-        metaFields: ['og:title', 'twitter:title']
+        metaFields: ['og:title', 'twitter:title'], custom: false
     }),
 }
 
