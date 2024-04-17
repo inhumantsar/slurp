@@ -103,7 +103,7 @@
 
 <div id="validation-errors">{validationErrorText || ""}</div>
 <div id="prop-settings">
-	{#each props as prop (prop.id)}
+	{#each props as prop, idx (prop.id)}
 		<div
 			class="prop-setting setting-item"
 			data-id={prop.id}
