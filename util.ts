@@ -1,5 +1,6 @@
 import { DEFAULT_PATH } from "const";
 import { Vault, normalizePath } from "obsidian";
+import { SlurpProp } from "types";
 
 export const isEmpty = (val: any): boolean => {
     return val == null
@@ -22,3 +23,5 @@ export const createFilePath = async (vault: Vault, title: string, path: string =
 
     return fpLoop(folder.path, fileName, 0);
 };
+
+export const sortSlurpProps = (props: SlurpProp<any>[]) => props.sort((a, b) => a.idx - b.idx);

@@ -4,8 +4,7 @@ import { App, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, ProgressBar
 import type { SlurpArticle, ISlurpMetadata, SlurpProps, SlurpSettings, TagCase, IFormatterArgs } from 'types';
 import { SlurpProp, TAG_CASES } from 'types';
 import NotePropSettingList from "./NotePropSettingList.svelte";
-import store from "./store";
-import { createFilePath, isEmpty } from './util';
+import { createFilePath, isEmpty, sortSlurpProps } from './util';
 import { format, formatString } from 'formatters';
 import { dump } from 'js-yaml';
 
@@ -43,23 +42,30 @@ export default class SlurpPlugin extends Plugin {
 			: this.settings.tagPrefix;
 	}
 
+	fixPropIdx() {
+		const props = Object.values<SlurpProp<any>>(this.slurpProps);
+		sortSlurpProps(props);
+		props.forEach((prop, idx) => prop.idx = idx);
+	}
+
+	migrateSettings() {
+		this.fixTagPrefix();
+		this.fixPropIdx();
+		this.saveSettings();
+	}
+
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		this.slurpProps = {};
-		for (let i in this.settings.propSettings) {
-			this.slurpProps[i] = SlurpProp.fromSetting(this.settings.propSettings[i], DEFAULT_SLURP_PROPS[i]);
-		}
-		this.fixTagPrefix();
+		this.slurpProps = SlurpProp.fromSettings(this.settings.propSettings, DEFAULT_SLURP_PROPS);
+		this.migrateSettings();
 	}
 
 	async saveSettings() {
 		for (let i in this.slurpProps) {
 			this.settings.propSettings[i] = this.slurpProps[i].getSetting();
 		}
-		this.fixTagPrefix();
 		await this.saveData(this.settings);
 	}
-
 
 	displayError = (err: Error) => new Notice(`Slurp Error! ${err.message}`);
 
@@ -321,17 +327,18 @@ class SlurpSettingsTab extends PluginSettingTab {
 				})
 			);
 
-
-		store.slurpProps.set(Object.values<SlurpProp<any>>(this.plugin.slurpProps));
-
-		new NotePropSettingList({ target: this.containerEl });
-
-		store.slurpProps.subscribe((p) => {
-			for (let i of p) {
-				this.plugin.slurpProps[i.id] = i;
-			}
+		const onValidate = (props: SlurpProp<any>[]) => {
+			props.forEach((prop) => this.plugin.slurpProps[prop.id] = prop);
 			this.plugin.saveSettings();
-		})
+		}
+
+		new NotePropSettingList({
+			target: this.containerEl, props: {
+				props: Object.values<SlurpProp<any>>(
+					SlurpProp.fromSettings(this.plugin.settings.propSettings, DEFAULT_SLURP_PROPS)),
+				onValidate: (props) => onValidate(props)
+			}
+		});
 
 		new Setting(containerEl).setName('Tags').setHeading();
 

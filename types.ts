@@ -1,3 +1,5 @@
+import type { Invalidator, Subscriber, Unsubscriber, Updater } from "svelte/store"
+
 export interface SlurpSettings {
     showEmptyProps: boolean
     parseTags: boolean
@@ -37,6 +39,12 @@ export interface SlurpCallbackArgs {
 export interface SlurpUrlParams {
     url: string
 }
+export interface ISlurpPropStore {
+    subscribe: (this: void, run: Subscriber<SlurpProps>, invalidate?: Invalidator<SlurpProps> | undefined) => Unsubscriber
+    set: (this: void, value: SlurpProps) => void
+    update: (modified: SlurpProps) => void
+    errs: (this: void, run: Subscriber<string[]>, invalidate?: Invalidator<string[]> | undefined) => Unsubscriber
+}
 
 export const TAG_CASES = ["camelCase", "PascalCase", "snake_case", "kebab-case", "iKebab-case"] as const;
 export type TagCase = typeof TAG_CASES[number];
@@ -55,11 +63,12 @@ export interface ISlurpProp<T> {
     defaultKey?: string;
     description?: string;
     metaFields?: string[];
+    custom: boolean;
     defaultFormat?: string;
     defaultValue?: T | DefaultFunction<T>;
 }
 
-export type ISlurpPropSetting<T> = Pick<ISlurpProp<T>, 'id' | 'key' | 'idx' | 'format' | 'enabled'>;
+export type ISlurpPropSetting<T> = Pick<ISlurpProp<T>, 'id' | 'key' | 'idx' | 'format' | 'enabled' | 'custom'>;
 
 export class SlurpProp<T> {
     [index: string]: string | number | string[] | boolean | T | DefaultFunction<T> | undefined | object
@@ -68,6 +77,7 @@ export class SlurpProp<T> {
     readonly defaultKey?: string
     readonly description?: string			            // for use in settings and note prop comments
     enabled: boolean    		            // whether to parse + write to notes
+    custom: boolean
     metaFields?: string[]   	                // <meta> attrs to check
     _key?: string
     _idx?: number
@@ -75,7 +85,7 @@ export class SlurpProp<T> {
     defaultFormat?: string
     defaultValue?: T | DefaultFunction<T>   // default value for custom and derived props
 
-    constructor({ id, enabled, key, idx, format, defaultIdx, defaultKey, description, metaFields, defaultFormat, defaultValue }: ISlurpProp<T>) {
+    constructor({ id, enabled, key, idx, format, defaultIdx, defaultKey, description, metaFields, defaultFormat, defaultValue, custom }: ISlurpProp<T>) {
         this.id = id;
         this.enabled = enabled != null ? enabled : true;
         this.key = key || defaultKey || id;
@@ -91,6 +101,7 @@ export class SlurpProp<T> {
         this.metaFields = metaFields;
         this.defaultFormat = defaultFormat;
         this.defaultValue = defaultValue;
+        this.custom = custom === null ? false : custom;
     }
 
     get key() { return this._key || this.defaultKey || this.id }
@@ -107,12 +118,18 @@ export class SlurpProp<T> {
     set format(val) { this._format = val }
 
     getSetting(): ISlurpPropSetting<T> {
-        return { id: this.id, key: this.key, idx: this.idx, format: this.format, enabled: this.enabled }
+        return { id: this.id, key: this.key, idx: this.idx, format: this.format, enabled: this.enabled, custom: this.custom }
     }
 
-    static fromSetting<T>(setting: ISlurpPropSetting<T>, existing: SlurpProp<any>): SlurpProp<T> {
-        const params = existing ? Object.assign({ ...existing, ...setting }) : setting;
-        return new SlurpProp<T>({ ...params });
+    static fromSettings(settings: SlurpPropSettings, defaults: SlurpProps): SlurpProps {
+        const slurpProps: SlurpProps = {};
+        for (let i in settings) {
+            slurpProps[i] = new SlurpProp({ ...settings[i], ...defaults[i] || {} });
+        }
+        for (let i in defaults) {
+            if (!slurpProps[i]) slurpProps[i] = new SlurpProp({ ...defaults[i] });
+        }
+        return slurpProps;
     }
 }
 

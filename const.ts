@@ -50,6 +50,10 @@ export const DEFAULT_SLURP_PROPS: SlurpProps = {
         defaultIdx: 10, id: "slurped", defaultKey: "slurped", enabled: true, description: 'Download date/time',
         defaultFormat: 'd|YYYY-MM-DDTHH:mm', defaultValue: () => new Date()
     }),
+    title: new SlurpProp<Date>({
+        defaultIdx: 11, id: "title", defaultKey: "title", enabled: true, description: 'Page title',
+        metaFields: ['og:title', 'twitter:title']
+    }),
 }
 
 const DEFAULT_SLURP_PROP_SETTINGS: SlurpPropSettings = {};
