@@ -13,9 +13,10 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
+                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-12.md",
                 "mode": "source",
-                "source": false
+                "backlinks": false,
+                "source": true
               }
             }
           }
@@ -85,7 +86,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
+                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-12.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +103,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
+                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-12.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +126,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md"
+                "file": "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-12.md"
               }
             }
           }
@@ -146,13 +147,23 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "b5173136ec90db07",
+  "active": "3ffcb702ebd060f1",
   "lastOpenFiles": [
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (with tags).md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-11.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-12.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-10.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-9.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-8.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-7.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-6.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-5.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-4.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-3.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-2.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-4.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-1.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (with tags).md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
     "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-3.md",
@@ -164,16 +175,6 @@
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-6.md",
     "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans.md",
     "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-4.md",
-    "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-3.md",
-    "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-2.md",
-    "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-1.md",
-    "Slurped Pages/Consumers will finally see FCC-mandated ‘nutrition labels’ for most broadband plans-1.md",
-    "Slurped Pages/Consumers will finally see FCC-mandated ‘nutrition labels’ for most broadband plans.md",
-    "Slurped Pages/Fear makes you a worse programmer-2.md",
-    "Slurped Pages/Fear makes you a worse programmer-1.md",
-    "Slurped Pages/Fear makes you a worse programmer.md",
-    "Slurped Pages/She Built a Microcomputer Empire From Her Suburban Home.md",
-    "Slurped Pages/Reddit - Dive into anything.md",
     "Slurped Pages"
   ]
 }

@@ -15,8 +15,8 @@ export interface ISlurpMetadata {
     excerpt?: string;
     byline?: string;
     siteName?: string;
-    publishedTime?: string;
-    modifiedTime?: string;
+    publishedTime?: string | number;
+    modifiedTime?: string | number;
     type?: string;
     twitter?: string;
     onion?: string;

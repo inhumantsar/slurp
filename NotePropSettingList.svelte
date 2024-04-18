@@ -2,26 +2,28 @@
 	import { validateSlurpProps } from "validate";
 	import { SlurpProp, type IFormatterArgs } from "types";
 	import { flip } from "svelte/animate";
-	import { crossfade } from "svelte/transition";
-	import { elasticOut } from "svelte/easing";
+	import { crossfade, slide } from "svelte/transition";
+	import { elasticOut, quintOut } from "svelte/easing";
 	import { formatDate, formatString, formatStrings } from "formatters";
 	import { sortSlurpProps } from "./util";
-	import { Delete } from "lucide-svelte";
+	import { writable } from "svelte/store";
 
 	export let props: Array<SlurpProp<any>>;
 	export let onValidate: (props: Array<SlurpProp<any>>) => void;
 
 	$: sortSlurpProps(props);
 
-	const inputsVisible = props.map(() => false);
+	// const inputsVisible = props.map(() => false);
+	let inputsVisible = new Array(props.length);
+	$: inputsVisible;
 	$: validationErrors = validateSlurpProps(props, onValidate);
-	$: formatErrors = validationErrors.map((errObj, idx) =>
-		errObj.format.join(" ").trim(),
-	);
-	$: keyErrors = validationErrors.map((errObj) =>
-		errObj.key.join(" ").trim(),
-	);
-	$: validationErrorText = [...formatErrors, ...keyErrors].join(" ").trim();
+	// $: formatErrors = validationErrors.map((errObj, idx) =>
+	// 	errObj.format.join(" ").trim(),
+	// );
+	// $: keyErrors = validationErrors.map((errObj) =>
+	// 	errObj.key.join(" ").trim(),
+	// );
+	// $: validationErrorText = [...formatErrors, ...keyErrors].join(" ").trim();
 	$: tooltips = props.map((prop) => {
 		return {
 			enabled: `${prop.enabled ? "Check to include" : "Uncheck to ignore"} this property`,
@@ -29,12 +31,12 @@
 		};
 	});
 
-	$: {
-		props.forEach((prop, idx) => {
-			if (formatErrors[idx].length > 0 || keyErrors[idx].length > 0)
-				inputsVisible[idx] = true;
-		});
-	}
+	// $: {
+	// 	props.forEach((prop, idx) => {
+	// 		if (formatErrors[idx].length > 0 || keyErrors[idx].length > 0)
+	// 			inputsVisible[idx] = true;
+	// 	});
+	// }
 
 	// $: formatExamples = props.map((prop) => {
 	// 	const fmt = prop.format;
@@ -54,18 +56,23 @@
 	// });
 
 	const toggleInputVisibility = (idx: number) => {
-		inputsVisible[idx] = !inputsVisible[idx];
+		if (propErrors(idx).length == 0)
+			inputsVisible[idx] = !inputsVisible[idx];
 	};
 
 	const [send, receive] = crossfade({ duration: 350, easing: elasticOut });
 
 	const toggleEnabled = (idx: number) => {
-		console.log(props[idx].enabled);
-		props[idx].enabled = !props[idx].enabled;
-		console.log(props[idx].enabled);
+		props[idx].enabled = props[idx].enabled ? false : true;
+		onValidate(props);
+		props = props;
 	};
 
 	const swapSettings = (from: number, to: number) => {
+		const fromVis = inputsVisible[from];
+		const toVis = inputsVisible[to];
+		inputsVisible[to] = fromVis;
+		inputsVisible[from] = toVis;
 		props[from].idx = to;
 		props[to].idx = from;
 	};
@@ -77,15 +84,14 @@
 			enabled: true,
 			custom: true,
 		});
-		console.log(newProp);
 		inputsVisible.push(true);
+		console.log(`pushing new prop: ${newProp.id}`);
 		props.push(newProp);
 		// trigger svelte reactivity
 		props = props;
 	};
 
 	const deleteProp = (idx: number) => {
-		console.log(`del idx ${idx} // id ${props[idx].id}`);
 		toggleInputVisibility(idx);
 		props.remove(props[idx]);
 		props.forEach((v, i) => {
@@ -99,15 +105,29 @@
 
 	const getDisabledClass = (idx: number) =>
 		props[idx].enabled === false ? "disabled" : "";
+
+	const getInvalidClass = (idx: number) =>
+		validationErrors[idx].format.length > 0 ? "validation-error" : "";
+
+	const getFormatDescription = (idx: number) =>
+		validationErrors[idx].format.length > 0
+			? validationErrors[idx].format
+			: 'String templates start with "s|" and use {s} as replacement placeholders. ' +
+				'Date templates start with "d|" and use Moment.js formatting. Booleans properties ' +
+				' can be created with either "b|true" or "b|false"';
+
+	const propErrors = (idx: number) => [
+		...validationErrors[idx].format,
+		...validationErrors[idx].key,
+	];
 </script>
 
-<div id="validation-errors">{validationErrorText || ""}</div>
 <div id="prop-settings">
 	{#each props as prop, idx (prop.id)}
 		<div
 			class="prop-setting setting-item"
 			data-id={prop.id}
-			animate:flip={{ delay: 50, duration: 350, easing: elasticOut }}
+			animate:flip={{ delay: 50, duration: 350, easing: quintOut }}
 			in:send={{ key: prop.id }}
 			out:receive={{ key: prop.id }}
 		>
@@ -132,7 +152,9 @@
 				</div>
 
 				<div class="setting-item-info">
-					<div class="setting-item-name">{prop.key}</div>
+					<div class="setting-item-name {getDisabledClass(idx)}">
+						{prop.key}
+					</div>
 					<div
 						class="setting-item-description {getDisabledClass(idx)}"
 					>
@@ -142,15 +164,23 @@
 				<button
 					class="mod-cta {inputsVisible[idx] ? 'active' : ''}"
 					on:click={() => toggleInputVisibility(idx)}
-					title="Close"
+					disabled={propErrors(idx).length > 0}
+					title={inputsVisible[idx] ? "Close" : "Edit"}
 				>
 					{inputsVisible[idx] ? "Close" : "Edit"}
 				</button>
 			</div>
 			<div
 				id={`input-section-${idx}`}
-				class="input-section {inputsVisible[idx] ? 'visible' : ''}"
+				class="input-section {inputsVisible[idx] ||
+				propErrors(idx).length > 0
+					? 'visible'
+					: ''}"
 			>
+				<div id="validation-errors">
+					{propErrors(idx).join("\n").trim()}
+				</div>
+
 				<div class="setting-item mod-toggle">
 					<div class="setting-item-info">
 						<div class="setting-item-name">Enable property</div>
@@ -164,12 +194,9 @@
 							class="checkbox-container {prop.enabled
 								? 'is-enabled'
 								: ''}"
+							on:click={() => toggleEnabled(idx)}
 						>
-							<input
-								type="checkbox"
-								on:click={() => toggleEnabled(idx)}
-								id={prop.id}
-							/>
+							<input type="checkbox" id={prop.id} />
 						</div>
 					</div>
 				</div>
@@ -185,13 +212,12 @@
 						<input
 							id="prop-key-{prop.id}"
 							type="text"
-							class="prop-key {keyErrors[idx]
-								? 'validation-error'
-								: ''}"
+							class="prop-input
+							{validationErrors[idx].key.length > 0 ? 'validation-error' : ''}"
 							title={tooltips[idx].key}
 							placeholder={prop.defaultKey || ""}
 							disabled={prop.enabled === false}
-							bind:value={prop.key}
+							bind:value={prop._key}
 						/>
 					</div>
 				</div>
@@ -199,22 +225,45 @@
 					<div class="setting-item-info">
 						<div class="setting-item-name">Format template</div>
 						<div class="setting-item-description">
+							<!-- {getInvalidClass(idx)} -->
+							<!-- {getFormatDescription(idx)} -->
 							String templates start with "s|" and use {"{"}s{"}"}
 							as replacement placeholders. Date templates start with
-							"d|" and use Moment.js formatting.
+							"d|" and use Moment.js formatting. Booleans properties
+							can be created with either "b|true" or "b|false".
 						</div>
 					</div>
 					<div class="setting-item-control">
 						<input
 							id="prop-format-{prop.id}"
 							type="text"
-							class={formatErrors[idx] ? "validation-error" : ""}
+							class="prop-input {getInvalidClass(idx)}"
 							placeholder={prop.defaultFormat || "Add format"}
+							disabled={prop.enabled === false}
 							bind:value={prop.format}
 						/>
 					</div>
 				</div>
 				{#if prop.custom}
+					<div class="setting-item">
+						<div class="setting-item-info">
+							<div class="setting-item-name">Description</div>
+							<div class="setting-item-description">
+								Helpful text to display in settings. Not written
+								to notes.
+							</div>
+						</div>
+						<div class="setting-item-control">
+							<input
+								id="prop-description-{prop.id}"
+								type="text"
+								class="prop-input"
+								disabled={prop.enabled === false}
+								bind:value={prop.description}
+							/>
+						</div>
+					</div>
+
 					<div class="setting-item">
 						<div class="setting-item-info">
 							<div class="setting-item-name">Delete property</div>
@@ -236,23 +285,25 @@
 		</div>
 	{/each}
 </div>
-<div id="new-prop">
-	<button class="new-button" title="New" on:click={addNewProp}>
-		<span style="margin-right:0.6em">Create</span>
-		<svg
-			viewBox="0 0 45.402 45.402"
-			height="15"
-			width="15"
-			fill="currentColor"
-		>
-			<path
-				d="M41.267,18.557H26.832V4.134C26.832,1.851,24.99,0,22.707,0c-2.283,0-4.124,1.851-4.124,4.135v14.432H4.141
-			c-2.283,0-4.139,1.851-4.138,4.135c-0.001,1.141,0.46,2.187,1.207,2.934c0.748,0.749,1.78,1.222,2.92,1.222h14.453V41.27
-			c0,1.142,0.453,2.176,1.201,2.922c0.748,0.748,1.777,1.211,2.919,1.211c2.282,0,4.129-1.851,4.129-4.133V26.857h14.435
-			c2.283,0,4.134-1.867,4.133-4.15C45.399,20.425,43.548,18.557,41.267,18.557z"
-			/>
-		</svg>
-	</button>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="new-button" title="New" on:click={addNewProp}>
+	<span style="margin-right:0.6em">New</span>
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		width="18"
+		height="18"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		class="lucide lucide-circle-plus"
+		><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /><path
+			d="M12 8v8"
+		/></svg
+	>
 </div>
 
 <style>
@@ -277,7 +328,7 @@
 	.prop-setting.setting-item {
 		display: flex;
 		align-self: center;
-		margin: 1em 0;
+		margin: 0.8em 0;
 		flex-direction: column;
 		padding: 0.25em 0;
 		list-style: none;
@@ -296,10 +347,9 @@
 		margin: 0 0.85em 0 0.75em;
 	}
 
-	.prop-input {
-		width: 10em;
-		text-align: left;
-		margin: 0 0.3em;
+	.prop-input:disabled {
+		color: var(--text-muted);
+		opacity: 50%;
 	}
 
 	.edit-button,
@@ -324,12 +374,15 @@
 		transition: color 0.3s;
 	}
 
+	#prop-settings .mod-cta {
+		width: 65px;
+	}
 	.mod-cta.active {
 		background-color: var(--interactive-normal);
 	}
 
 	.new-button {
-		margin-top: 0.6em;
+		margin-top: 1em;
 	}
 
 	.description {
@@ -350,6 +403,7 @@
 	}
 
 	.input-section {
+		width: 100%;
 		overflow: hidden;
 		max-height: 0;
 		transition:
@@ -366,7 +420,7 @@
 		margin: 2.3em 0;
 		/* setting this high to avoid contents being cut off. without it, the hidden input area
 		never grows */
-		max-height: 350px;
+		max-height: 1350px;
 	}
 
 	.shifter {
@@ -383,7 +437,9 @@
 		margin: 0 0.3em;
 		font-size: medium;
 	}
-	.shifter:hover {
+
+	.up:hover,
+	.down:hover {
 		/* background-color: var(--background-modifier-hover); */
 		color: var(--text-accent-hover);
 	}
@@ -418,8 +474,8 @@
 		border-radius: var(--button-radius);
 	}
 
-	.validation-error {
-		background-color: darkred;
+	input.validation-error {
+		color: var(--text-error);
 	}
 
 	.prop-setting > *,

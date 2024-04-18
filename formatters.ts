@@ -2,30 +2,39 @@ import moment from "moment";
 import type { IFormatterArgs } from "types";
 
 export const format = (tmpl: string, val: any) => {
-    let result;
     switch (tmpl.substring(0, 2)) {
+        case 'b|':
+            return formatBoolean(tmpl.substring(2), val);
+
         case 'd|':
-            result = formatDate(tmpl.substring(2), val);
-            break;
+            return formatDate(tmpl.substring(2), val);
 
         case 's|':
-            result = formatString(tmpl.substring(2), val);
-            break;
+            return formatString(tmpl.substring(2), val);
 
         case 'S|':
-            result = formatStrings(tmpl.substring(2), val);
-            break;
+            return formatStrings(tmpl.substring(2), val);
 
         default:
-            result = formatString(tmpl, val);
-            break;
+            return formatString(tmpl, val);
     }
-    console.log(result);
-    return result;
+}
+
+export const formatBoolean = (tmpl: string, val?: string | boolean) => {
+    if (tmpl !== "" && !val)
+        // trusting that the settings validation functions did their job properly
+        return JSON.parse(tmpl.toLowerCase());
+    if (typeof val === "string" && ['true', 'false'].contains(val.trim().toLowerCase()))
+        return JSON.parse(val);
+    if (typeof val === "boolean")
+        return val
+    console.warn(`Unable to parse ${val} as a boolean, passing it back raw.`);
+    return val;
 }
 
 export const formatDate = (t = "YYYY-MM-DDTHH:mm", v = new Date()) => {
-    return moment(v).format(t);
+    const result = moment(v).format(t);
+    return isNaN(+result) ? result : +result;
 }
 
 export const formatString = (tmpl: string, val: any) => formatStrings(tmpl, [{ s: val }])[0];
@@ -36,7 +45,6 @@ export const formatStrings = (tmpl: string, val: Iterable<IFormatterArgs>): Arra
         const s = tmpl.replace(/\{(\w+)\}/g, (match, name) => {
             return i.hasOwnProperty(name) ? i[name] : match;
         });
-        console.log(`adding formatting result ${s}`);
         result.push(s);
     }
     return result;

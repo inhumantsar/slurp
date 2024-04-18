@@ -30,8 +30,6 @@
 	},
 	"dependencies": {
 		"@mozilla/readability": "^0.5.0",
-		"js-yaml": "^4.1.0",
-		"lucide-svelte": "^0.368.0",
-		"sortablejs": "^1.15.2"
+		"yaml": "^2.4.1"
 	}
 }

@@ -7,6 +7,7 @@ import NotePropSettingList from "./NotePropSettingList.svelte";
 import { createFilePath, isEmpty, sortSlurpProps } from './util';
 import { format, formatString } from 'formatters';
 import { dump } from 'js-yaml';
+import { Pair, stringify } from 'yaml';
 
 export default class SlurpPlugin extends Plugin {
 	settings!: SlurpSettings;
@@ -201,16 +202,18 @@ export default class SlurpPlugin extends Plugin {
 				? prop.defaultValue()
 				: prop.defaultValue;
 
-		if (!isEmpty(article[prop.id]) || this.settings.showEmptyProps)
-			return prop.format ? format(prop.format, article[prop.id]) : article[prop.id];
+		if (!isEmpty(article[prop.id]) || this.settings.showEmptyProps) {
+			const r = prop.format ? format(prop.format, article[prop.id]) : article[prop.id];
+			return r
+		}
 	}
 
 
 	getFrontMatterYaml(fm: Map<string, any>, idx: Map<string, number>) {
 		const fmObj = Object.fromEntries(fm);
 		console.log('created frontmatter obj', fmObj);
-		const yamlSort = (a: string, b: string) => (idx.get(a) || 0) - (idx.get(b) || 0);
-		const yamlstr = dump(fmObj, { styles: { "!!null": 'empty' }, sortKeys: yamlSort });
+		const yamlSort = (a: Pair, b: Pair) => (idx.get(a.key as string) || 0) - (idx.get(b.key as string) || 0);
+		const yamlstr = stringify(fmObj, { sortMapEntries: yamlSort }).trim();
 		console.log(yamlstr);
 		return yamlstr;
 	}
@@ -225,6 +228,7 @@ export default class SlurpPlugin extends Plugin {
 			if (!prop.enabled) continue;
 
 			const val = this.getFrontMatterValue(prop, article, this.settings.showEmptyProps);
+			if (prop.key == "mykey") console.log(`adding mykey val ${val} (${typeof val}) to fm map`);
 			fm.set(prop.key, val);
 
 			keyIndex.set(prop.key, prop.idx);
@@ -328,7 +332,24 @@ class SlurpSettingsTab extends PluginSettingTab {
 			);
 
 		const onValidate = (props: SlurpProp<any>[]) => {
-			props.forEach((prop) => this.plugin.slurpProps[prop.id] = prop);
+			console.log("onValidate called");
+			console.log(props);
+			// update existing
+			const modKeys = props.map((prop) => {
+				//Object.keys(prop).forEach((key) => console.log(`new: ${prop[key]}, curr: ${this.plugin.slurpProps[prop.id][key]}`));
+				this.plugin.slurpProps[prop.id] = prop
+				return prop.id;
+			});
+
+			// delete keys no longer present
+			Object.keys(this.plugin.slurpProps).map((id) => modKeys
+				.contains(id) ? null : id).filter((id) => id !== null).map((id) => {
+					if (id) {
+						delete this.plugin.settings.propSettings[id];
+						delete this.plugin.slurpProps[id];
+					}
+				});
+
 			this.plugin.saveSettings();
 		}
 
@@ -387,16 +408,16 @@ class SlurpSettingsTab extends PluginSettingTab {
 				})
 			);
 
-		new Setting(containerEl).setName('Advanced').setHeading();
-		new Setting(containerEl)
-			.setName("Debug mode")
-			.setDesc("Write debug messages to console and slurp.log.")
-			.addToggle((toggle) => toggle
-				.setValue(this.plugin.settings.debug)
-				.onChange(async (val) => {
-					this.plugin.settings.debug = val;
-					await this.plugin.saveSettings();
-				})
-			);
+		// new Setting(containerEl).setName('Advanced').setHeading();
+		// new Setting(containerEl)
+		// 	.setName("Debug mode")
+		// 	.setDesc("Write debug messages to console and slurp.log.")
+		// 	.addToggle((toggle) => toggle
+		// 		.setValue(this.plugin.settings.debug)
+		// 		.onChange(async (val) => {
+		// 			this.plugin.settings.debug = val;
+		// 			await this.plugin.saveSettings();
+		// 		})
+		// 	);
 	}
 }
