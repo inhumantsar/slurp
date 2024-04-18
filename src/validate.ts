@@ -1,4 +1,4 @@
-import { SlurpProp } from "types";
+import { SlurpProp } from "./slurp-prop";
 
 const validateKey = (p: SlurpProp<any>): string[] => {
     const e = new Array<string>();
@@ -23,6 +23,7 @@ const validateFormatMultiString = (p: SlurpProp<any>): string[] => {
 
     if (!isMultiString && reqMultiString)
         e.push("The format string for this property must start with 'S|'.");
+
     if (isMultiString && reqMultiString) {
         const matches = def?.match(/(\{\w+\})/g);
         if (!matches?.some((val) => fmt?.contains(val)))
@@ -50,11 +51,6 @@ const validateFormat = (p: SlurpProp<any>): string[] => {
         e.push("String formats must contain at least one replacement placeholder '{s}'");
 
     return [...e, ...validateFormatMultiString(p), ...validateFormatBoolean(p)]
-}
-
-export interface ISlurpPropValidationErrors {
-    format: string[]
-    key: string[]
 }
 
 export const validateSlurpProps = (props: Array<SlurpProp<any>>, onValidate: (props: Array<SlurpProp<any>>) => void) => {

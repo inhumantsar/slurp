@@ -1,6 +1,7 @@
-import { DEFAULT_PATH } from "const";
+import { DEFAULT_PATH } from "./const";
 import { Vault, normalizePath } from "obsidian";
-import { SlurpProp } from "types";
+import type { StringCase } from "src/string-case";
+import { SlurpProp } from "src/slurp-prop";
 
 export const isEmpty = (val: any): boolean => {
     return val == null
@@ -25,3 +26,19 @@ export const createFilePath = async (vault: Vault, title: string, path: string =
 };
 
 export const sortSlurpProps = (props: SlurpProp<any>[]) => props.sort((a, b) => a.idx - b.idx);
+
+export const updateStringCase = (text: string, targetCase: StringCase) => {
+    switch (targetCase) {
+        case "PascalCase":
+            return text.replace(/ ./g, (str) => str.trim().toUpperCase()).replace(/^./, (str) => str.toUpperCase());
+        case "camelCase":
+            return text.replace(/ ./g, (str) => str.trim().toUpperCase()).replace(/^./, (str) => str.toLowerCase());
+        case "snake_case":
+            return text.replace(/ /g, '_').toLowerCase();
+        case "kebab-case":
+            return text.replace(/ /g, '-').toLowerCase();
+        default:
+            return text.replace(/ /g, '-');
+    }
+}
+

@@ -1,8 +1,5 @@
-import { type SlurpPropSettings, type SlurpProps, type SlurpSettings } from "types";
-import { SlurpProp } from "types";
-import { formatString, formatDate } from 'formatters';
-
-
+import type { SlurpPropSettings, SlurpSettings } from "src/types/settings";
+import { SlurpProp, type SlurpProps } from "src/slurp-prop";
 
 export const DEFAULT_SLURP_PROPS: SlurpProps = {
     link: new SlurpProp<string>({
