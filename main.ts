@@ -1,18 +1,17 @@
-import { DEFAULT_SETTINGS, DEFAULT_SLURP_PROPS } from './src/const';
-import { App, MarkdownView, Notice, Plugin } from 'obsidian';
-import type { SlurpArticle } from './src/types/article';
-import { SlurpProp, type SlurpProps } from './src/slurp-prop';
-import { createFilePath, sortSlurpProps } from './src/util';
-import { createFrontMatter } from './src/frontmatter';
-import { fetchHtml, parsePage, mergeMetadata, parseMetadata, parseMarkdown } from './src/parse';
+import { MarkdownView, Notice, Plugin } from 'obsidian';
+import { DEFAULT_SETTINGS } from './src/const';
+import { createFrontMatter, createFrontMatterPropSettings, createFrontMatterProps } from './src/frontmatter';
+import { Logger } from './src/logger';
 import { SlurpNewNoteModal } from './src/modals/new-note';
-import { SlurpSettingsTab } from 'src/settings';
-import type { SlurpSettings } from 'src/types/settings';
-import type { FormatterArgs } from 'src/types/misc';
+import { fetchHtml, mergeMetadata, parseMarkdown, parseMetadata, parsePage } from './src/parse';
+import { SlurpSettingsTab } from './src/settings';
+import type { FormatterArgs, IArticle, IFrontMatterSettings, IFrontMatterTagSettings, ISettings, ISettingsV0, TFrontMatterProps } from './src/types';
+import { createFilePath } from './src/util';
 
 export default class SlurpPlugin extends Plugin {
-	settings!: SlurpSettings;
-	slurpProps!: SlurpProps;
+	settings!: ISettings;
+	fmProps!: TFrontMatterProps;
+	logger!: Logger;
 
 	async onload() {
 		await this.loadSettings();
@@ -38,34 +37,73 @@ export default class SlurpPlugin extends Plugin {
 
 	onunload() { }
 
-	fixTagPrefix() {
-		this.settings.tagPrefix = this.settings.tagPrefix.endsWith('/')
-			? this.settings.tagPrefix.substring(0, this.settings.tagPrefix.length - 1)
-			: this.settings.tagPrefix;
+	fixTagPrefix(tagPrefix: string) {
+		return tagPrefix.endsWith('/')
+			? tagPrefix.substring(0, tagPrefix.length - 1)
+			: tagPrefix;
 	}
 
-	fixPropIdx() {
-		const props = Object.values<SlurpProp<any>>(this.slurpProps);
-		sortSlurpProps(props);
-		props.forEach((prop, idx) => prop.idx = idx);
+	migrateSettingsV0toV1(loadedSettings: Object): ISettings {
+		// only v0 lacks the settingsVersion key
+		if (Object.keys(loadedSettings).contains("settingsVersion")) return loadedSettings as ISettings;
+		if (Object.keys(loadedSettings).length == 0) return DEFAULT_SETTINGS;
+
+		const v0 = loadedSettings as ISettingsV0;
+
+		const fmTags = {
+			parse: v0.parseTags,
+			prefix: this.fixTagPrefix(v0.tagPrefix),
+			case: v0.tagCase
+		} as IFrontMatterTagSettings;
+
+		const fm = {
+			includeEmpty: v0.showEmptyProps,
+			tags: fmTags,
+			properties: v0.propSettings
+		} as IFrontMatterSettings;
+
+		const v1 = {
+			settingsVersion: 1,
+			fm: fm,
+			logs: DEFAULT_SETTINGS.logs
+		} as ISettings;
+
+		return v1;
 	}
 
-	migrateSettings() {
-		this.fixTagPrefix();
-		this.fixPropIdx();
-		this.saveSettings();
+	migrateObjToMap<K, V>(obj: Object) {
+		if (!obj.hasOwnProperty('keys')) {
+			if (Object.keys(obj).length === 0)
+				return new Map<K, V>();
+		}
+	}
+
+	migrateSettings(settings: ISettingsV0 | ISettings): ISettings {
+		// this.fixPropIdx();
+		const s1 = this.migrateSettingsV0toV1(settings);
+		// // @ts-ignore
+		// s1.fm.properties = this.migrateObjToMap<string, IFrontMatterPropSetting>(s1.fm.properties);
+		// ...more to come...
+		return s1;
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		this.slurpProps = SlurpProp.fromSettings(this.settings.propSettings, DEFAULT_SLURP_PROPS);
-		this.migrateSettings();
+		const preSettings = Object.assign({}, await this.loadData());
+		// this.logger.debug("pre-migration settings", preSettings);
+		this.settings = this.migrateSettings(preSettings);
+
+		this.logger = new Logger(this);
+		this.logger.debug("post-migration settings", this.settings);
+
+		this.fmProps = createFrontMatterProps(this.settings.fm.properties);
+		this.logger.debug("fmProps loaded", this.fmProps);
+		await this.saveSettings();
 	}
 
 	async saveSettings() {
-		for (let i in this.slurpProps) {
-			this.settings.propSettings[i] = this.slurpProps[i].getSetting();
-		}
+		this.settings.fm.tags.prefix = this.fixTagPrefix(this.settings.fm.tags.prefix);
+		this.settings.fm.properties = createFrontMatterPropSettings(this.fmProps);
+		this.logger.debug("saving settings", this.settings);
 		await this.saveData(this.settings);
 	}
 
@@ -74,26 +112,37 @@ export default class SlurpPlugin extends Plugin {
 	async slurp(url: string): Promise<void> {
 		const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
 
-		const article: SlurpArticle = {
+		const article: IArticle = {
 			slurpedTime: new Date(),
-			tags: new Set<FormatterArgs>(),
+			tags: new Array<FormatterArgs>(),
 			...parsePage(doc)
 		};
+		this.logger.debug("parsed page", article);
 
 		// find metadata that readability doesn't pick up
-		const parsedMetadata = parseMetadata(doc, this.slurpProps, this.settings.tagPrefix, this.settings.tagCase)
+		const parsedMetadata = parseMetadata(doc, this.fmProps, this.settings.fm.tags.prefix, this.settings.fm.tags.case)
+		this.logger.debug("parsed metadata", parsedMetadata);
+
+		const mergedMetadata = mergeMetadata(article, parsedMetadata)
+		this.logger.debug("merged metadata", parsedMetadata);
+
+		const md = parseMarkdown(article.content);
+		this.logger.debug("converted page to markdown", md);
 
 		await this.slurpNewNoteCallback({
-			...mergeMetadata(article, parsedMetadata),
-			content: parseMarkdown(article.content),
+			...mergedMetadata,
+			content: md,
 			link: url
 		});
 	}
 
-	async slurpNewNoteCallback(article: SlurpArticle) {
-		const frontMatter = createFrontMatter(article, this.slurpProps, this.settings.showEmptyProps);
-		const content = `---\n${frontMatter}\n---\n${article.content}`;
+	async slurpNewNoteCallback(article: IArticle) {
+		const frontMatter = createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty);
+		this.logger.debug("created frontmatter", frontMatter);
 
+		const content = `---\n${frontMatter}\n---\n\n${article.content}`;
+
+		this.logger.debug("writing file...");
 		const filePath = await createFilePath(this.app.vault, article.title);
 		const newFile = await this.app.vault.create(filePath, content);
 		this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.openFile(newFile);

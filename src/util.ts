@@ -1,7 +1,7 @@
-import { DEFAULT_PATH } from "./const";
 import { Vault, normalizePath } from "obsidian";
+import { DEFAULT_PATH } from "src/const";
+import type { FrontMatterProp } from "src/frontmatter";
 import type { StringCase } from "src/string-case";
-import { SlurpProp } from "src/slurp-prop";
 
 export const isEmpty = (val: any): boolean => {
     return val == null
@@ -25,7 +25,7 @@ export const createFilePath = async (vault: Vault, title: string, path: string =
     return fpLoop(folder.path, fileName, 0);
 };
 
-export const sortSlurpProps = (props: SlurpProp<any>[]) => props.sort((a, b) => a.idx - b.idx);
+export const sortFrontMatterItems = (items: FrontMatterProp[]) => items.sort((a, b) => a.idx - b.idx);
 
 export const updateStringCase = (text: string, targetCase: StringCase) => {
     switch (targetCase) {
@@ -42,3 +42,16 @@ export const updateStringCase = (text: string, targetCase: StringCase) => {
     }
 }
 
+export const mapToObj = (m: Map<string, any>) => {
+    return Array.from(m).reduce((obj, [key, value]) => {
+        // @ts-ignore
+        obj[key] = value;
+        return obj;
+    }, {});
+};
+
+export const serialize = (val: any) => {
+    if (val instanceof Map) return mapToObj(val);
+    if (val instanceof Set) return Array.from(val);
+    return val;
+}

@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "47ab417f5e0ed2e9",
+        "id": "5c3c141e81d9d7bd",
         "type": "tabs",
         "children": [
           {
-            "id": "3ffcb702ebd060f1",
+            "id": "3780d90630b6e19d",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -147,34 +147,36 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "3ffcb702ebd060f1",
+  "active": "3780d90630b6e19d",
   "lastOpenFiles": [
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-9.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-12.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-11.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-10.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-8.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-7.md",
+    "_slurplogs/slurp-2024-04-19.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-6.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-7.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-5.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-4.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-3.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-2.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-1.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-10.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-11.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-8.md",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-9.md",
+    "_slurplogs/slurp-2024-04-18.md",
+    "Slurped Pages/OpenNeRF- Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
+    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
+    "_slurplogs/slurp-2024-04-18.log",
+    "_slurplogs",
+    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-12.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (with tags).md",
-    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
     "Slurped Pages/Show HN- Invertornot.com – API to enhance your images in dark-mode.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-3.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-4.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-2.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-1.md",
-    "Slurped Pages/OpenNeRF- Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-5.md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion-6.md",
-    "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans.md",
-    "Slurped Pages/Consumers will finally see FCC-mandated “nutrition labels” for most broadband plans-4.md",
     "Slurped Pages"
   ]
 }

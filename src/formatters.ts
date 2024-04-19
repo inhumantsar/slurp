@@ -1,5 +1,5 @@
 import moment from "moment";
-import type { FormatterArgs } from "./types/misc";
+import type { FormatterArgs } from "./types";
 
 export const format = (tmpl: string, val: any) => {
     switch (tmpl.substring(0, 2)) {

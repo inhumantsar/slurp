@@ -25,7 +25,10 @@ This API is free, and is open source (both the code and the weights of the model
 
 #### Try it out
 
+
 Upload an image to see InvertOrNot what transformation it would apply to it.
+
+
 
 #### Background
 

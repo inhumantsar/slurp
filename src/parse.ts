@@ -1,11 +1,10 @@
 import { Readability } from "@mozilla/readability";
-import { requestUrl, htmlToMarkdown, sanitizeHTMLToDom } from "obsidian";
+import { htmlToMarkdown, requestUrl, sanitizeHTMLToDom } from "obsidian";
 import { formatString } from "./formatters";
-import type { SlurpArticleMetadata, SlurpArticle } from "./types/article";
-import type { FormatterArgs } from "./types/misc";
-import type { SlurpProps } from "./slurp-prop";
-import { isEmpty, updateStringCase } from "./util";
+import { logger } from "./logger";
 import type { StringCase } from "./string-case";
+import type { FormatterArgs, IArticle, IArticleMetadata, TFrontMatterProps } from "./types";
+import { isEmpty, updateStringCase } from "./util";
 
 export const fixRelativeLinks = (html: string, articleUrl: string) => {
     const url = new URL(articleUrl);
@@ -26,7 +25,7 @@ export const fixRelativeLinks = (html: string, articleUrl: string) => {
 export const fetchHtml = async (url: string) => {
     const html = await requestUrl(url).text;
     if (!html) {
-        console.error(`[Slurp] Unable to fetch page from: ${url}.`);
+        logger().error(`Unable to fetch page from: ${url}.`);
         throw `Unable to fetch page.`;
     }
     return fixRelativeLinks(html, url)
@@ -36,7 +35,7 @@ export const parsePage = (doc: Document) => {
     const article = new Readability(doc).parse();
 
     if (!article || !article.title || !article.content) {
-        console.error(`[Slurp] Parsed article missing critical content: ${article}.`);
+        logger().error(`Parsed article missing critical content`, article);
         throw "No title or content found.";
     }
     return article;
@@ -52,30 +51,33 @@ export const parseMetadataTags = (elements: NodeListOf<HTMLMetaElement>, tagPref
     elements.forEach((e) => e.content
         .split(",")
         .forEach((text) => tags.add({ prefix: tagPrefix, tag: updateStringCase(text.trim(), tagCase) })));
-    console.debug(tags);
+
+    logger().debug("parsed tags", tags);
     return tags;
 }
 
-export const parseMetadata = (doc: Document, slurpProps: SlurpProps, tagPrefix: string, tagCase: StringCase): SlurpArticleMetadata => {
-    const metadata: SlurpArticleMetadata = { tags: new Set<FormatterArgs>(), slurpedTime: new Date() };
+export const parseMetadata = (doc: Document, fmProps: TFrontMatterProps, tagPrefix: string, tagCase: StringCase): IArticleMetadata => {
+    const metadata: IArticleMetadata = { tags: new Array<FormatterArgs>(), slurpedTime: new Date() };
     const tmpl = 'meta[name="{s}"], meta[property="{s}"], meta[itemprop="{s}"], meta[http-equiv="{s}"]';
 
-    for (let i in slurpProps) {
-        const prop = slurpProps[i];
-
+    for (let i of fmProps) {
+        const prop = i[1];
         const metaFields = new Set([...prop.metaFields || [], ...prop.extraMetaFields || []]);
 
         metaFields.forEach((attr) => {
             // tags need special handling, for everything else we just take the first result
-            const elements: NodeListOf<HTMLMetaElement> = doc.querySelectorAll(formatString(tmpl, attr));
+            const querySelector = formatString(tmpl, attr);
+            const elements: NodeListOf<HTMLMetaElement> = doc.querySelectorAll(querySelector);
             if (elements.length == 0) return;
 
             if (prop.id == "tags") {
-                parseMetadataTags(elements, tagPrefix, tagCase).forEach((val) => metadata.tags.add(val));
+                logger().debug("parsing tags", { prop, elements, tagPrefix, tagCase, metaFields, querySelector });
+                parseMetadataTags(elements, tagPrefix, tagCase).forEach((val) => metadata.tags.push(val));
             } else {
                 // already found a match
                 if (metadata[prop.id] != undefined) return;
 
+                logger().debug("adding metadata", { prop, elements, metaFields, querySelector });
                 metadata[prop.id] = elements[0].content;
             }
         });
@@ -84,11 +86,11 @@ export const parseMetadata = (doc: Document, slurpProps: SlurpProps, tagPrefix: 
     return metadata;
 }
 
-export const mergeMetadata = (article: SlurpArticle, metadata: SlurpArticleMetadata): SlurpArticle => {
+export const mergeMetadata = (article: IArticle, metadata: IArticleMetadata): IArticle => {
     const merged = { ...article };
 
     // handle tags separately
-    merged.tags = new Set([...article.tags, ...metadata.tags]);
+    merged.tags = Array.from(new Set<FormatterArgs>([...article.tags, ...metadata.tags]));
 
     // Iterate over the keys of objB
     for (const key in metadata) {
@@ -102,7 +104,7 @@ export const mergeMetadata = (article: SlurpArticle, metadata: SlurpArticleMetad
 export const parseMarkdown = (content: string): string => {
     const md = htmlToMarkdown(sanitizeHTMLToDom(content));
     if (!md) {
-        console.error(`[Slurp] Parsed content resulted in falsey markdown: ${md}`);
+        logger().error(`Parsed content resulted in falsey markdown: ${md}`);
         throw "Unable to convert content to Markdown.";
     }
     return md;

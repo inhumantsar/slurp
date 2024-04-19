@@ -1,17 +1,16 @@
 <script lang="ts">
-	import { validateSlurpProps } from "src/validate";
-	import { SlurpProp } from "src/slurp-prop";
 	import { flip } from "svelte/animate";
 	import { crossfade } from "svelte/transition";
 	import { quintOut } from "svelte/easing";
-	import { sortSlurpProps } from "../util";
+	import { FrontMatterProp, validateFrontMatterProps } from "../frontmatter";
+	import { sortFrontMatterItems } from "../util";
 
 	// for the order-shift animation
 	const [send, receive] = crossfade({ duration: 350 });
 
-	export let props: Array<SlurpProp<any>>;
-	export let onValidate: (props: Array<SlurpProp<any>>) => void;
-	$: sortSlurpProps(props);
+	export let props: FrontMatterProp[];
+	export let onValidate: (props: FrontMatterProp[]) => void;
+	$: sortFrontMatterItems(props);
 
 	// populate, then make reactive.
 	let inputsVisible = new Array(props.length);
@@ -19,7 +18,13 @@
 
 	// making validation reactive helps with errors but also spams the save settings function.
 	// might become an issue when there are lots of properties to deal with.
-	$: validationErrors = validateSlurpProps(props, onValidate);
+	$: validationErrors = validateFrontMatterProps(props);
+	$: {
+		const hasErrorsCount = validationErrors
+			.map((val) => val.hasErrors)
+			.filter((val) => val === true).length;
+		if (hasErrorsCount === 0) onValidate(props);
+	}
 
 	$: tooltips = props.map((prop) => {
 		return {
@@ -29,7 +34,7 @@
 	});
 
 	const toggleInputVisibility = (idx: number) => {
-		if (propErrors(idx).length == 0)
+		if (getValidationErrors(idx).length == 0)
 			inputsVisible[idx] = !inputsVisible[idx];
 	};
 
@@ -48,9 +53,11 @@
 		props[to].idx = from;
 	};
 
-	const addNewProp = () => {
-		const newProp = new SlurpProp({
-			id: (Math.random() + 1).toString(36).substring(7),
+	const addItem = () => {
+		const id = (Math.random() + 1).toString(36).substring(7);
+		const newProp = new FrontMatterProp({
+			id: id,
+			key: id,
 			idx: props.length,
 			enabled: true,
 			custom: true,
@@ -61,7 +68,7 @@
 		props = props;
 	};
 
-	const deleteProp = (idx: number) => {
+	const deleteItem = (idx: number) => {
 		toggleInputVisibility(idx);
 		props.remove(props[idx]);
 		props.forEach((v, i) => {
@@ -80,7 +87,7 @@
 	const getInvalidClass = (idx: number) =>
 		validationErrors[idx].format.length > 0 ? "validation-error" : "";
 
-	const propErrors = (idx: number) => [
+	const getValidationErrors = (idx: number) => [
 		...validationErrors[idx].format,
 		...validationErrors[idx].key,
 	];
@@ -133,7 +140,7 @@
 			<button
 				class="edit {inputsVisible[idx] ? 'mod-cta' : ''}"
 				title={inputsVisible[idx] ? "Close" : "Edit"}
-				disabled={propErrors(idx).length > 0}
+				disabled={getValidationErrors(idx).length > 0}
 				on:click={() => toggleInputVisibility(idx)}
 			>
 				{inputsVisible[idx] ? "Close" : "Edit"}
@@ -143,12 +150,12 @@
 		<div
 			id={`input-section-${idx}`}
 			class="input-section {inputsVisible[idx] ||
-			propErrors(idx).length > 0
+			getValidationErrors(idx).length > 0
 				? 'visible'
 				: ''}"
 		>
 			<div class="validation-error">
-				{propErrors(idx).join("\n").trim()}
+				{getValidationErrors(idx).join("\n").trim()}
 			</div>
 
 			<!-- Enable -->
@@ -252,7 +259,7 @@
 					<div class="setting-item-control">
 						<button
 							class="mod-warning"
-							on:click={() => deleteProp(idx)}
+							on:click={() => deleteItem(idx)}
 						>
 							Delete
 						</button>
@@ -265,7 +272,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div id="new-property" title="New Property" on:click={addNewProp}>
+<div id="new-property" title="New Property" on:click={addItem}>
 	<span style="margin-right:0.6em">New Property</span>
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
