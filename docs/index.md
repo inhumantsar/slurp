@@ -2,28 +2,9 @@
 
 Slurps webpages, cleans off all the crud, and saves them to Obsidian as nice, tidy Markdown files. Think Pocket, but better.
 
-<p style="text-align: center"><img src="docs/assets/demo.gif" /></p>
-
-# Features
-
-* Slurp pages into Obsidian using the command palette, bookmarklets, or browser extensions (*soon™️*).
-* Customize frontmatter properties with formatting options or by adding your own.
-* Enrich slurped pages with frontmatter automatically using metadata sources like OpenGraph, including:
-  * __Tags__ - Create customizable tags from keywords present on the page. 
-  * __Excerpt__ - Often used for subtitles, excerpts, descriptions, and abstracts.
-  * __Byline__ - Name of the primary author or the first author detected.
-  * __Site name__ - Website or publication name. Useful for blogs and news sites.
-  * __Published and Modified dates__
-  * __Permalink__
-  * __Page type__ - The page type, usually "article", "page", or "post".
-  * __Twitter handle__
-  * __Onion mirrors__
-  * and more...
-* Works on desktop and mobile devices.
+<p style="text-align: center"><img src="assets/demo.gif" /></p>
 
 # Usage
-
-Detailed usage information can be found in the [documentation](https://inhumantsar.github.io/slurp).
 
 ## Create Note from URL
 
@@ -47,6 +28,8 @@ Browser extensions are also coming soon for Firefox and Chrome-compatible browse
 
 ## FrontMatter Properties
 
+<p style="text-align: center"><img src="assets/frontmatter-settings.png" /></p>
+
 [Note properties](https://help.obsidian.md/Editing+and+formatting/Properties) are used by Obsidian to add metadata to notes. Supported data types include checkboxes (`true` and `false` values), dates and datetimes, lists, numbers, and good ol' plaintext.
 
 By default, Slurp will try to find relevant metadata and add it to new notes. The plugin settings screen offers a few ways to adjust how this metadata is handled and presented:
@@ -55,10 +38,62 @@ By default, Slurp will try to find relevant metadata and add it to new notes. Th
 * Tap the up and down arrows to customize the order in which properties appear in notes.
 * Use the *Show empty properties* toggle to get Slurp to add properties even if there is no data to populate them with. 
 * Selectively enable/disable individual properties.
-* Customize how properties are formatted.
-* Add custom properties.
 
-For more information, check out the [documentation](https://inhumantsar.github.io/slurp).
+### Format Templates
+
+Custom and built-in properties can be formatted using a simple template string. Strings, datetimes, and booleans are currently supported.
+
+Format templates have three main components:
+
+1. _Type identifiers_: The first two characters indicate to Slurp what kind of formatting to use.
+2. _Template body_: The rest of the template defines how to format the property.
+3. _Replacement placeholders_: These will be replaced with metadata.
+
+Note that, by default, Obsidian will display newly written properties using an existing format (dates in particular) if there are notes which use the same property name. It will also sometimes guess incorrectly at what format to use on new fields. Correcting these issues manually *should* ensure future notes get the new format.
+
+#### Dates & Datetimes
+
+Date format templates start with `d|` and use [Moment.js](https://momentjs.com/docs/#/displaying/) formatting syntax.
+
+* `d|YYYY-MM-DDTHH:mm` ➡️ `2024-04-20T11:05`
+* `d|dddd, MMMM Do YYYY, h:mm:ss a` ➡️ `Tuesday, April 20th 2024, 11:05:50 pm`
+* `d|[Today is] dddd` ➡️ `Today is Tuesday`
+* `d|YY[Q]Q` ➡️ `24Q2`
+
+<p style="float: right"><img src="assets/date-to-datetime.png" /></p>
+
+There are limitations however. 
+
+* Datetimes are naive and will be processed using your timezone by default. If Slurp detects a datetime which doesn't include its own timezone information, it will assume that it is using your local timezone.
+* Custom properties can use datetime format templates as well, but they will be populated with the current date/time.
+* When in Reading Mode, Obsidian may choose to display a datetime as a date instead. As seen below, this can be changed but it will affect all notes using the same property key.
+
+
+#### Strings
+
+String format templates can be used to format built-in properties or to provide a default value to custom properties. They start with `s|` and use `{s}` as a replacement placeholder.
+
+* `Jane Doe` ➕ `s|Written by {s}` ➡️ `Written by Jane Doe`
+* `poodle` ➕ `s|{s}{s}{s}` ➡️ `poodlepoodlepoodle`
+* `@inhumantsar` ➕ `s|https://twitter.com/{s}` ➡️ `https://twitter.com/@inhumantsar`
+
+Some built-in properties allow the use multi-placeholder format templates. These start with `S|` and use named replacement placeholders. For example, the tag property uses `S|{prefix}/{tag}`. This can be customized in the same way as other string format templates with a few limitations:
+
+* The named placeholders are not available in other properties, eg: you can't use `{prefix}` to add the tag prefix to the title property.
+* At least one of the named placeholders must be present, eg: `S|{tag}` and `S|{prefix}` are valid, but `S|my static template` is not.
+* Properties which use a multi-placeholder template cannot be changed to a single-placeholder format like `s|...{s}...`.
+* Multi-placeholder templates cannot be used with custom properties or built-in properties which don't use them by default.
+
+#### Booleans
+
+<p style="float: right"><img src="assets/date-to-datetime.png" /></p>
+
+Boolean templates aren't templates per-se, since booleans can only ever be `true` or `false`. They can be used to provide a default for custom properties though.
+
+For example, if you wanted a checkbox which indicates whether or not you've read a slurped page, you could create a custom property called `read` and set its template to `b|false`. This will ensure that new notes include `read: false` in their front matter.
+
+Obsidian can display booleans as checkboxes, though it may display it as text at first. This can be fixed in Reading Mode by clicking the icon next to the property and changing its type to *Checkbox*.
+
 
 # Roadmap
 
@@ -85,6 +120,21 @@ For more information, check out the [documentation](https://inhumantsar.github.i
   * [ ] HackerNews: Map discussion threads to blockquote levels, capture both the HN URL and the article URL, use submitter name in the byline, ensure dates are reliably captured. Stretch goal: Scores, capture article along with the discussion.
   * [ ] Reddit: Literally any actual content, plus everything mentioned for HN.
 
+# Known Issues & Limitations
+
+* Social media links generally don't work well, for example:
+  * Twitter links will simply fail because Twitter aggressively filters non-browsers.
+  * Comments will be captured from HackerNews links (mostly), but all threading will be lost.
+  * Reddit links will be processed without error, but only the link, author, and subreddit sidebar content will be captured.
+* Slurp does *nothing* to bypass paywalls.
+* The conversion will leave a bit of janky markup behind sometimes, mainly in the form of too many line breaks.
+
+# Changelog
+
+* 0.1.5 - Customization options for properties.
+* 0.1.4 - Improve identification of note properties by sourcing them from well-known meta elements.
+* 0.1.3 - Added mobile support, custom URI for bookmarklets, and the option to show all properties even when empty.
+* 0.1.2 - Initial public release
 
 # Beta Testing
 

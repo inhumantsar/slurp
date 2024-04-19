@@ -38,7 +38,7 @@ export class FrontMatterProp implements IFrontMatterProp {
     set format(val) { this._format = val }
 
     constructor(s?: IFrontMatterPropSetting, d?: IFrontMatterPropDefault) {
-        if (!d && !s) throw Error("FrontMatterItem objects require either a setting or a default");
+        if (!d && !s) throw Error("FrontMatterProp objects require either a setting or a default");
 
         this._key = s?.key;
         this._idx = s?.idx;

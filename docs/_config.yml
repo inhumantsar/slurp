@@ -1,0 +1,6 @@
+remote_theme: "godalming123/minimal"
+plugins:
+- jekyll-remote-theme # add this line to the plugins list if you already have one
+title: Slurp Documentation
+description: Slurps webpages, cleans off all the crud, and saves them to Obsidian as nice, tidy Markdown files. Think Pocket, but better.
+color-scheme: auto-default-dark
