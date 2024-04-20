@@ -93,7 +93,8 @@ export interface IFrontMatterValidationErrors {
 
 
 export interface ISettings {
-    settingsVersion: number,
+    settingsVersion: number
+    defaultPath: string
     fm: IFrontMatterSettings
     logs: ILogSettings
 }

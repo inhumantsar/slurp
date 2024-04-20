@@ -4,6 +4,7 @@ import FrontMatterSettings from "./components/NotePropSettings.svelte";
 import { FrontMatterProp } from "./frontmatter";
 import { Logger } from "./logger";
 import { StringCaseOptions, type StringCase } from "./string-case";
+import { DEFAULT_SETTINGS } from "./const";
 
 export class SlurpSettingsTab extends PluginSettingTab {
     plugin: SlurpPlugin;
@@ -16,10 +17,23 @@ export class SlurpSettingsTab extends PluginSettingTab {
     }
 
     display(): void {
-
         const { containerEl } = this;
 
         containerEl.empty();
+
+        new Setting(containerEl).setName('General').setHeading();
+        this.app.workspace
+        new Setting(containerEl)
+            .setName('Default save location')
+            .setDesc("What directory should Slurp save pages to? Leave blank to save to the vault's main directory.")
+            .addText((text) => text
+                .setValue(this.plugin.settings.defaultPath)
+                .setPlaceholder(DEFAULT_SETTINGS.defaultPath)
+                .onChange(async (val) => {
+                    this.plugin.settings.defaultPath = val;
+                    await this.plugin.saveSettings();
+                })
+            );
 
         new Setting(containerEl).setName('Properties').setHeading();
 
@@ -38,7 +52,7 @@ export class SlurpSettingsTab extends PluginSettingTab {
             this.logger.debug("onValidate called", props);
             // update existing
             const modKeys = props.map((prop) => {
-                //Object.keys(prop).forEach((key) => console.log(`new: ${prop[key]}, curr: ${this.plugin.slurpProps[prop.id][key]}`));
+                //Object.keys(prop).forEach((key) => console.log(`new: ${ prop[key]}, curr: ${ this.plugin.slurpProps[prop.id][key] }`));
                 this.plugin.fmProps.set(prop.id, prop)
                 return prop.id;
             });

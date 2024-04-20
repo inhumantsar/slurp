@@ -6,7 +6,7 @@ import { SlurpNewNoteModal } from './src/modals/new-note';
 import { fetchHtml, mergeMetadata, parseMarkdown, parseMetadata, parsePage } from './src/parse';
 import { SlurpSettingsTab } from './src/settings';
 import type { FormatterArgs, IArticle, IFrontMatterSettings, IFrontMatterTagSettings, ISettings, ISettingsV0, TFrontMatterProps } from './src/types';
-import { createFilePath } from './src/util';
+import { getNewFilePath, removeTrailingSlash } from './src/util';
 
 export default class SlurpPlugin extends Plugin {
 	settings!: ISettings;
@@ -37,12 +37,6 @@ export default class SlurpPlugin extends Plugin {
 
 	onunload() { }
 
-	fixTagPrefix(tagPrefix: string) {
-		return tagPrefix.endsWith('/')
-			? tagPrefix.substring(0, tagPrefix.length - 1)
-			: tagPrefix;
-	}
-
 	migrateSettingsV0toV1(loadedSettings: Object): ISettings {
 		// only v0 lacks the settingsVersion key
 		if (Object.keys(loadedSettings).contains("settingsVersion")) return loadedSettings as ISettings;
@@ -52,7 +46,7 @@ export default class SlurpPlugin extends Plugin {
 
 		const fmTags = {
 			parse: v0.parseTags,
-			prefix: this.fixTagPrefix(v0.tagPrefix),
+			prefix: removeTrailingSlash(v0.tagPrefix),
 			case: v0.tagCase
 		} as IFrontMatterTagSettings;
 
@@ -69,6 +63,11 @@ export default class SlurpPlugin extends Plugin {
 		} as ISettings;
 
 		return v1;
+	}
+
+	patchInDefaults() {
+		if (this.settings.defaultPath === undefined)
+			this.settings.defaultPath = DEFAULT_SETTINGS.defaultPath;
 	}
 
 	migrateObjToMap<K, V>(obj: Object) {
@@ -91,6 +90,7 @@ export default class SlurpPlugin extends Plugin {
 		const preSettings = Object.assign({}, await this.loadData());
 		// this.logger.debug("pre-migration settings", preSettings);
 		this.settings = this.migrateSettings(preSettings);
+		this.patchInDefaults();
 
 		this.logger = new Logger(this);
 		this.logger.debug("post-migration settings", this.settings);
@@ -101,7 +101,7 @@ export default class SlurpPlugin extends Plugin {
 	}
 
 	async saveSettings() {
-		this.settings.fm.tags.prefix = this.fixTagPrefix(this.settings.fm.tags.prefix);
+		this.settings.fm.tags.prefix = removeTrailingSlash(this.settings.fm.tags.prefix);
 		this.settings.fm.properties = createFrontMatterPropSettings(this.fmProps);
 		this.logger.debug("saving settings", this.settings);
 		await this.saveData(this.settings);
@@ -143,7 +143,7 @@ export default class SlurpPlugin extends Plugin {
 		const content = `---\n${frontMatter}\n---\n\n${article.content}`;
 
 		this.logger.debug("writing file...");
-		const filePath = await createFilePath(this.app.vault, article.title);
+		const filePath = await getNewFilePath(this.app.vault, article.title, this.settings.defaultPath);
 		const newFile = await this.app.vault.create(filePath, content);
 		this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.openFile(newFile);
 	}

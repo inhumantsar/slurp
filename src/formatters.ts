@@ -40,15 +40,22 @@ export const formatDate = (t = "YYYY-MM-DDTHH:mm", v = new Date()) => {
     return isNaN(+result) ? result : +result;
 }
 
-export const formatString = (tmpl: string, val: any) => formatStrings(tmpl, [{ s: val }])[0];
+export const formatString = (tmpl: string, val: any) =>
+    val
+        ? formatStrings(tmpl, [{ s: val }])[0]
+        : "";
 
 export const formatStrings = (tmpl: string, val: Iterable<FormatterArgs>): Array<string> => {
     const result = new Array<string>();
     for (let i of val) {
-        const s = tmpl.replace(/\{(\w+)\}/g, (match, name) => {
-            return i.hasOwnProperty(name) ? i[name] : match;
-        });
-        result.push(s);
+        result.push(
+            tmpl.replace(/\{(\w+)\}/g, (match, name) =>
+                !i.hasOwnProperty(name)
+                    ? match
+                    : i[name] !== undefined
+                        ? ""
+                        : i[name]
+            ));
     }
     return result;
 }

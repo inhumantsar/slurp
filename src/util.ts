@@ -1,7 +1,7 @@
 import { Vault, normalizePath } from "obsidian";
-import { DEFAULT_PATH } from "src/const";
 import type { FrontMatterProp } from "src/frontmatter";
 import type { StringCase } from "src/string-case";
+import { logger } from "./logger";
 
 export const isEmpty = (val: any): boolean => {
     return val == null
@@ -9,20 +9,60 @@ export const isEmpty = (val: any): boolean => {
         || (typeof val[Symbol.iterator] === 'function' && val.length === 0)
 }
 
-export const createFilePath = async (vault: Vault, title: string, path: string = DEFAULT_PATH): Promise<string> => {
-    // increment suffix on duplicated file names... to a point.
-    const fpLoop = (p: string, fn: string, retries: number): string => {
-        if (retries == 100) throw "Cowardly refusing to increment past 100.";
-        const suffix = retries > 0 ? `-${retries}.md` : '.md';
-        const fp = normalizePath(`${p}/${fn}${suffix}`);
-        return vault.getFileByPath(fp) ? fpLoop(p, fn, retries + 1) : fp
-    }
+export const removeTrailingSlash = (str: string) =>
+    str.endsWith('/')
+        ? str.substring(0, str.length - 1)
+        : str;
 
-    // TODO: add setting for slurped pages folder
-    const folder = vault.getFolderByPath(path) || await vault.createFolder(path);
-    const fileName = title.replace(/[\\\/:]/g, '-');
+export const cleanTitle = (title: string) => {
+    // disallowed characters: * " \ / < > : | ?
+    return title
+        // assume that a colons and pipes are most likely a useful separator, eg:
+        //   OpenNeRF: Open Set 3D Neural Scene Segmentation...
+        //   Local News | Botched home sale costs man his real estate license
+        //   Blog|Some Title
+        .replace(/\s?[\|:]\s?/g, ' - ')
+        // assume that quotes are used to enclose words/phrases
+        // eg: Bitcoin prices edges lower after "Halving" concludes
+        .replace('"', "'")
+        // assume that others can simply be nuked
+        .replace(/[\*"\\/<>:\?]/g, '');
 
-    return fpLoop(folder.path, fileName, 0);
+}
+
+export const ensureFolderExists = async (vault: Vault, path: string) => {
+    const existingFolder = vault.getFolderByPath(path);
+    logger().debug(`getFolderByPath("${path}")`, existingFolder);
+    return existingFolder !== null
+        ? existingFolder.path
+        : path === ""
+            ? ""
+            : await (await vault.createFolder(path)).path;
+
+}
+
+const handleDuplicates = (vault: Vault, filename: string, retries: number, path: string): string => {
+    if (retries == 100) throw "Cowardly refusing to increment past 100.";
+
+    const suffix = retries > 0 ? ` (${retries}).md` : '.md';
+    const fullPath = path !== ""
+        ? `${path}/${filename}${suffix}`
+        : `${filename}${suffix}`;
+    const normPath = normalizePath(fullPath);
+
+    logger().debug(`checking if path is available: ${normPath}`);
+    return vault.getFileByPath(normPath) ? handleDuplicates(vault, filename, retries + 1, path) : normPath
+}
+
+export const getNewFilePath = async (vault: Vault, title: string, pathSetting: string): Promise<string> => {
+
+    const titleClean = cleanTitle(title);
+    logger().debug(`finalised title: ${title}`);
+
+    const path = await ensureFolderExists(vault, pathSetting);
+    logger().debug(`finalised folder: ${path}`);
+
+    return handleDuplicates(vault, titleClean, 0, path);
 };
 
 export const sortFrontMatterItems = (items: FrontMatterProp[]) => items.sort((a, b) => a.idx - b.idx);
