@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Are SAP users embracing AI (1).md",
+                "file": "slurp/Are SAP users embracing AI.md",
                 "mode": "source",
                 "backlinks": false,
                 "source": false
@@ -86,7 +86,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Are SAP users embracing AI (1).md",
+                "file": "slurp/Are SAP users embracing AI.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +103,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Are SAP users embracing AI (1).md",
+                "file": "slurp/Are SAP users embracing AI.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -126,7 +126,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Are SAP users embracing AI (1).md"
+                "file": "slurp/Are SAP users embracing AI.md"
               }
             }
           }
@@ -149,8 +149,10 @@
   },
   "active": "3780d90630b6e19d",
   "lastOpenFiles": [
-    "Are SAP users embracing AI.md",
     "Are SAP users embracing AI (1).md",
+    "slurp/Are SAP users embracing AI.md",
+    "slurp",
+    "Are SAP users embracing AI.md",
     "OpenNeRF - Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views (1).md",
     "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
     "OpenNeRF - Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
@@ -177,7 +179,6 @@
     "_slurplogs/slurp-2024-04-18.log",
     "_slurplogs",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-12.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled (without tags).md",
     "Slurped Pages"
   ]
 }

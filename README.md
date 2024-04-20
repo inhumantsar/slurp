@@ -66,8 +66,8 @@ For more information, check out the [documentation](https://inhumantsar.github.i
 
 * [x] Add settings to customize and selectively disable properties.
 * [x] Improve documentation and project structure.
+* [x] Add setting for default [save location](https://github.com/inhumantsar/slurp/issues/9).
 * [ ] *IN PROGRESS* Browser extension for one-click slurps.
-* [ ] *IN PROGRESS* Add setting for default [save location](https://github.com/inhumantsar/slurp/issues/9).
 * [ ] Offer tag parsing, tag prefix, and save location options at slurp-time.
 * [ ] Import Pocket saves, bookmarks, and more automagically
 * [ ] Support for multiple authors in the byline field.
