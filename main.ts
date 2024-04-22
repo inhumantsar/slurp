@@ -107,33 +107,37 @@ export default class SlurpPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	displayError = (err: Error) => new Notice(`Slurp Error! ${err.message}`);
+	displayError = (err: Error) => new Notice(`Slurp Error! ${err.message}. If this is a bug, please report it from plugin settings.`, 0);
 
 	async slurp(url: string): Promise<void> {
-		const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
+		try {
+			const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
 
-		const article: IArticle = {
-			slurpedTime: new Date(),
-			tags: new Array<FormatterArgs>(),
-			...parsePage(doc)
-		};
-		this.logger.debug("parsed page", article);
+			const article: IArticle = {
+				slurpedTime: new Date(),
+				tags: new Array<FormatterArgs>(),
+				...parsePage(doc)
+			};
+			this.logger.debug("parsed page", article);
 
-		// find metadata that readability doesn't pick up
-		const parsedMetadata = parseMetadata(doc, this.fmProps, this.settings.fm.tags.prefix, this.settings.fm.tags.case)
-		this.logger.debug("parsed metadata", parsedMetadata);
+			// find metadata that readability doesn't pick up
+			const parsedMetadata = parseMetadata(doc, this.fmProps, this.settings.fm.tags.prefix, this.settings.fm.tags.case)
+			this.logger.debug("parsed metadata", parsedMetadata);
 
-		const mergedMetadata = mergeMetadata(article, parsedMetadata)
-		this.logger.debug("merged metadata", parsedMetadata);
+			const mergedMetadata = mergeMetadata(article, parsedMetadata)
+			this.logger.debug("merged metadata", parsedMetadata);
 
-		const md = parseMarkdown(article.content);
-		this.logger.debug("converted page to markdown", md);
+			const md = parseMarkdown(article.content);
+			this.logger.debug("converted page to markdown", md);
 
-		await this.slurpNewNoteCallback({
-			...mergedMetadata,
-			content: md,
-			link: url
-		});
+			await this.slurpNewNoteCallback({
+				...mergedMetadata,
+				content: md,
+				link: url
+			});
+		} catch (err) {
+			this.displayError(err as Error);
+		}
 	}
 
 	async slurpNewNoteCallback(article: IArticle) {

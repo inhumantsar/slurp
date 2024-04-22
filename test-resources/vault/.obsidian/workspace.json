@@ -4,16 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "5c3c141e81d9d7bd",
+        "id": "f4f043c1cdef4697",
         "type": "tabs",
         "children": [
           {
-            "id": "3780d90630b6e19d",
+            "id": "1b543898b9339945",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "slurp/Are SAP users embracing AI.md",
+                "file": "other path/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
                 "mode": "source",
                 "backlinks": false,
                 "source": false
@@ -86,7 +86,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "slurp/Are SAP users embracing AI.md",
+                "file": "other path/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +103,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "slurp/Are SAP users embracing AI.md",
+                "file": "other path/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -126,7 +126,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "slurp/Are SAP users embracing AI.md"
+                "file": "other path/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md"
               }
             }
           }
@@ -147,10 +147,18 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "3780d90630b6e19d",
+  "active": "1b543898b9339945",
   "lastOpenFiles": [
-    "Are SAP users embracing AI (1).md",
+    "_slurplogs/slurp-2024-04-22.md",
+    "_slurplogs/slurp-2024-04-21.md",
+    "Inbox/Slurped/Are SAP users embracing AI (1).md",
+    "Inbox/Slurped/Are SAP users embracing AI.md",
+    "Slurped Pages/Are SAP users embracing AI (1).md",
+    "Inbox/Slurped",
+    "Inbox",
+    "Slurped Pages/Are SAP users embracing AI.md",
     "slurp/Are SAP users embracing AI.md",
+    "Are SAP users embracing AI (1).md",
     "slurp",
     "Are SAP users embracing AI.md",
     "OpenNeRF - Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views (1).md",
@@ -171,14 +179,8 @@
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-5.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-4.md",
     "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-3.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-10.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-11.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-8.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-9.md",
-    "_slurplogs/slurp-2024-04-18.md",
     "_slurplogs/slurp-2024-04-18.log",
     "_slurplogs",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-12.md",
     "Slurped Pages"
   ]
 }

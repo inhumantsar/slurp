@@ -13,7 +13,7 @@ interface LogMessage {
     timestamp: number
 }
 
-const MAX_BUFFER_SIZE = 10 ^ 5;
+const MAX_BUFFER_SIZE = 100;
 
 let _logger: Logger;
 
@@ -64,10 +64,14 @@ export class Logger {
         _logger = this;
     }
 
+    private sortBuffer = () => this.buffer.sort((a, b) => a.timestamp - b.timestamp);
+
     private bufferLog = (msg: LogMessage) => {
-        this.buffer.sort((a, b) => a.timestamp - b.timestamp);
+        this.sortBuffer();
         if (this.buffer.length >= MAX_BUFFER_SIZE)
-            this.buffer.pop();
+            // pop would be more efficient, but with 100 items max and a 500ms
+            // interval, the impact should be negligible.
+            this.buffer.shift();
         this.buffer.push(msg);
     }
 
@@ -77,36 +81,44 @@ export class Logger {
         return this.vault.getFileByPath(file) || await this.vault.create(file, `##### startup: ${new Date().toUTCString()}\n`);
     };
 
-    flush = async () => {
-        if (this.buffer.length == 0) return;
-
-        const file = await this.getOrCreateLogFile();
-
-        if (this.settings.debug) console.log(`flushing logs`, this.buffer, file);
-
-        const b = new Set(this.buffer);
+    dump = (returnCallback = true, limit = Infinity, format: "markdown" = "markdown"): { content: string, onComplete: null | (() => void) } => {
         let content = "\n";
+        const b = new Set(this.sortBuffer());
 
-        b.forEach((msg) => {
+        for (let idx = 0; idx < this.buffer.length && idx < limit; idx++) {
+            const msg = this.buffer[idx];
             let optJson = [];
             for (let i of msg.optionalParams || []) {
                 optJson.push(JSON.stringify(serialize(i), undefined, 2));
             }
-            content += `##### [${msg.level.padStart(5)}] ${msg.msg}\n` +
-                `> \`${msg.caller}\`\n> ${msg.timestamp}\n\n`
+            content += `##### ${msg.timestamp} | ${msg.level.padStart(5).toUpperCase()} | ${msg.msg}\n` +
+                `- Caller: \`${msg.caller}\`\n\n`
             if (optJson.length > 0)
                 content += "```\n" + `${optJson.join('\n')}\n` + "```\n\n";
-        });
+        };
 
+        return {
+            content, onComplete: returnCallback
+                ? () => b.forEach((msg) => this.buffer.remove(msg))
+                : null
+        };
+    }
+
+    flush = async () => {
+        if (this.buffer.length == 0 || !this.settings.debug) return;
+
+        const file = await this.getOrCreateLogFile();
+
+        console.log(`flushing logs`, this.buffer, file);
+
+        const { content, onComplete } = this.dump();
 
         await this.vault.append(file, content);
 
-        b.forEach((msg) => this.buffer.remove(msg));
+        if (onComplete) onComplete();
     };
 
     private log = (msg: LogMessage) => {
-        if (!this.settings.debug && msg.level == "debug") return;
-
         const msgStr = `[${msg.caller}] ${msg.msg}`;
         const fn = msg.level === "error"
             ? console.error
@@ -114,8 +126,10 @@ export class Logger {
                 ? console.warn
                 : console.log;
 
-        fn(msgStr, ...msg.optionalParams || []);
-        if (this.settings.debug) this.bufferLog(msg);
+        if (this.settings.debug || msg.level != "debug")
+            fn(msgStr, ...msg.optionalParams || []);
+
+        this.bufferLog(msg);
     }
 
     debug = (msg: string, ...optionalParams: any[]) => {

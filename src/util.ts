@@ -31,7 +31,7 @@ export const cleanTitle = (title: string) => {
 }
 
 export const ensureFolderExists = async (vault: Vault, path: string) => {
-    const existingFolder = vault.getFolderByPath(path);
+    const existingFolder = vault.getFolderByPath(normalizePath(path));
     logger().debug(`getFolderByPath("${path}")`, existingFolder);
     return existingFolder !== null
         ? existingFolder.path
