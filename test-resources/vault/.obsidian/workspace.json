@@ -1,23 +1,18 @@
 {
   "main": {
-    "id": "de6a7ce6be2399ef",
+    "id": "02ba99fa007dcd1b",
     "type": "split",
     "children": [
       {
-        "id": "f4f043c1cdef4697",
+        "id": "8370dcfe4505b70d",
         "type": "tabs",
         "children": [
           {
-            "id": "1b543898b9339945",
+            "id": "50580fd4fc0dea57",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "other path/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
-                "mode": "source",
-                "backlinks": false,
-                "source": false
-              }
+              "type": "empty",
+              "state": {}
             }
           }
         ]
@@ -26,15 +21,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "239f5d138a87bac1",
+    "id": "93d7434dcf125237",
     "type": "split",
     "children": [
       {
-        "id": "a6f3e0f915c40aa9",
+        "id": "cea0d8468f2f7b77",
         "type": "tabs",
         "children": [
           {
-            "id": "b5173136ec90db07",
+            "id": "5bc75bc3168bc2c6",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -44,7 +39,7 @@
             }
           },
           {
-            "id": "2c4027bf9a546e94",
+            "id": "d3fd4ca126625541",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -59,7 +54,7 @@
             }
           },
           {
-            "id": "73fba81d1d696105",
+            "id": "2fc3559bd4e77106",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -70,23 +65,22 @@
       }
     ],
     "direction": "horizontal",
-    "width": 294.5
+    "width": 300
   },
   "right": {
-    "id": "903645595e28f33d",
+    "id": "b8e350f53ea2a7bd",
     "type": "split",
     "children": [
       {
-        "id": "aa1614265eed4674",
+        "id": "83ee5629e05de7f3",
         "type": "tabs",
         "children": [
           {
-            "id": "2cd1b6dd5dc441ee",
+            "id": "aac12db83de87dbd",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "other path/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -98,19 +92,18 @@
             }
           },
           {
-            "id": "c4814f371a1ec5bd",
+            "id": "ac1583f8d3e57cba",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "other path/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
             }
           },
           {
-            "id": "bcaba0ffa24312e2",
+            "id": "929e158cc52344d6",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -121,13 +114,11 @@
             }
           },
           {
-            "id": "07ed5c6cf0207a52",
+            "id": "f258fee7e08ebe70",
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {
-                "file": "other path/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md"
-              }
+              "state": {}
             }
           }
         ]
@@ -147,40 +138,8 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "1b543898b9339945",
+  "active": "50580fd4fc0dea57",
   "lastOpenFiles": [
-    "_slurplogs/slurp-2024-04-22.md",
-    "_slurplogs/slurp-2024-04-21.md",
-    "Inbox/Slurped/Are SAP users embracing AI (1).md",
-    "Inbox/Slurped/Are SAP users embracing AI.md",
-    "Slurped Pages/Are SAP users embracing AI (1).md",
-    "Inbox/Slurped",
-    "Inbox",
-    "Slurped Pages/Are SAP users embracing AI.md",
-    "slurp/Are SAP users embracing AI.md",
-    "Are SAP users embracing AI (1).md",
-    "slurp",
-    "Are SAP users embracing AI.md",
-    "OpenNeRF - Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views (1).md",
-    "Slurped Pages/InvertOrNot - Smart Dark-Mode Image Inversion.md",
-    "OpenNeRF - Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
-    "Slurped Pages/OpenNeRF - Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views (1).md",
-    "Slurped Pages/OpenNeRF - Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
-    "Slurped Pages/OpenNeRF- Open Set 3D Neural Scene Segmentation with Pixel-Wise Features and Rendered Novel Views.md",
-    "_slurplogs/slurp-2024-04-20.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-2.md",
-    "_slurplogs/slurp-2024-04-19.md",
-    "other path/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-1.md",
-    "other path",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-6.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-7.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-5.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-4.md",
-    "Slurped Pages/The first Apple-approved emulator for the iPhone has arrived... and been pulled-3.md",
-    "_slurplogs/slurp-2024-04-18.log",
-    "_slurplogs",
-    "Slurped Pages"
+    "_slurplogs/slurp-2024-04-23.md"
   ]
 }

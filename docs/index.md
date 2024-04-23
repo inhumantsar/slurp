@@ -94,32 +94,6 @@ For example, if you wanted a checkbox which indicates whether or not you've read
 
 Obsidian can display booleans as checkboxes, though it may display it as text at first. This can be fixed in Reading Mode by clicking the icon next to the property and changing its type to *Checkbox*.
 
-
-# Roadmap
-
-## Toward v1
-
-* [x] Add settings to customize and selectively disable properties.
-* [x] Improve documentation and project structure.
-* [ ] *IN PROGRESS* Browser extension for one-click slurps.
-* [ ] *IN PROGRESS* Add setting for default [save location](https://github.com/inhumantsar/slurp/issues/9).
-* [ ] Offer tag parsing, tag prefix, and save location options at slurp-time.
-* [ ] Import Pocket saves, bookmarks, and more automagically
-* [ ] Support for multiple authors in the byline field.
-* [ ] Use a bit of custom parsing logic for popular sites to capture better data and tidy up results:
-  * [ ] arXiv: Authors, topics, arXiv IDs, dates, and cleaner formatting. Stretch goal: Grab the paper PDF and any code links as well.
-  * [ ] Medium: Clean up the author information captured, particularly the links which get spread across multiple lines currently. 
-
-## Beyond v1
-
-* [ ] Ensure video and other embeds are captured reliably
-* [ ] Integrate with an LLM to provide summaries and tag recommendations
-* [ ] Make sure Slurp plays nicely with other plugins, eg Dataview
-* [ ] Save PDF and/or HTML versions of the page with the Markdown versions
-* [ ] More custom parsing logic
-  * [ ] HackerNews: Map discussion threads to blockquote levels, capture both the HN URL and the article URL, use submitter name in the byline, ensure dates are reliably captured. Stretch goal: Scores, capture article along with the discussion.
-  * [ ] Reddit: Literally any actual content, plus everything mentioned for HN.
-
 # Known Issues & Limitations
 
 * Social media links generally don't work well, for example:
@@ -128,13 +102,6 @@ Obsidian can display booleans as checkboxes, though it may display it as text at
   * Reddit links will be processed without error, but only the link, author, and subreddit sidebar content will be captured.
 * Slurp does *nothing* to bypass paywalls.
 * The conversion will leave a bit of janky markup behind sometimes, mainly in the form of too many line breaks.
-
-# Changelog
-
-* 0.1.5 - Customization options for properties.
-* 0.1.4 - Improve identification of note properties by sourcing them from well-known meta elements.
-* 0.1.3 - Added mobile support, custom URI for bookmarklets, and the option to show all properties even when empty.
-* 0.1.2 - Initial public release
 
 # Beta Testing
 

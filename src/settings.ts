@@ -1,10 +1,11 @@
 import type SlurpPlugin from "main";
-import { App, PluginSettingTab, Setting, ValueComponent } from "obsidian";
+import { App, PluginSettingTab, Setting, TAbstractFile } from "obsidian";
 import FrontMatterSettings from "./components/NotePropSettings.svelte";
 import { FrontMatterProp } from "./frontmatter";
 import { Logger, logger } from "./logger";
 import { StringCaseOptions, type StringCase } from "./string-case";
 import { DEFAULT_SETTINGS } from "./const";
+import { FileInputSuggestComponent } from "./file-suggester";
 
 export class SlurpSettingsTab extends PluginSettingTab {
     plugin: SlurpPlugin;
@@ -22,18 +23,20 @@ export class SlurpSettingsTab extends PluginSettingTab {
         containerEl.empty();
 
         new Setting(containerEl).setName('General').setHeading();
-        this.app.workspace
-        new Setting(containerEl)
+
+        const saveLoc = new Setting(containerEl)
             .setName('Default save location')
-            .setDesc("What directory should Slurp save pages to? Leave blank to save to the vault's main directory.")
-            .addText((text) => text
-                .setValue(this.plugin.settings.defaultPath)
-                .setPlaceholder(DEFAULT_SETTINGS.defaultPath)
-                .onChange(async (val) => {
-                    this.plugin.settings.defaultPath = val;
-                    await this.plugin.saveSettings();
-                })
-            );
+            .setDesc("What directory should Slurp save pages to? Leave blank to save to the vault's main directory.");
+
+        new FileInputSuggestComponent(saveLoc.controlEl, this.app)
+            .setValue(this.plugin.settings.defaultPath)
+            .setPlaceholder(DEFAULT_SETTINGS.defaultPath)
+            .addFilter("folder")
+            .addLimit(10)
+            .onSelect(async (val: TAbstractFile) => {
+                this.plugin.settings.defaultPath = val.name;
+                await this.plugin.saveSettings();
+            });
 
         new Setting(containerEl).setName('Properties').setHeading();
 
@@ -50,20 +53,18 @@ export class SlurpSettingsTab extends PluginSettingTab {
 
         const onValidate = (props: FrontMatterProp[]) => {
             this.logger.debug("onValidate called", props);
-            // update existing
-            const modKeys = props.map((prop) => {
-                this.plugin.fmProps.set(prop.id, prop);
-                return prop.id;
-            });
 
-            // delete keys no longer present
-            Object.keys(this.plugin.fmProps).map((id) => modKeys
-                .contains(id) ? null : id).filter((id) => id !== null).map((id) => {
-                    if (id) {
-                        delete this.plugin.settings.fm.properties[id];
-                        this.plugin.fmProps.delete(id);
-                    }
-                });
+            const newPropIds = props.map((prop) => prop.id);
+            const deleted = Array.from(this.plugin.fmProps.keys())
+                .filter((id) => !newPropIds.contains(id));
+
+            if (deleted.length > 0) {
+                logger().warn("removing note properties", deleted);
+                deleted.forEach((id) => this.plugin.fmProps.delete(id));
+            }
+
+            // update the rest
+            props.forEach((prop) => this.plugin.fmProps.set(prop.id, prop));
 
             this.plugin.saveSettings();
         }
@@ -118,6 +119,7 @@ export class SlurpSettingsTab extends PluginSettingTab {
             );
 
 
+        // TODO: make a component for everything below
         new Setting(containerEl)
             .setName("Report an Issue")
             .setHeading();
@@ -133,13 +135,21 @@ export class SlurpSettingsTab extends PluginSettingTab {
                 })
             );
 
+        let recentLogsText: HTMLTextAreaElement;
+        const updateLogsText = () => recentLogsText.setText(logger().dump(false, 25).content);
+
         new Setting(containerEl)
             .setName("Recent Logs")
             .setDesc(
                 "Copy+Paste these when opening a new GitHub issue. Not available when debug mode is enabled. " +
-                "Submit the most recent log file instead"
+                "Attach the most recent log file to the GitHub issue instead."
             )
-            .setDisabled(!this.plugin.settings.logs.debug);
+            .setDisabled(this.plugin.settings.logs.debug)
+            .addButton((btn) => btn
+                .setButtonText("Refresh")
+                .setCta()
+                .onClick(updateLogsText)
+                .setDisabled(this.plugin.settings.logs.debug));
 
         if (!this.plugin.settings.logs.debug) {
             const recentLogs = containerEl.createDiv();
@@ -147,13 +157,13 @@ export class SlurpSettingsTab extends PluginSettingTab {
             recentLogsStyles["font-size"] = "small";
             recentLogs.setCssProps(recentLogsStyles);
 
-            const logsTextArea = containerEl.createEl("textarea");
-            logsTextArea.setText(logger().dump(false, 25).content);
+            recentLogsText = containerEl.createEl("textarea");
             const logsTextAreaStyles: Record<string, string> = {};
             logsTextAreaStyles["width"] = "100%";
             logsTextAreaStyles["height"] = "20em";
-            logsTextArea.setCssProps(logsTextAreaStyles);
-            recentLogs.appendChild(logsTextArea);
+            recentLogsText.setCssProps(logsTextAreaStyles);
+            updateLogsText();
+            recentLogs.appendChild(recentLogsText);
             containerEl.appendChild(recentLogs);
         }
 
