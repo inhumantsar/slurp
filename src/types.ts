@@ -1,9 +1,9 @@
-import type { StringCase } from "src/string-case"
+import type { StringCase } from "./lib/string-case";
 
-export interface IArticleTags { [s: string]: string }
+export interface IArticleTags { [s: string]: string; }
 
 export interface IArticleMetadata {
-    [property: string]: any;
+    [property: string]: unknown;
     slurpedTime: Date;
     tags: Array<IArticleTags>;
     excerpt?: string;
@@ -18,7 +18,7 @@ export interface IArticleMetadata {
 }
 
 export interface IArticle extends IArticleMetadata {
-    [property: string]: any;
+    [property: string]: unknown;
     title: string;
     content: string;
 }
@@ -44,14 +44,14 @@ export interface SlurpCallbackArgs {
 
 // overkill atm but hey
 export interface SlurpUrlParams {
-    url: string
+    url: string;
 }
 
-export interface FormatterArgs { [s: string]: string }
+export interface FormatterArgs { [s: string]: string; }
 
 
 export interface IFrontMatterProp {
-    [index: string]: string | number | string[] | boolean | IFrontMatterPropDefaultValue | undefined | object
+    [index: string]: string | number | string[] | boolean | IFrontMatterPropDefaultValue | undefined | object;
 
     id: string;
     enabled: boolean;
@@ -66,54 +66,54 @@ export interface IFrontMatterProp {
     defaultFormat?: string;
     defaultValue?: IFrontMatterPropDefaultValue;
 
-    getSetting: () => IFrontMatterPropSetting
+    getSetting: () => IFrontMatterPropSetting;
 }
 
 export interface IFrontMatterPropDefault {
-    id: string
-    defaultIdx: number
-    defaultKey: string
-    description: string
-    metaFields?: string[]
-    defaultFormat?: string
-    defaultValue?: IFrontMatterPropDefaultValue
+    id: string;
+    defaultIdx: number;
+    defaultKey: string;
+    description: string;
+    metaFields?: string[];
+    defaultFormat?: string;
+    defaultValue?: IFrontMatterPropDefaultValue;
 }
 
 
-export type IFrontMatterPropDefaultValue = any | (() => any);
+export type IFrontMatterPropDefaultValue = unknown | (() => unknown);
 
 export type TFrontMatterProps = Map<string, IFrontMatterProp>;
 export type TFrontMatterPropDefaults = Map<string, IFrontMatterPropDefault>;
 
 export interface IFrontMatterValidationErrors {
-    hasErrors: boolean
-    format: string[]
-    key: string[]
+    hasErrors: boolean;
+    format: string[];
+    key: string[];
 }
 
 
 export interface ISettings {
-    settingsVersion: number
-    defaultPath: string
-    fm: IFrontMatterSettings
-    logs: ILogSettings
+    settingsVersion: number;
+    defaultPath: string;
+    fm: IFrontMatterSettings;
+    logs: ILogSettings;
 }
 
 export interface ILogSettings {
-    debug: boolean
-    logPath: string
+    debug: boolean;
+    logPath: string;
 }
 
 export interface IFrontMatterTagSettings {
-    parse: boolean
-    prefix: string
-    case: StringCase
+    parse: boolean;
+    prefix: string;
+    case: StringCase;
 }
 
 export interface IFrontMatterSettings {
-    includeEmpty: boolean
-    tags: IFrontMatterTagSettings
-    properties: IFrontMatterPropSettings
+    includeEmpty: boolean;
+    tags: IFrontMatterTagSettings;
+    properties: IFrontMatterPropSettings;
 }
 
 export interface IFrontMatterPropSetting {
@@ -125,18 +125,18 @@ export interface IFrontMatterPropSetting {
     format?: string;
 }
 
-export interface IFrontMatterPropSettings { [s: string]: IFrontMatterPropSetting }
+export interface IFrontMatterPropSettings { [s: string]: IFrontMatterPropSetting; }
 
 //////////////////////////////////////////////////////////////////////////
 // ye olde interfaces
 
 export interface ISettingsV0 {
-    showEmptyProps: boolean
-    parseTags: boolean
-    tagPrefix: string
-    tagCase: StringCase
-    propSettings: IFrontMatterPropSettingsV0
-    debug: boolean
+    showEmptyProps: boolean;
+    parseTags: boolean;
+    tagPrefix: string;
+    tagCase: StringCase;
+    propSettings: IFrontMatterPropSettingsV0;
+    debug: boolean;
 }
 
 
@@ -149,4 +149,4 @@ export interface IFrontMatterPropSettingV0 {
     custom: boolean;
 }
 
-export type IFrontMatterPropSettingsV0 = { [s: string]: IFrontMatterPropSettingV0 }
+export type IFrontMatterPropSettingsV0 = { [s: string]: IFrontMatterPropSettingV0; };

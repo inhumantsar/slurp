@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { flip } from "svelte/animate";
-	import { crossfade } from "svelte/transition";
 	import { quintOut } from "svelte/easing";
-	import { FrontMatterProp, validateFrontMatterProps } from "../frontmatter";
-	import { sortFrontMatterItems } from "../util";
+	import { crossfade } from "svelte/transition";
+	import { FrontMatterProp, sortFrontMatterItems, validateFrontMatterProps } from "../frontmatter";
 
-	// for the order-shift animation
 	const [send, receive] = crossfade({ duration: 350 });
 
 	export let props: FrontMatterProp[];

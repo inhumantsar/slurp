@@ -1,12 +1,13 @@
 import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS } from './src/const';
 import { createFrontMatter, createFrontMatterPropSettings, createFrontMatterProps } from './src/frontmatter';
-import { Logger } from './src/logger';
+import { getNewFilePath } from "./src/lib/files";
+import { Logger } from './src/lib/logger';
+import { removeTrailingSlash } from './src/lib/util';
 import { SlurpNewNoteModal } from './src/modals/new-note';
 import { fetchHtml, mergeMetadata, parseMarkdown, parseMetadata, parsePage } from './src/parse';
 import { SlurpSettingsTab } from './src/settings';
 import type { FormatterArgs, IArticle, IFrontMatterSettings, IFrontMatterTagSettings, ISettings, ISettingsV0, TFrontMatterProps } from './src/types';
-import { getNewFilePath, removeTrailingSlash } from './src/util';
 
 export default class SlurpPlugin extends Plugin {
 	settings!: ISettings;
@@ -27,7 +28,7 @@ export default class SlurpPlugin extends Plugin {
 		});
 
 		this.registerObsidianProtocolHandler("slurp", async (e) => {
-			if (!e.url || e.url == "") console.error("URI is empty or undefined");
+			if (!e.url || e.url === "") console.error("URI is empty or undefined");
 
 			try {
 				this.slurp(e.url);
@@ -37,10 +38,10 @@ export default class SlurpPlugin extends Plugin {
 
 	onunload() { }
 
-	migrateSettingsV0toV1(loadedSettings: Object): ISettings {
+	migrateSettingsV0toV1(loadedSettings: ISettingsV0 | ISettings): ISettings {
 		// only v0 lacks the settingsVersion key
 		if (Object.keys(loadedSettings).contains("settingsVersion")) return loadedSettings as ISettings;
-		if (Object.keys(loadedSettings).length == 0) return DEFAULT_SETTINGS;
+		if (Object.keys(loadedSettings).length === 0) return DEFAULT_SETTINGS;
 
 		const v0 = loadedSettings as ISettingsV0;
 
@@ -70,7 +71,8 @@ export default class SlurpPlugin extends Plugin {
 			this.settings.defaultPath = DEFAULT_SETTINGS.defaultPath;
 	}
 
-	migrateObjToMap<K, V>(obj: Object) {
+	migrateObjToMap<K, V>(obj: { [key: string]: V; }) {
+		// biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
 		if (!obj.hasOwnProperty('keys')) {
 			if (Object.keys(obj).length === 0)
 				return new Map<K, V>();
@@ -121,10 +123,10 @@ export default class SlurpPlugin extends Plugin {
 			this.logger.debug("parsed page", article);
 
 			// find metadata that readability doesn't pick up
-			const parsedMetadata = parseMetadata(doc, this.fmProps, this.settings.fm.tags.prefix, this.settings.fm.tags.case)
+			const parsedMetadata = parseMetadata(doc, this.fmProps, this.settings.fm.tags.prefix, this.settings.fm.tags.case);
 			this.logger.debug("parsed metadata", parsedMetadata);
 
-			const mergedMetadata = mergeMetadata(article, parsedMetadata)
+			const mergedMetadata = mergeMetadata(article, parsedMetadata);
 			this.logger.debug("merged metadata", parsedMetadata);
 
 			const md = parseMarkdown(article.content);

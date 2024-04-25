@@ -1,11 +1,11 @@
 import type SlurpPlugin from "main";
-import { App, PluginSettingTab, Setting, TAbstractFile } from "obsidian";
-import FrontMatterSettings from "./components/NotePropSettings.svelte";
-import { FrontMatterProp } from "./frontmatter";
-import { Logger, logger } from "./logger";
-import { StringCaseOptions, type StringCase } from "./string-case";
+import { PluginSettingTab, Setting, type App, type TAbstractFile } from "obsidian";
+import { FileSuggestionComponent } from "./components/file-suggestion";
+import FrontMatterSettings from "./components/frontmatter-prop-settings.svelte";
 import { DEFAULT_SETTINGS } from "./const";
-import { FileInputSuggestComponent } from "./file-suggester";
+import type { FrontMatterProp } from "./frontmatter";
+import { Logger, logger } from "./lib/logger";
+import { StringCaseOptions, type StringCase } from "./lib/string-case";
 
 export class SlurpSettingsTab extends PluginSettingTab {
     plugin: SlurpPlugin;
@@ -28,13 +28,13 @@ export class SlurpSettingsTab extends PluginSettingTab {
             .setName('Default save location')
             .setDesc("What directory should Slurp save pages to? Leave blank to save to the vault's main directory.");
 
-        new FileInputSuggestComponent(saveLoc.controlEl, this.app)
+        new FileSuggestionComponent(saveLoc.controlEl, this.app)
             .setValue(this.plugin.settings.defaultPath)
             .setPlaceholder(DEFAULT_SETTINGS.defaultPath)
             .addFilter("folder")
             .addLimit(10)
             .onSelect(async (val: TAbstractFile) => {
-                this.plugin.settings.defaultPath = val.name;
+                this.plugin.settings.defaultPath = val.path;
                 await this.plugin.saveSettings();
             });
 
@@ -60,14 +60,16 @@ export class SlurpSettingsTab extends PluginSettingTab {
 
             if (deleted.length > 0) {
                 logger().warn("removing note properties", deleted);
+                // biome-ignore lint/complexity/noForEach: <explanation>
                 deleted.forEach((id) => this.plugin.fmProps.delete(id));
             }
 
             // update the rest
+            // biome-ignore lint/complexity/noForEach: <explanation>
             props.forEach((prop) => this.plugin.fmProps.set(prop.id, prop));
 
             this.plugin.saveSettings();
-        }
+        };
 
         new FrontMatterSettings({
             target: this.containerEl, props: {
@@ -159,8 +161,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
 
             recentLogsText = containerEl.createEl("textarea");
             const logsTextAreaStyles: Record<string, string> = {};
-            logsTextAreaStyles["width"] = "100%";
-            logsTextAreaStyles["height"] = "20em";
+            logsTextAreaStyles.width = "100%";
+            logsTextAreaStyles.height = "20em";
             recentLogsText.setCssProps(logsTextAreaStyles);
             updateLogsText();
             recentLogs.appendChild(recentLogsText);

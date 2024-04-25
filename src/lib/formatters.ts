@@ -1,24 +1,24 @@
 import moment from "moment";
-import type { FormatterArgs } from "./types";
+import type { FormatterArgs } from "../types";
 
-export const format = (tmpl: string, val: any) => {
+export const format = (tmpl: string, val: unknown) => {
     switch (tmpl.substring(0, 2)) {
         case 'b|':
-            return formatBoolean(tmpl.substring(2), val);
+            return formatBoolean(tmpl.substring(2), val as boolean);
 
         case 'd|':
-            return formatDate(tmpl.substring(2), val);
+            return formatDate(tmpl.substring(2), val as Date);
 
         case 's|':
-            return formatString(tmpl.substring(2), val);
+            return formatString(tmpl.substring(2), val as string);
 
         case 'S|':
-            return formatStrings(tmpl.substring(2), val);
+            return formatStrings(tmpl.substring(2), val as FormatterArgs[]);
 
         default:
-            return formatString(tmpl, val);
+            return formatString(tmpl, val as string);
     }
-}
+};
 
 export const formatBoolean = (tmpl: string, val?: string | boolean) => {
     if (tmpl !== "" && !val)
@@ -29,27 +29,28 @@ export const formatBoolean = (tmpl: string, val?: string | boolean) => {
         return JSON.parse(val);
 
     if (typeof val === "boolean")
-        return val
+        return val;
 
     console.warn(`Unable to parse ${val} as a boolean, passing it back raw.`);
     return val;
-}
+};
 
 export const formatDate = (t = "YYYY-MM-DDTHH:mm", v = new Date()) => {
     const result = moment(v).format(t);
-    return isNaN(+result) ? result : +result;
-}
+    return Number.isNaN(+result) ? result : +result;
+};
 
-export const formatString = (tmpl: string, val: any) =>
+export const formatString = (tmpl: string, val: string) =>
     val
         ? formatStrings(tmpl, [{ s: val }])[0]
         : "";
 
 export const formatStrings = (tmpl: string, val: Iterable<FormatterArgs>): Array<string> => {
     const result = new Array<string>();
-    for (let i of val) {
+    for (const i of val) {
         result.push(
             tmpl.replace(/\{(\w+)\}/g, (match, name) =>
+                // biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
                 !i.hasOwnProperty(name)
                     ? match
                     : i[name] !== undefined

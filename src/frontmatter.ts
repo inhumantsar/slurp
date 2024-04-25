@@ -1,41 +1,41 @@
-import { Pair, Scalar, stringify } from "yaml";
+import { stringify, type Pair, type Scalar } from "yaml";
 import { FRONT_MATTER_ITEM_DEFAULTS } from "./const";
-import { format } from "./formatters";
-import { logger } from "./logger";
+import { format } from "./lib/formatters";
+import { logger } from "./lib/logger";
+import { isEmpty } from "./lib/util";
 import type {
     IArticle, IFrontMatterProp, IFrontMatterPropDefault, IFrontMatterPropDefaultValue,
     IFrontMatterPropSetting, IFrontMatterPropSettings, IFrontMatterValidationErrors, TFrontMatterProps
 } from "./types";
-import { isEmpty } from "./util";
 
 export class FrontMatterProp implements IFrontMatterProp {
-    [index: string]: string | number | string[] | boolean | IFrontMatterPropDefaultValue | undefined | object
+    [index: string]: string | number | string[] | boolean | IFrontMatterPropDefaultValue | undefined | object;
 
-    readonly id: string
-    public enabled = true
-    public custom = false
-    public metaFields?: string[]
-    readonly defaultIdx?: number
-    readonly defaultKey?: string
-    readonly description?: string
-    public defaultFormat?: string
-    public defaultValue?: IFrontMatterPropDefaultValue
-    _key?: string
-    _idx?: number
-    _format?: string
+    readonly id: string;
+    public enabled = true;
+    public custom = false;
+    public metaFields?: string[];
+    readonly defaultIdx?: number;
+    readonly defaultKey?: string;
+    readonly description?: string;
+    public defaultFormat?: string;
+    public defaultValue?: IFrontMatterPropDefaultValue;
+    _key?: string;
+    _idx?: number;
+    _format?: string;
 
-    get key(): string { return this._key || this.defaultKey || this.id }
-    set key(val: string) { this._key = val }
+    get key(): string { return this._key || this.defaultKey || this.id; }
+    set key(val: string) { this._key = val; }
     get idx() {
         return this._idx !== undefined
             ? this._idx
             : this.defaultIdx !== undefined
                 ? this.defaultIdx
-                : Infinity
+                : Number.POSITIVE_INFINITY;
     }
-    set idx(val) { this._idx = val }
-    get format() { return this._format || this.defaultFormat }
-    set format(val) { this._format = val }
+    set idx(val) { this._idx = val; }
+    get format() { return this._format || this.defaultFormat; }
+    set format(val) { this._format = val; }
 
     constructor(s?: IFrontMatterPropSetting, d?: IFrontMatterPropDefault) {
         if (!d && !s) throw Error("FrontMatterProp objects require either a setting or a default");
@@ -55,8 +55,8 @@ export class FrontMatterProp implements IFrontMatterProp {
     }
 
     public getSetting = (): IFrontMatterPropSetting => {
-        return { id: this.id, key: this.key, idx: this.idx, format: this.format, enabled: this.enabled, custom: this.custom }
-    }
+        return { id: this.id, key: this.key, idx: this.idx, format: this.format, enabled: this.enabled, custom: this.custom };
+    };
 
     public validateKey = (): string[] => {
         const e = new Array<string>();
@@ -67,7 +67,7 @@ export class FrontMatterProp implements IFrontMatterProp {
         if (this._key?.match(/[^\p{L}0-9 ._\-]/gu) !== null)
             e.push("Property keys may only contain alphanumeric characters, spaces, dots, dashes, and underscores.");
         return e;
-    }
+    };
 
     private validateFormatMultiString = (): string[] => {
         const e = new Array<string>();
@@ -87,8 +87,8 @@ export class FrontMatterProp implements IFrontMatterProp {
             if (!matches?.some((val) => fmt?.contains(val)))
                 e.push(`This format string must contain at least one of ${matches?.join(", ")}.`);
         }
-        return e
-    }
+        return e;
+    };
 
     private validateFormatBoolean = (): string[] => {
         if (!this._format?.startsWith('b|')) return [];
@@ -97,7 +97,7 @@ export class FrontMatterProp implements IFrontMatterProp {
             return ["Boolean formats must be either 'true' or 'false'."];
 
         return [];
-    }
+    };
 
     public validateFormat = (): string[] => {
         const e = new Array<string>();
@@ -111,8 +111,8 @@ export class FrontMatterProp implements IFrontMatterProp {
         if (fmt?.startsWith("s|") && !fmt?.contains("{s}"))
             e.push("String formats must contain at least one replacement placeholder '{s}'");
 
-        return [...e, ...this.validateFormatMultiString(), ...this.validateFormatBoolean()]
-    }
+        return [...e, ...this.validateFormatMultiString(), ...this.validateFormatBoolean()];
+    };
 }
 
 export const createFrontMatterPropSettings = (props: TFrontMatterProps): IFrontMatterPropSettings =>
@@ -125,13 +125,13 @@ export const createFrontMatterProps = (settings?: IFrontMatterPropSettings): TFr
     return new Map<string, FrontMatterProp>(
         Array.from(new Set([...settings ? Object.keys(settings) : [], ...FRONT_MATTER_ITEM_DEFAULTS.keys()]))
             .map((k) => [k, new FrontMatterProp(settings ? settings[k] : undefined, FRONT_MATTER_ITEM_DEFAULTS.get(k))]));
-}
+};
 
 export const validateFrontMatterProps = (props: FrontMatterProp[]): IFrontMatterValidationErrors[] => {
     return props.map((prop) => {
         const fmt = prop.validateFormat();
         const key = prop.validateKey();
-        return { format: fmt, key: key, hasErrors: fmt.length + key.length > 0 } as IFrontMatterValidationErrors
+        return { format: fmt, key: key, hasErrors: fmt.length + key.length > 0 } as IFrontMatterValidationErrors;
     });
 
 };
@@ -149,9 +149,9 @@ export const getFrontMatterValue = (fmItem: IFrontMatterProp, article: IArticle,
             : article[fmItem.id] !== undefined
                 ? article[fmItem.id]
                 : null;
-}
+};
 
-export const getFrontMatterYaml = (fm: Map<string, any>, idx: Map<string, number>) => {
+export const getFrontMatterYaml = (fm: Map<string, unknown>, idx: Map<string, number>) => {
     logger().debug("stringifying yaml...", fm, idx);
     const yamlSort = (a: Pair, b: Pair) => {
         const ak = (a.key as Scalar).toString();
@@ -162,20 +162,21 @@ export const getFrontMatterYaml = (fm: Map<string, any>, idx: Map<string, number
         return aidx - bidx;
     };
     return stringify(fm, { sortMapEntries: yamlSort, nullStr: "" }).trim();
-}
+};
 
 export const createFrontMatter = (article: IArticle, fmItems: TFrontMatterProps, showEmpty: boolean): string | undefined => {
-    const fm = new Map<string, any>();
+    const fm = new Map<string, unknown>();
     // we want to sort by key not by id
     const keyIndex = new Map<string, number>();
 
-    fmItems.forEach((v) => {
+    for (const [k, v] of fmItems) {
         if (v.enabled) {
             fm.set(v.key, getFrontMatterValue(v, article, showEmpty));
             keyIndex.set(v.key, v.idx);
         }
-    })
+    }
 
     return getFrontMatterYaml(fm, keyIndex);
-}
+};
+export const sortFrontMatterItems = (items: FrontMatterProp[]) => items.sort((a, b) => a.idx - b.idx);
 

@@ -1,10 +1,10 @@
 import { Readability } from "@mozilla/readability";
 import { htmlToMarkdown, requestUrl, sanitizeHTMLToDom } from "obsidian";
-import { formatString } from "./formatters";
-import { logger } from "./logger";
-import type { StringCase } from "./string-case";
+import { formatString } from "./lib/formatters";
+import { logger } from "./lib/logger";
+import type { StringCase } from "./lib/string-case";
+import { isEmpty, updateStringCase } from "./lib/util";
 import type { FormatterArgs, IArticle, IArticleMetadata, TFrontMatterProps } from "./types";
-import { isEmpty, updateStringCase } from "./util";
 
 export const fixRelativeLinks = (html: string, articleUrl: string) => {
     const url = new URL(articleUrl);
@@ -20,26 +20,26 @@ export const fixRelativeLinks = (html: string, articleUrl: string) => {
             }
             return `${p1}="${new URL(p2, url.href)}"`;
         });
-}
+};
 
 export const fetchHtml = async (url: string) => {
     const html = await requestUrl(url).text;
     if (!html) {
         logger().error(`Unable to fetch page from: ${url}.`);
-        throw `Unable to fetch page.`;
+        throw "Unable to fetch page.";
     }
-    return fixRelativeLinks(html, url)
-}
+    return fixRelativeLinks(html, url);
+};
 
 export const parsePage = (doc: Document) => {
     const article = new Readability(doc).parse();
 
     if (!article || !article.title || !article.content) {
-        logger().error(`Parsed article missing critical content`, article);
+        logger().error("Parsed article missing critical content", article);
         throw "No title or content found.";
     }
     return article;
-}
+};
 
 export const parseMetadataTags = (elements: NodeListOf<HTMLMetaElement>, tagPrefix: string, tagCase: StringCase) => {
     // Tags need to be split and reformatted:
@@ -48,43 +48,47 @@ export const parseMetadataTags = (elements: NodeListOf<HTMLMetaElement>, tagPref
     //   - Nested tags are separated by forward slashes (/)
     //	 - Tags are case-insensitive 
     const tags = new Set<FormatterArgs>();
+    // biome-ignore lint/complexity/noForEach: <explanation>
     elements.forEach((e) => e.content
         .split(",")
-        .forEach((text) => tags.add({ prefix: tagPrefix, tag: updateStringCase(text.trim(), tagCase) })));
+        .forEach((text) => tags
+            .add({ prefix: tagPrefix, tag: updateStringCase(text.trim(), tagCase) })));
 
     logger().debug("parsed tags", tags);
     return tags;
-}
+};
 
 export const parseMetadata = (doc: Document, fmProps: TFrontMatterProps, tagPrefix: string, tagCase: StringCase): IArticleMetadata => {
     const metadata: IArticleMetadata = { tags: new Array<FormatterArgs>(), slurpedTime: new Date() };
     const tmpl = 'meta[name="{s}"], meta[property="{s}"], meta[itemprop="{s}"], meta[http-equiv="{s}"]';
 
-    for (let i of fmProps) {
+    for (const i of fmProps) {
         const prop = i[1];
-        const metaFields = new Set([...prop.metaFields || [], ...prop.extraMetaFields || []]);
+        const metaFields = new Set([...prop.metaFields || []]);
 
-        metaFields.forEach((attr) => {
+        for (const attr of metaFields) {
             // tags need special handling, for everything else we just take the first result
             const querySelector = formatString(tmpl, attr);
             const elements: NodeListOf<HTMLMetaElement> = doc.querySelectorAll(querySelector);
-            if (elements.length == 0) return;
+            if (elements.length === 0) continue;
 
-            if (prop.id == "tags") {
+            if (prop.id === "tags") {
                 logger().debug("parsing tags", { prop, elements, tagPrefix, tagCase, metaFields, querySelector });
-                parseMetadataTags(elements, tagPrefix, tagCase).forEach((val) => metadata.tags.push(val));
+                for (const val of parseMetadataTags(elements, tagPrefix, tagCase)) {
+                    metadata.tags.push(val);
+                }
             } else {
                 // already found a match
-                if (metadata[prop.id] != undefined) return;
+                if (metadata[prop.id] !== undefined) continue;
 
                 logger().debug("adding metadata", { prop, elements, metaFields, querySelector });
                 metadata[prop.id] = elements[0].content;
             }
-        });
+        }
     };
 
     return metadata;
-}
+};
 
 export const mergeMetadata = (article: IArticle, metadata: IArticleMetadata): IArticle => {
     const merged = { ...article };
@@ -99,7 +103,7 @@ export const mergeMetadata = (article: IArticle, metadata: IArticleMetadata): IA
     }
 
     return merged;
-}
+};
 
 export const parseMarkdown = (content: string): string => {
     const md = htmlToMarkdown(sanitizeHTMLToDom(content));

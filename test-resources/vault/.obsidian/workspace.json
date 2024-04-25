@@ -11,8 +11,13 @@
             "id": "50580fd4fc0dea57",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {}
+              "type": "markdown",
+              "state": {
+                "file": "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md",
+                "mode": "source",
+                "backlinks": false,
+                "source": true
+              }
             }
           }
         ]
@@ -81,6 +86,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -97,6 +103,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -118,7 +125,9 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {}
+              "state": {
+                "file": "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md"
+              }
             }
           }
         ]
@@ -140,6 +149,10 @@
   },
   "active": "50580fd4fc0dea57",
   "lastOpenFiles": [
+    "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md",
+    "Inbox/Slurped/Voluntary Safety Recall - MSR.md",
+    "Slurped/Voluntary Safety Recall - MSR.md",
+    "Slurped",
     "_slurplogs/slurp-2024-04-23.md"
   ]
 }
