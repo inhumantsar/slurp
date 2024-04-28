@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-    "version": "npx auto-changelog && node version-bump.mjs && git add manifest.json manifest-beta.json versions.json",
-    "release": "node version-bump.mjs"
+    "release-major": "release_type=major node version-bump.mjs",
+    "release-minor": "release_type=minor node version-bump.mjs",
+    "release-patch": "release_type=patch node version-bump.mjs",
+    "release-beta": "release_type=beta node version-bump.mjs"
   },
   "keywords": [
     "html-to-markdown",
