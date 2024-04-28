@@ -13,10 +13,10 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md",
+                "file": "Inbox/Slurped/obsidian-file-suggestion-component.md",
                 "mode": "source",
                 "backlinks": false,
-                "source": true
+                "source": false
               }
             }
           }
@@ -86,7 +86,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md",
+                "file": "Inbox/Slurped/obsidian-file-suggestion-component.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +103,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md",
+                "file": "Inbox/Slurped/obsidian-file-suggestion-component.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -126,7 +126,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md"
+                "file": "Inbox/Slurped/obsidian-file-suggestion-component.md"
               }
             }
           }
@@ -149,6 +149,10 @@
   },
   "active": "50580fd4fc0dea57",
   "lastOpenFiles": [
+    "Inbox/Slurped/How to install an npm package from GitHub directly.md",
+    "Inbox/Slurped/obsidian-file-suggestion-component.md",
+    "Inbox/Slurped",
+    "Inbox",
     "Inbox/Slurped/Voluntary Safety Recall - MSR (1).md",
     "Inbox/Slurped/Voluntary Safety Recall - MSR.md",
     "Slurped/Voluntary Safety Recall - MSR.md",

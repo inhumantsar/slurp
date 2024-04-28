@@ -1,6 +1,6 @@
 import type SlurpPlugin from "main";
 import { PluginSettingTab, Setting, type App, type TAbstractFile } from "obsidian";
-import { FileSuggestionComponent } from "./components/file-suggestion";
+import { FileSuggestionComponent } from "obsidian-file-suggestion-component";
 import FrontMatterSettings from "./components/frontmatter-prop-settings.svelte";
 import { DEFAULT_SETTINGS } from "./const";
 import type { FrontMatterProp } from "./frontmatter";
@@ -31,8 +31,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
         new FileSuggestionComponent(saveLoc.controlEl, this.app)
             .setValue(this.plugin.settings.defaultPath)
             .setPlaceholder(DEFAULT_SETTINGS.defaultPath)
-            .addFilter("folder")
-            .addLimit(10)
+            .setFilter("folder")
+            .setLimit(10)
             .onSelect(async (val: TAbstractFile) => {
                 this.plugin.settings.defaultPath = val.path;
                 await this.plugin.saveSettings();
