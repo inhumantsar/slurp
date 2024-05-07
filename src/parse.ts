@@ -1,6 +1,5 @@
 import { Readability } from "@mozilla/readability";
 import { htmlToMarkdown, requestUrl, sanitizeHTMLToDom } from "obsidian";
-import { formatString } from "./lib/formatters";
 import { logger } from "./lib/logger";
 import type { StringCase } from "./lib/string-case";
 import { isEmpty, updateStringCase } from "./lib/util";
@@ -65,11 +64,13 @@ export const parseMetadata = (doc: Document, fmProps: TFrontMatterProps, tagPref
     for (const i of fmProps) {
         const prop = i[1];
         const metaFields = new Set([...prop.metaFields || []]);
+        logger().debug("attempting to parse prop metadata", prop);
 
         for (const attr of metaFields) {
             // tags need special handling, for everything else we just take the first result
-            const querySelector = formatString(tmpl, attr);
+            const querySelector = tmpl.replace('{s}', attr);
             const elements: NodeListOf<HTMLMetaElement> = doc.querySelectorAll(querySelector);
+            logger().debug("found prop elements", attr, querySelector, elements);
             if (elements.length === 0) continue;
 
             if (prop.id === "tags") {

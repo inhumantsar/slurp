@@ -89,7 +89,11 @@ export class Logger {
             const msg = this.buffer[idx];
             const optJson = [];
             for (const i of msg.optionalParams || []) {
+                try{
                 optJson.push(JSON.stringify(serialize(i), undefined, 2));
+            } catch (err) {
+                optJson.push(`Unable to stringify: ${i}`);
+            }
             }
             content += `##### ${msg.timestamp} | ${msg.level.padStart(5).toUpperCase()} | ${msg.msg}\n` +
                 `- Caller: \`${msg.caller}\`\n\n`;

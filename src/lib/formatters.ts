@@ -1,5 +1,6 @@
 import moment from "moment";
 import type { FormatterArgs } from "../types";
+import { logger } from "./logger";
 
 export const format = (tmpl: string, val: unknown) => {
     switch (tmpl.substring(0, 2)) {
@@ -48,14 +49,17 @@ export const formatString = (tmpl: string, val: string) =>
 export const formatStrings = (tmpl: string, val: Iterable<FormatterArgs>): Array<string> => {
     const result = new Array<string>();
     for (const i of val) {
+        logger().debug("formatting string", { tmpl: tmpl, value: i });
         result.push(
-            tmpl.replace(/\{(\w+)\}/g, (match, name) =>
+            tmpl.replace(/\{(\w+)\}/g, (match, name) => {
                 // biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
-                !i.hasOwnProperty(name)
+                logger().debug("match found", { match: match, name: name, value: i[name], iHasName: i.hasOwnProperty(name) });
+                return !i.hasOwnProperty(name)
                     ? match
                     : i[name] !== undefined
-                        ? ""
-                        : i[name]
+                        ? i[name]
+                        : "";
+            }
             ));
     }
     return result;
