@@ -141,7 +141,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
         // TODO: make a component for everything below
         new Setting(containerEl)
             .setName("Report an Issue")
-            .setHeading();
+            .setHeading()
+            .setDesc("Visit github.com/inhumantsar/slurp/issues/new to report a bug or request a feature.");
 
         new Setting(containerEl)
             .setName("Debug mode")
@@ -155,7 +156,6 @@ export class SlurpSettingsTab extends PluginSettingTab {
             );
 
         let recentLogsText: HTMLTextAreaElement;
-        const updateLogsText = () => recentLogsText.setText(logger().dump(false, 25).content);
 
         new Setting(containerEl)
             .setName("Recent Logs")
@@ -164,11 +164,6 @@ export class SlurpSettingsTab extends PluginSettingTab {
                 "Attach the most recent log file to the GitHub issue instead."
             )
             .setDisabled(this.plugin.settings.logs.debug)
-            .addButton((btn) => btn
-                .setButtonText("Refresh")
-                .setCta()
-                .onClick(updateLogsText)
-                .setDisabled(this.plugin.settings.logs.debug));
 
         if (!this.plugin.settings.logs.debug) {
             const recentLogs = containerEl.createDiv();
@@ -181,23 +176,9 @@ export class SlurpSettingsTab extends PluginSettingTab {
             logsTextAreaStyles.width = "100%";
             logsTextAreaStyles.height = "20em";
             recentLogsText.setCssProps(logsTextAreaStyles);
-            updateLogsText();
+            recentLogsText.setText(logger().dump(false, 25).content);
             recentLogs.appendChild(recentLogsText);
             containerEl.appendChild(recentLogs);
         }
-
-        // const githubOuter = containerEl.createDiv();
-        // const githubPara = containerEl.createEl("p");
-        // const githubParaStyles: Record<string, string> = {};
-        // githubParaStyles["font-size"] = "normal";
-        // githubParaStyles["text-align"] = "center";
-        // githubPara.setCssProps(githubParaStyles);
-
-        // const gitHubLink = containerEl.createDiv();
-        // // gitHubLink.addClass("external-link");
-        // gitHubLink.setText('https://github.com/inhumantsar/slurp/issues/new?labels=bug');
-        // githubPara.appendChild(gitHubLink);
-        // githubOuter.appendChild(githubPara);
-        // containerEl.appendChild(githubOuter);
     }
 }
