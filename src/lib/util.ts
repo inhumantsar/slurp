@@ -58,9 +58,9 @@ export const serialize = (val: unknown) => {
 };
 
 // murmurhash3 is simple, fast, and doesn't have external dependencies.
-export function murmurhash3_32(key: string, seed: number = 0) {
+export const murmurhash3_32 = (key: string, seed: number = 0) => {
     var remainder, bytes, h1, h1b, c1, c2, k1, i;
-    
+
     // Initialize the variables
     remainder = key.length & 3; // key.length % 4
     bytes = key.length - remainder;
@@ -72,7 +72,7 @@ export function murmurhash3_32(key: string, seed: number = 0) {
     // Process the input data in 4-byte chunks
     while (i < bytes) {
         // extract the next 4 bytes and combine into a 32 bit int
-        k1 = 
+        k1 =
             ((key.charCodeAt(i) & 0xff)) |
             ((key.charCodeAt(++i) & 0xff) << 8) |
             ((key.charCodeAt(++i) & 0xff) << 16) |
@@ -103,10 +103,10 @@ export function murmurhash3_32(key: string, seed: number = 0) {
         case 3: k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
         case 2: k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
         case 1: k1 ^= (key.charCodeAt(i) & 0xff);
-        k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
-        k1 = (k1 << 15) | (k1 >>> 17);
-        k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
-        h1 ^= k1;
+            k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
+            k1 = (k1 << 15) | (k1 >>> 17);
+            k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
+            h1 ^= k1;
     }
 
     // Finalize the hash value
@@ -121,4 +121,21 @@ export function murmurhash3_32(key: string, seed: number = 0) {
 
     // Return the resulting hash as an unsigned 32-bit integer
     return h1 >>> 0;
-}
+};
+
+export const extractDomain = (u: string) => {
+    // naively strap a proto in case it doesn't have one
+    const url = (u.split(":").length == 1) ? `https://${u}` : u;
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.protocol === "http:" || urlObj.protocol === "https:") {
+            const parts = urlObj.host.split('.');
+            const domain = parts[parts.length - 2] + '.' + parts[parts.length - 1];
+            if (!domain.startsWith(".") && !domain.endsWith(".")) return domain;
+        }
+    } catch (err) {
+        // returning null after this anyway...
+    }
+
+    return null;
+};

@@ -6,3 +6,19 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.validation-error {
+    color: var(--text-error);
+    font-size: small;
+}
+
+.validation-error.hidden {
+    color: transparent;
+    background-color: transparent;
+}
+
+ul.validation-error {
+    list-style: none;
+    padding: 0;
+    margin: 0.5em 0.1em;
+}

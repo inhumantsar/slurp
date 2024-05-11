@@ -112,6 +112,7 @@ export default class SlurpPlugin extends Plugin {
 	displayError = (err: Error) => new Notice(`Slurp Error! ${err.message}. If this is a bug, please report it from plugin settings.`, 0);
 
 	async slurp(url: string): Promise<void> {
+		this.logger.debug("slurping", {url});
 		try {
 			const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
 
@@ -138,6 +139,7 @@ export default class SlurpPlugin extends Plugin {
 				link: url
 			});
 		} catch (err) {
+            this.logger.error("Unable to Slurp page", {url, err: (err as Error).message});
 			this.displayError(err as Error);
 		}
 	}

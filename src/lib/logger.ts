@@ -54,9 +54,10 @@ export class Logger {
         this.vault = plugin.app.vault;
         if (plugin.settings && Object.keys(plugin.settings).contains("logs")) {
             this.settings = plugin.settings.logs;
-        } else
+        } else {
             this.settings = { debug: true, logPath: DEFAULT_SETTINGS.logs.logPath };
-
+        }
+        
         if (this.settings.debug)
             plugin.registerInterval(window.setInterval(
                 () => this.flush(), 500));
@@ -89,11 +90,11 @@ export class Logger {
             const msg = this.buffer[idx];
             const optJson = [];
             for (const i of msg.optionalParams || []) {
-                try{
-                optJson.push(JSON.stringify(serialize(i), undefined, 2));
-            } catch (err) {
-                optJson.push(`Unable to stringify: ${i}`);
-            }
+                try {
+                    optJson.push(JSON.stringify(serialize(i), undefined, 2));
+                } catch (err) {
+                    optJson.push(`Unable to stringify: ${i}`);
+                }
             }
             content += `##### ${msg.timestamp} | ${msg.level.padStart(5).toUpperCase()} | ${msg.msg}\n` +
                 `- Caller: \`${msg.caller}\`\n\n`;

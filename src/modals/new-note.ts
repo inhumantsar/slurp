@@ -1,54 +1,70 @@
 import type SlurpPlugin from "main";
-import { Modal, App, TextComponent, ProgressBarComponent, Setting } from "obsidian";
+import { App, ButtonComponent, Modal, Setting } from "obsidian";
+import { BouncingProgressBarComponent } from "../components/bouncing-progress-bar";
+import { ValidatedTextComponent } from "../components/validated-text";
+import { KNOWN_BROKEN_DOMAINS } from "../const";
+import { extractDomain } from "../lib/util";
 
 export class SlurpNewNoteModal extends Modal {
-    plugin: SlurpPlugin;
-    url: string;
+    private readonly plugin: SlurpPlugin;
+    private readonly WARNING_CLS = "validation";
+    private readonly URL_FORMAT_ERR = "Invalid URL format.";
 
     constructor(app: App, plugin: SlurpPlugin) {
         super(app);
         this.plugin = plugin;
-        this.url = "";
+    }
+
+    private validateKnownBrokenDomains(url: string) {
+        const domain = extractDomain(url) || "";
+        const defaultReason = "This site is known to be incompatible with Slurp.";
+
+        return KNOWN_BROKEN_DOMAINS.has(domain) 
+            ? KNOWN_BROKEN_DOMAINS.get(domain) || defaultReason
+            : null;
+    }
+
+    private validateUrlFormat(url: string) {
+        return extractDomain(url) === null ? this.URL_FORMAT_ERR : null;
     }
 
     onOpen() {
         const { contentEl } = this;
-
-        contentEl.createEl("h3", { text: "What would you like to slurp today?" })
-
-        const urlField = new TextComponent(contentEl)
-            .setPlaceholder("URL")
-            .onChange((val) => this.url = val);
-        urlField.inputEl.setCssProps({ "width": "100%" });
-
-        const progressBar = new ProgressBarComponent(contentEl)
-        progressBar.disabled = true;
-        progressBar.setValue(0);
-
-        const doSlurp = async () => {
-            urlField.setDisabled(true);
-            progressBar.setDisabled(false);
-            let progressIncrement = 1;
-
-            const t = setInterval(() => {
-                const cur = progressBar.getValue();
-                if (cur == 100) progressIncrement *= -1;
-                progressBar.setValue(cur + progressIncrement);
-            }, 10)
-
-            try {
-                this.plugin.slurp(this.url);
-            } catch (err) { this.plugin.displayError(err as Error); }
-
-            clearInterval(t);
-            this.close();
-        };
+        let slurpBtn: ButtonComponent;
 
         new Setting(contentEl)
-            .addButton((btn) => btn
-                .setButtonText("Slurp")
-                .setCta()
-                .onClick(doSlurp))
+            .setName("What would you like to slurp today?")
+            .setHeading();
+
+        const urlField = new ValidatedTextComponent(contentEl)
+            .setPlaceholder("https://www.somesite.com/...")
+            .setMinimumLength(5)
+            .addValidator((url: string) => this.validateUrlFormat(url))
+            .addValidator((url: string) => this.validateKnownBrokenDomains(url))
+            .onValidate((url: string, errs: string[]) => {
+                slurpBtn.setDisabled(errs.length > 0 || urlField.getValue().length < 5);
+            });
+
+        urlField.inputEl.setCssProps({ "width": "100%" });
+
+        const progressBar = new BouncingProgressBarComponent(contentEl);
+
+        const doSlurp = () => {
+            progressBar.start();
+            this.plugin.slurp(urlField.getValue());
+            progressBar.stop()
+            this.close();
+        }
+
+        new Setting(contentEl)
+            .addButton((btn) => {
+                btn.setButtonText("Slurp")
+                    .setCta()
+                    .setDisabled(true)
+                    .onClick(doSlurp);
+                slurpBtn = btn;
+                return slurpBtn;
+            });
 
         contentEl.addEventListener("keypress", (k) => (k.key === "Enter") && doSlurp());
     }

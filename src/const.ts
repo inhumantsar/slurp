@@ -1,6 +1,11 @@
 import { createFrontMatterPropSettings, createFrontMatterProps } from "src/frontmatter";
 import type { IFrontMatterPropDefault, ISettings, TFrontMatterPropDefaults } from "./types";
 
+export const KNOWN_BROKEN_DOMAINS = new Map<string, string|null>([
+    ["fastcompany.com", "Fast Company prevents programs like Slurp from accessing their articles."],
+    ["sparksoftcorp.com", null],
+]);
+
 export const FRONT_MATTER_ITEM_DEFAULTS: TFrontMatterPropDefaults = new Map<string, IFrontMatterPropDefault>([
     {
         id: "link", defaultIdx: 0, defaultKey: "link",

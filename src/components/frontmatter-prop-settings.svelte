@@ -389,20 +389,9 @@
 		opacity: 50%;
 	}
 
-	.mod-prop .validation-error,
-	.mod-prop .validation-error {
-		color: var(--text-error);
-	}
-
 	.mod-prop div.validation-error {
-		font-size: small;
 		text-align: center;
 		margin: 0.75em 0;
-	}
-
-	.mod-prop div.validation-error.hidden {
-		color: transparent;
-		background-color: transparent;
 	}
 
 	/* new property button */
