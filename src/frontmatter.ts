@@ -178,5 +178,5 @@ export const createFrontMatter = (article: IArticle, fmItems: TFrontMatterProps,
 
     return getFrontMatterYaml(fm, keyIndex);
 };
-export const sortFrontMatterItems = (items: FrontMatterProp[]) => items.sort((a, b) => a.idx - b.idx);
+export const sortFrontMatterItems = (items: IFrontMatterProp[]) => items.sort((a, b) => a.idx - b.idx);
 

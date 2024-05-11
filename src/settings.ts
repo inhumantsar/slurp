@@ -3,9 +3,11 @@ import { PluginSettingTab, Setting, type App, type TAbstractFile } from "obsidia
 import { FileSuggestionComponent } from "obsidian-file-suggestion-component";
 import FrontMatterSettings from "./components/frontmatter-prop-settings.svelte";
 import { DEFAULT_SETTINGS } from "./const";
-import type { FrontMatterProp } from "./frontmatter";
+import { sortFrontMatterItems, type FrontMatterProp } from "./frontmatter";
 import { Logger, logger } from "./lib/logger";
 import { StringCaseOptions, type StringCase } from "./lib/string-case";
+import { murmurhash3_32 } from "./lib/util";
+import type { IFrontMatterProp } from "./types";
 
 export class SlurpSettingsTab extends PluginSettingTab {
     plugin: SlurpPlugin;
@@ -51,8 +53,23 @@ export class SlurpSettingsTab extends PluginSettingTab {
                 })
             );
 
+        // hash the original props for change detection
+        const hashProps = (p: IFrontMatterProp[]) => {
+            const sorted = sortFrontMatterItems(p);
+            return murmurhash3_32(
+                sorted.map((val) => JSON.stringify(val.getSetting())).join(""),
+            );
+        }
+        const origPropsHash = hashProps(Array.from(this.plugin.fmProps.values()));
+
         const onValidate = (props: FrontMatterProp[]) => {
-            this.logger.debug("onValidate called", props);
+            const hash = hashProps(props);
+            if (origPropsHash == hash) {
+                this.logger.debug("onValidate called, no changes detected", {hash: hash});
+                return;
+            }
+
+            this.logger.debug("onValidate called, changes detected", {hash: hash, originalHash: origPropsHash, props});
 
             const newPropIds = props.map((prop) => prop.id);
             const deleted = Array.from(this.plugin.fmProps.keys())
@@ -169,18 +186,18 @@ export class SlurpSettingsTab extends PluginSettingTab {
             containerEl.appendChild(recentLogs);
         }
 
-        const githubOuter = containerEl.createDiv();
-        const githubPara = containerEl.createEl("p");
-        const githubParaStyles: Record<string, string> = {};
-        githubParaStyles["font-size"] = "normal";
-        githubParaStyles["text-align"] = "center";
-        githubPara.setCssProps(githubParaStyles);
+        // const githubOuter = containerEl.createDiv();
+        // const githubPara = containerEl.createEl("p");
+        // const githubParaStyles: Record<string, string> = {};
+        // githubParaStyles["font-size"] = "normal";
+        // githubParaStyles["text-align"] = "center";
+        // githubPara.setCssProps(githubParaStyles);
 
-        const gitHubLink = containerEl.createSpan();
-        gitHubLink.addClass("external-link");
-        gitHubLink.setText('https://github.com/inhumantsar/slurp/issues/new?labels=bug');
-        githubPara.appendChild(gitHubLink);
-        githubOuter.appendChild(githubPara);
-        containerEl.appendChild(githubOuter);
+        // const gitHubLink = containerEl.createDiv();
+        // // gitHubLink.addClass("external-link");
+        // gitHubLink.setText('https://github.com/inhumantsar/slurp/issues/new?labels=bug');
+        // githubPara.appendChild(gitHubLink);
+        // githubOuter.appendChild(githubPara);
+        // containerEl.appendChild(githubOuter);
     }
 }

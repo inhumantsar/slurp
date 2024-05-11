@@ -2,7 +2,11 @@
 	import { flip } from "svelte/animate";
 	import { quintOut } from "svelte/easing";
 	import { crossfade } from "svelte/transition";
-	import { FrontMatterProp, sortFrontMatterItems, validateFrontMatterProps } from "../frontmatter";
+	import {
+		FrontMatterProp,
+		sortFrontMatterItems,
+		validateFrontMatterProps,
+	} from "../frontmatter";
 
 	const [send, receive] = crossfade({ duration: 350 });
 
