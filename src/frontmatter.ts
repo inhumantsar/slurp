@@ -136,19 +136,29 @@ export const validateFrontMatterProps = (props: FrontMatterProp[]): IFrontMatter
 
 };
 
+const formatFrontMatterValue = (fmItem: IFrontMatterProp, value: unknown) => {
+    return fmItem.format && value
+        ? format(fmItem.format, value)
+        : value
+            ? value
+            : null;
+};
 
 export const getFrontMatterValue = (fmItem: IFrontMatterProp, article: IArticle, showEmpty: boolean) => {
-    if (isEmpty(article[fmItem.id]) && fmItem.defaultValue !== undefined)
-        return typeof fmItem.defaultValue === "function"
+    if (isEmpty(article[fmItem.id]) && fmItem.defaultValue !== undefined){
+        const raw = typeof fmItem.defaultValue === "function"
             ? fmItem.defaultValue()
             : fmItem.defaultValue;
+        const val = formatFrontMatterValue(fmItem, raw);
+        logger().debug("got frontmatter default", {key: fmItem.id, rawValue: raw, format: fmItem.format, value: val});
+        return val;
+    }
 
-    if (!isEmpty(article[fmItem.id]) || showEmpty)
-        return fmItem.format
-            ? format(fmItem.format, article[fmItem.id])
-            : article[fmItem.id] !== undefined
-                ? article[fmItem.id]
-                : null;
+    if (!isEmpty(article[fmItem.id]) || showEmpty)  {
+        const val = formatFrontMatterValue(fmItem, article[fmItem.id])
+        logger().debug("got frontmatter value", {key: fmItem.id, rawValue: article[fmItem.id], format: fmItem.format, value: val});
+        return val;
+    }
 };
 
 export const getFrontMatterYaml = (fm: Map<string, unknown>, idx: Map<string, number>) => {

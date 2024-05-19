@@ -2,7 +2,7 @@ import type { StringCase } from "./string-case";
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const isEmpty = (val: any): boolean => {
-    return val == null
+    return !val
         || (typeof val === 'string' && val.trim().length === 0)
         || (typeof val[Symbol.iterator] === 'function' && val.length === 0);
 };
