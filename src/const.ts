@@ -1,4 +1,4 @@
-import { createFrontMatterPropSettings, createFrontMatterProps } from "src/frontmatter";
+import { createFrontMatterPropSettings, createFrontMatterProps } from "./frontmatter";
 import type { IFrontMatterPropDefault, ISettings, TFrontMatterPropDefaults } from "./types";
 
 export const KNOWN_BROKEN_DOMAINS = new Map<string, string|null>([

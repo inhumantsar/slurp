@@ -2,6 +2,7 @@
   "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
     "types": [
+      "jest",
       "svelte",
       "node"
     ],
@@ -15,6 +16,9 @@
     "importHelpers": true,
     "isolatedModules": true,
     "strictNullChecks": true,
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": false,
+    "resolveJsonModule": true,
     "lib": [
       "DOM",
       "ES5",
@@ -25,5 +29,9 @@
   "include": [
     "**/*.ts",
     "**/*.svelte"
-  ]
+  ],
+  "exclude": [
+    "node_modules/*",
+    "test"
+  ],
 }

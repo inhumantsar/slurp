@@ -3,7 +3,7 @@ import { htmlToMarkdown, requestUrl, sanitizeHTMLToDom } from "obsidian";
 import { logger } from "./lib/logger";
 import type { StringCase } from "./lib/string-case";
 import { isEmpty, updateStringCase } from "./lib/util";
-import type { FormatterArgs, IArticle, IArticleMetadata, TFrontMatterProps } from "./types";
+import type { FormatterArgs, IArticle, IArticleMetadata, IArticleTags, TFrontMatterProps } from "./types";
 
 export const fixRelativeLinks = (html: string, articleUrl: string) => {
     const url = new URL(articleUrl);
@@ -40,6 +40,24 @@ export const parsePage = (doc: Document) => {
     return article;
 };
 
+export const cleanTag = (text: string, tagCase: StringCase): string => {
+    const other = new RegExp(/[^\w\-\/]+/g);
+    const extraWhitespace = new RegExp(/\s{2,}/);
+    return updateStringCase(
+        text
+            // & is used almost exclusively to mean "and"
+            // wrapping the word with spaces so updateStringCase handles it gracefully later
+            .replace('&', ' and ')
+            // : is used mainly for categories. TODO: look for "Categor(y|ies)" and strip it?
+            .replace(':',"/")
+            // use spaces in place of other invalid chars to maintain word separation
+            .replace(other, ' ')
+            // collapse multiple spaces into a single space
+            .replace(extraWhitespace, ' ')
+            .trim(),
+        tagCase);
+};
+
 export const parseMetadataTags = (elements: NodeListOf<HTMLMetaElement>, tagPrefix: string, tagCase: StringCase) => {
     // Tags need to be split and reformatted:
     //   - Must be alphanumeric (not numeric)
@@ -51,7 +69,10 @@ export const parseMetadataTags = (elements: NodeListOf<HTMLMetaElement>, tagPref
     elements.forEach((e) => e.content
         .split(",")
         .forEach((text) => tags
-            .add({ prefix: tagPrefix, tag: updateStringCase(text.trim(), tagCase) })));
+            .add({ 
+                prefix: tagPrefix, 
+                tag: cleanTag(text, tagCase) 
+            })));
 
     logger().debug("parsed tags", tags);
     return tags;
@@ -91,11 +112,23 @@ export const parseMetadata = (doc: Document, fmProps: TFrontMatterProps, tagPref
     return metadata;
 };
 
+const dedupeTags = (tagsA: IArticleTags[], tagsB: IArticleTags[]): IArticleTags[] => {
+    const found = new Array<string>();
+    const results: IArticleTags[] = [];
+    for (const tag of [...tagsA, ...tagsB]) {
+        if (found.length == 0 || !found.includes(tag.tag)){
+            found.push(tag.tag);
+            results.push(tag);
+        }
+    }
+    return results;
+}
+
 export const mergeMetadata = (article: IArticle, metadata: IArticleMetadata): IArticle => {
     const merged = { ...article };
 
     // handle tags separately
-    merged.tags = Array.from(new Set<FormatterArgs>([...article.tags, ...metadata.tags]));
+    merged.tags = dedupeTags(article.tags, metadata.tags);
 
     // Iterate over the keys of objB
     for (const key in metadata) {

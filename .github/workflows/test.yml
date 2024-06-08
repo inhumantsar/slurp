@@ -1,0 +1,21 @@
+name: Test Commit
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      - name: Install modules
+        run: npm i
+
+      - name: Run build
+        run: npm run build
+
+      - name: Run Jest
+        run: npm run test
