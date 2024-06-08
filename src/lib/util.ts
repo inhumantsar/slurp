@@ -24,8 +24,26 @@ export const cleanTitle = (title: string) => {
         // eg: Bitcoin prices edges lower after "Halving" concludes
         .replace('"', "'")
         // assume that others can simply be nuked
-        .replace(/[\*"\\/<>:\?]/g, '');
+        .replace(/[\*"\\/#<>:\?]/g, '');
 
+};
+
+export const cleanTag = (text: string, tagCase: StringCase): string => {
+    const other = new RegExp(/[^\w\-\/]+/g);
+    const extraWhitespace = new RegExp(/\s{2,}/);
+    return updateStringCase(
+        text
+            // & is used almost exclusively to mean "and"
+            // wrapping the word with spaces so updateStringCase handles it gracefully later
+            .replace('&', ' and ')
+            // : is used mainly for categories. TODO: look for "Categor(y|ies)" and strip it?
+            .replace(':',"/")
+            // use spaces in place of other invalid chars to maintain word separation
+            .replace(other, ' ')
+            // collapse multiple spaces into a single space
+            .replace(extraWhitespace, ' ')
+            .trim(),
+        tagCase);
 };
 
 export const updateStringCase = (text: string, targetCase: StringCase) => {

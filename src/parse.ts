@@ -2,7 +2,7 @@ import { Readability } from "@mozilla/readability";
 import { htmlToMarkdown, requestUrl, sanitizeHTMLToDom } from "obsidian";
 import { logger } from "./lib/logger";
 import type { StringCase } from "./lib/string-case";
-import { isEmpty, updateStringCase } from "./lib/util";
+import { cleanTag, isEmpty } from "./lib/util";
 import type { FormatterArgs, IArticle, IArticleMetadata, IArticleTags, TFrontMatterProps } from "./types";
 
 export const fixRelativeLinks = (html: string, articleUrl: string) => {
@@ -38,24 +38,6 @@ export const parsePage = (doc: Document) => {
         throw "No title or content found.";
     }
     return article;
-};
-
-export const cleanTag = (text: string, tagCase: StringCase): string => {
-    const other = new RegExp(/[^\w\-\/]+/g);
-    const extraWhitespace = new RegExp(/\s{2,}/);
-    return updateStringCase(
-        text
-            // & is used almost exclusively to mean "and"
-            // wrapping the word with spaces so updateStringCase handles it gracefully later
-            .replace('&', ' and ')
-            // : is used mainly for categories. TODO: look for "Categor(y|ies)" and strip it?
-            .replace(':',"/")
-            // use spaces in place of other invalid chars to maintain word separation
-            .replace(other, ' ')
-            // collapse multiple spaces into a single space
-            .replace(extraWhitespace, ' ')
-            .trim(),
-        tagCase);
 };
 
 export const parseMetadataTags = (elements: NodeListOf<HTMLMetaElement>, tagPrefix: string, tagCase: StringCase) => {
