@@ -1,6 +1,7 @@
 import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS } from './src/const';
 import { createFrontMatter, createFrontMatterPropSettings, createFrontMatterProps } from './src/frontmatter';
+import { hookManager } from './src/hooks';
 import { getNewFilePath } from "./src/lib/files";
 import { Logger } from './src/lib/logger';
 import { removeTrailingSlash } from './src/lib/util';
@@ -114,28 +115,43 @@ export default class SlurpPlugin extends Plugin {
 	async slurp(url: string): Promise<void> {
 		this.logger.debug("slurping", {url});
 		try {
-			const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
+			let doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
 
-			const article: IArticle = {
+			let article: IArticle = {
 				slurpedTime: new Date(),
 				tags: new Array<FormatterArgs>(),
 				...parsePage(doc)
 			};
 			this.logger.debug("parsed page", article);
 
+			// Hook 1: Before simplification (before Readability parsing)
+			const beforeSimplificationResult = hookManager.executeBeforeSimplification(doc, url, article);
+			doc = beforeSimplificationResult.doc;
+			article = beforeSimplificationResult.article;
+
 			// find metadata that readability doesn't pick up
 			const parsedMetadata = parseMetadata(doc, this.fmProps, this.settings.fm.tags.prefix, this.settings.fm.tags.case);
 			this.logger.debug("parsed metadata", parsedMetadata);
 
-			const mergedMetadata = mergeMetadata(article, parsedMetadata);
-			this.logger.debug("merged metadata", parsedMetadata);
+			article = mergeMetadata(article, parsedMetadata);
+			this.logger.debug("merged metadata", article);
 
-			const md = parseMarkdown(article.content);
+			// Hook 2: Before markdown conversion (operates on HTML content)
+			const beforeMarkdownResult = hookManager.executeBeforeMarkdownConversion(article.content, url, article);
+			const processedHtml = beforeMarkdownResult.html;
+			article = beforeMarkdownResult.article;
+
+			const md = parseMarkdown(processedHtml);
 			this.logger.debug("converted page to markdown", md);
 
+			// Hook 3: After markdown conversion
+			const afterMarkdownResult = hookManager.executeAfterMarkdownConversion(md, url, article);
+			const processedMd = afterMarkdownResult.markdown;
+			article = afterMarkdownResult.article;
+
 			await this.slurpNewNoteCallback({
-				...mergedMetadata,
-				content: md,
+				...article,
+				content: processedMd,
 				link: url
 			});
 		} catch (err) {
@@ -156,3 +172,14 @@ export default class SlurpPlugin extends Plugin {
 		this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.openFile(newFile);
 	}
 }
+
+// Export hook manager and types for developers
+export { hookManager } from './src/hooks';
+export type { 
+    BeforeSimplificationHook, 
+    BeforeMarkdownConversionHook, 
+    AfterMarkdownConversionHook,
+    IBeforeSimplificationResult,
+    IBeforeMarkdownConversionResult,
+    IAfterMarkdownConversionResult
+} from './src/hooks';
