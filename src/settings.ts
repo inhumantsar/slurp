@@ -40,6 +40,17 @@ export class SlurpSettingsTab extends PluginSettingTab {
                 await this.plugin.saveSettings();
             });
 
+        new Setting(containerEl)
+            .setName('Metadata only')
+            .setDesc("Only save frontmatter metadata, leaving the note content empty. Useful if you prefer to take notes directly on the web page rather than reading saved content.")
+            .addToggle((toggle) => toggle
+                .setValue(this.plugin.settings.metadataOnly)
+                .onChange(async (val) => {
+                    this.plugin.settings.metadataOnly = val;
+                    await this.plugin.saveSettings();
+                })
+            );
+
         new Setting(containerEl).setName('Properties').setHeading();
 
         new Setting(containerEl)

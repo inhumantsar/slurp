@@ -79,6 +79,7 @@ const FRONT_MATTER_ITEM_DEFAULT_SETTINGS = createFrontMatterPropSettings(createF
 export const DEFAULT_SETTINGS: ISettings = {
     settingsVersion: 1,
     defaultPath: "Slurped Pages",
+    metadataOnly: false,
     fm: {
         includeEmpty: false,
         tags: {

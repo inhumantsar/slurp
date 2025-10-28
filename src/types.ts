@@ -95,6 +95,7 @@ export interface IFrontMatterValidationErrors {
 export interface ISettings {
     settingsVersion: number;
     defaultPath: string;
+    metadataOnly: boolean;
     fm: IFrontMatterSettings;
     logs: ILogSettings;
 }

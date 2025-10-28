@@ -69,6 +69,8 @@ export default class SlurpPlugin extends Plugin {
 	patchInDefaults() {
 		if (this.settings.defaultPath === undefined)
 			this.settings.defaultPath = DEFAULT_SETTINGS.defaultPath;
+		if (this.settings.metadataOnly === undefined)
+			this.settings.metadataOnly = DEFAULT_SETTINGS.metadataOnly;
 	}
 
 	migrateObjToMap<K, V>(obj: { [key: string]: V; }) {
@@ -148,7 +150,8 @@ export default class SlurpPlugin extends Plugin {
 		const frontMatter = createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty);
 		this.logger.debug("created frontmatter", frontMatter);
 
-		const content = `---\n${frontMatter}\n---\n\n${article.content}`;
+		const noteContent = this.settings.metadataOnly ? "" : article.content;
+		const content = `---\n${frontMatter}\n---\n\n${noteContent}`;
 
 		this.logger.debug("writing file...");
 		const filePath = await getNewFilePath(this.app.vault, article.title, this.settings.defaultPath);
