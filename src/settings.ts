@@ -40,6 +40,17 @@ export class SlurpSettingsTab extends PluginSettingTab {
                 await this.plugin.saveSettings();
             });
 
+        new Setting(containerEl)
+            .setName('Frontmatter only')
+            .setDesc("Save only frontmatter, leaving note content empty.")
+            .addToggle((toggle) => toggle
+                .setValue(this.plugin.settings.frontmatterOnly)
+                .onChange(async (val) => {
+                    this.plugin.settings.frontmatterOnly = val;
+                    await this.plugin.saveSettings();
+                })
+            );
+
         new Setting(containerEl).setName('Properties').setHeading();
 
         new Setting(containerEl)

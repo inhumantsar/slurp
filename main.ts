@@ -81,6 +81,8 @@ export default class SlurpPlugin extends Plugin {
 	patchInDefaults() {
 		if (this.settings.defaultPath === undefined)
 			this.settings.defaultPath = DEFAULT_SETTINGS.defaultPath;
+		if (this.settings.frontmatterOnly === undefined)
+			this.settings.frontmatterOnly = DEFAULT_SETTINGS.frontmatterOnly;
 	}
 
 	migrateObjToMap<K, V>(obj: { [key: string]: V; }) {
@@ -123,7 +125,7 @@ export default class SlurpPlugin extends Plugin {
 
 	displayError = (err: Error) => new Notice(`Slurp Error! ${err.message}. If this is a bug, please report it from plugin settings.`, 0);
 
-	async slurp(url: string): Promise<void> {
+	async slurp(url: string, frontmatterOnlyOverride?: boolean): Promise<void> {
 		this.logger.debug("slurping", {url});
 		try {
 			const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
@@ -142,8 +144,9 @@ export default class SlurpPlugin extends Plugin {
 			const mergedMetadata = mergeMetadata(article, parsedMetadata);
 			this.logger.debug("merged metadata", parsedMetadata);
 
-			const md = parseMarkdown(article.content);
-			this.logger.debug("converted page to markdown", md);
+			const frontmatterOnly = frontmatterOnlyOverride ?? this.settings.frontmatterOnly;
+			const md = frontmatterOnly ? "" : parseMarkdown(article.content);
+			this.logger.debug(frontmatterOnly ? "skipping markdown conversion" : "converted page to markdown", md);
 
 			await this.slurpNewNoteCallback({
 				...mergedMetadata,

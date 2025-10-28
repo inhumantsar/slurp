@@ -31,6 +31,7 @@ export class SlurpNewNoteModal extends Modal {
     onOpen() {
         const { contentEl } = this;
         let slurpBtn: ButtonComponent;
+        let frontmatterOnlyValue = this.plugin.settings.frontmatterOnly;
 
         new Setting(contentEl)
             .setName("What would you like to slurp today?")
@@ -49,10 +50,19 @@ export class SlurpNewNoteModal extends Modal {
 
         const progressBar = new BouncingProgressBarComponent(contentEl);
 
+        new Setting(contentEl)
+            .setName("Frontmatter only")
+            .addToggle((toggle) => toggle
+                .setValue(this.plugin.settings.frontmatterOnly)
+                .onChange((value) => {
+                    frontmatterOnlyValue = value;
+                })
+            );
+
         const doSlurp = () => {
             progressBar.start();
-            this.plugin.slurp(urlField.getValue());
-            progressBar.stop()
+            this.plugin.slurp(urlField.getValue(), frontmatterOnlyValue);
+            progressBar.stop();
             this.close();
         }
 
