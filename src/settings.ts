@@ -41,8 +41,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
-            .setName('Enable Android share menu')
-            .setDesc("Add Slurp to the Android share menu. When you share a URL from another app, Slurp will appear as an option. Note: Requires app restart to take effect.")
+            .setName('Enable mobile share menu')
+            .setDesc("Add Slurp to the mobile share menu. When you share a URL from another app, Slurp will appear as an option. Note: Requires app restart to take effect.")
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.extendShareMenu)
                 .onChange(async (val) => {
