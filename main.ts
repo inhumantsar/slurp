@@ -150,7 +150,7 @@ export default class SlurpPlugin extends Plugin {
 		const frontMatter = createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty);
 		this.logger.debug("created frontmatter", frontMatter);
 
-		const metadataOnly = metadataOnlyOverride !== undefined ? metadataOnlyOverride : this.settings.metadataOnly;
+		const metadataOnly = metadataOnlyOverride ?? this.settings.metadataOnly;
 		const noteContent = metadataOnly ? "" : article.content;
 		const content = `---\n${frontMatter}\n---\n\n${noteContent}`;
 
