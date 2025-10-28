@@ -134,7 +134,7 @@ export default class SlurpPlugin extends Plugin {
 
 			const frontmatterOnly = frontmatterOnlyOverride ?? this.settings.frontmatterOnly;
 			const md = frontmatterOnly ? "" : parseMarkdown(article.content);
-			this.logger.debug("converted page to markdown", md);
+			this.logger.debug(frontmatterOnly ? "skipping markdown conversion" : "converted page to markdown", md);
 
 			await this.slurpNewNoteCallback({
 				...mergedMetadata,
