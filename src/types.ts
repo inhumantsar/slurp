@@ -97,7 +97,6 @@ export interface ISettings {
     defaultPath: string;
     fm: IFrontMatterSettings;
     logs: ILogSettings;
-    extendShareMenu: boolean;
 }
 
 export interface ILogSettings {
