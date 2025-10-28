@@ -1,6 +1,7 @@
 import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS } from './src/const';
 import { createFrontMatter, createFrontMatterPropSettings, createFrontMatterProps } from './src/frontmatter';
+import { hookManager } from './src/hooks';
 import { getNewFilePath } from "./src/lib/files";
 import { Logger } from './src/lib/logger';
 import { removeTrailingSlash } from './src/lib/util';
@@ -114,7 +115,10 @@ export default class SlurpPlugin extends Plugin {
 	async slurp(url: string): Promise<void> {
 		this.logger.debug("slurping", {url});
 		try {
-			const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
+			let doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
+
+			// Hook 1: Before simplification (before Readability parsing)
+			doc = hookManager.executeBeforeSimplification(doc, url);
 
 			const article: IArticle = {
 				slurpedTime: new Date(),
@@ -130,12 +134,18 @@ export default class SlurpPlugin extends Plugin {
 			const mergedMetadata = mergeMetadata(article, parsedMetadata);
 			this.logger.debug("merged metadata", parsedMetadata);
 
-			const md = parseMarkdown(article.content);
+			// Hook 2: Before markdown conversion (operates on HTML content)
+			const processedHtml = hookManager.executeBeforeMarkdownConversion(article.content, url);
+
+			const md = parseMarkdown(processedHtml);
 			this.logger.debug("converted page to markdown", md);
+
+			// Hook 3: After markdown conversion
+			const processedMd = hookManager.executeAfterMarkdownConversion(md, url);
 
 			await this.slurpNewNoteCallback({
 				...mergedMetadata,
-				content: md,
+				content: processedMd,
 				link: url
 			});
 		} catch (err) {
