@@ -140,14 +140,14 @@ export default class SlurpPlugin extends Plugin {
 				...mergedMetadata,
 				content: md,
 				link: url
-			}, frontmatterOnlyOverride);
+			});
 		} catch (err) {
             this.logger.error("Unable to Slurp page", {url, err: (err as Error).message});
 			this.displayError(err as Error);
 		}
 	}
 
-	async slurpNewNoteCallback(article: IArticle, frontmatterOnlyOverride?: boolean) {
+	async slurpNewNoteCallback(article: IArticle) {
 		const frontMatter = createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty);
 		this.logger.debug("created frontmatter", frontMatter);
 
