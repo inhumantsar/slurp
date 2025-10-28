@@ -166,3 +166,8 @@ export default class SlurpPlugin extends Plugin {
 		this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.openFile(newFile);
 	}
 }
+
+// Export hook manager and types for developers
+export { hookManager } from './src/hooks';
+export type { BeforeSimplificationHook, BeforeMarkdownConversionHook, AfterMarkdownConversionHook } from './src/hooks';
+
