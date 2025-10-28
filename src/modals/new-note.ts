@@ -62,7 +62,7 @@ export class SlurpNewNoteModal extends Modal {
         const doSlurp = () => {
             progressBar.start();
             this.plugin.slurp(urlField.getValue(), frontmatterOnlyValue);
-            progressBar.stop()
+            progressBar.stop();
             this.close();
         }
 

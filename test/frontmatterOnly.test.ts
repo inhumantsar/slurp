@@ -52,7 +52,7 @@ describe('frontmatterOnly setting', () => {
             link: "https://example.com"
         };
 
-        const frontmatterOnly = overrideFrontmatterOnly !== undefined ? overrideFrontmatterOnly : settingsFrontmatterOnly;
+        const frontmatterOnly = overrideFrontmatterOnly ?? settingsFrontmatterOnly;
         const noteContent = frontmatterOnly ? "" : article.content;
 
         expect(frontmatterOnly).toBe(true);
@@ -70,7 +70,7 @@ describe('frontmatterOnly setting', () => {
             link: "https://example.com"
         };
 
-        const frontmatterOnly = overrideFrontmatterOnly !== undefined ? overrideFrontmatterOnly : settingsFrontmatterOnly;
+        const frontmatterOnly = overrideFrontmatterOnly ?? settingsFrontmatterOnly;
         const noteContent = frontmatterOnly ? "" : article.content;
 
         expect(frontmatterOnly).toBe(true);
