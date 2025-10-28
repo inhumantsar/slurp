@@ -132,7 +132,8 @@ export default class SlurpPlugin extends Plugin {
 			const mergedMetadata = mergeMetadata(article, parsedMetadata);
 			this.logger.debug("merged metadata", parsedMetadata);
 
-			const md = parseMarkdown(article.content);
+			const frontmatterOnly = frontmatterOnlyOverride ?? this.settings.frontmatterOnly;
+			const md = frontmatterOnly ? "" : parseMarkdown(article.content);
 			this.logger.debug("converted page to markdown", md);
 
 			await this.slurpNewNoteCallback({
@@ -150,9 +151,7 @@ export default class SlurpPlugin extends Plugin {
 		const frontMatter = createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty);
 		this.logger.debug("created frontmatter", frontMatter);
 
-		const frontmatterOnly = frontmatterOnlyOverride ?? this.settings.frontmatterOnly;
-		const noteContent = frontmatterOnly ? "" : article.content;
-		const content = `---\n${frontMatter}\n---\n\n${noteContent}`;
+		const content = `---\n${frontMatter}\n---\n\n${article.content}`;
 
 		this.logger.debug("writing file...");
 		const filePath = await getNewFilePath(this.app.vault, article.title, this.settings.defaultPath);
