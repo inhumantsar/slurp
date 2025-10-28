@@ -88,5 +88,6 @@ export const DEFAULT_SETTINGS: ISettings = {
         },
         properties: FRONT_MATTER_ITEM_DEFAULT_SETTINGS
     },
-    logs: { logPath: "_slurplogs", debug: false }
+    logs: { logPath: "_slurplogs", debug: false },
+    extendShareMenu: false
 }

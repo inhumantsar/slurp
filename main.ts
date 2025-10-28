@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Plugin } from 'obsidian';
+import { MarkdownView, Menu, MenuItem, Notice, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS } from './src/const';
 import { createFrontMatter, createFrontMatterPropSettings, createFrontMatterProps } from './src/frontmatter';
 import { getNewFilePath } from "./src/lib/files";
@@ -34,6 +34,20 @@ export default class SlurpPlugin extends Plugin {
 				this.slurp(e.url);
 			} catch (err) { this.displayError(err as Error); }
 		});
+
+		if (this.settings.extendShareMenu) {
+			this.registerEvent(
+				//eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				//@ts-ignore
+				this.app.workspace.on('receive-text-menu', (menu: Menu, shareText: string) => {
+					menu.addItem((item: MenuItem) => {
+						item.setTitle('Slurp');
+						item.setIcon('download');
+						item.onClick(() => this.slurp(shareText));
+					});
+				})
+			);
+		}
 	}
 
 	onunload() { }
@@ -69,6 +83,8 @@ export default class SlurpPlugin extends Plugin {
 	patchInDefaults() {
 		if (this.settings.defaultPath === undefined)
 			this.settings.defaultPath = DEFAULT_SETTINGS.defaultPath;
+		if (this.settings.extendShareMenu === undefined)
+			this.settings.extendShareMenu = DEFAULT_SETTINGS.extendShareMenu;
 	}
 
 	migrateObjToMap<K, V>(obj: { [key: string]: V; }) {
