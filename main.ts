@@ -69,8 +69,8 @@ export default class SlurpPlugin extends Plugin {
 	patchInDefaults() {
 		if (this.settings.defaultPath === undefined)
 			this.settings.defaultPath = DEFAULT_SETTINGS.defaultPath;
-		if (this.settings.metadataOnly === undefined)
-			this.settings.metadataOnly = DEFAULT_SETTINGS.metadataOnly;
+		if (this.settings.frontmatterOnly === undefined)
+			this.settings.frontmatterOnly = DEFAULT_SETTINGS.frontmatterOnly;
 	}
 
 	migrateObjToMap<K, V>(obj: { [key: string]: V; }) {
@@ -113,7 +113,7 @@ export default class SlurpPlugin extends Plugin {
 
 	displayError = (err: Error) => new Notice(`Slurp Error! ${err.message}. If this is a bug, please report it from plugin settings.`, 0);
 
-	async slurp(url: string, metadataOnlyOverride?: boolean): Promise<void> {
+	async slurp(url: string, frontmatterOnlyOverride?: boolean): Promise<void> {
 		this.logger.debug("slurping", {url});
 		try {
 			const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
@@ -139,19 +139,19 @@ export default class SlurpPlugin extends Plugin {
 				...mergedMetadata,
 				content: md,
 				link: url
-			}, metadataOnlyOverride);
+			}, frontmatterOnlyOverride);
 		} catch (err) {
             this.logger.error("Unable to Slurp page", {url, err: (err as Error).message});
 			this.displayError(err as Error);
 		}
 	}
 
-	async slurpNewNoteCallback(article: IArticle, metadataOnlyOverride?: boolean) {
+	async slurpNewNoteCallback(article: IArticle, frontmatterOnlyOverride?: boolean) {
 		const frontMatter = createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty);
 		this.logger.debug("created frontmatter", frontMatter);
 
-		const metadataOnly = metadataOnlyOverride ?? this.settings.metadataOnly;
-		const noteContent = metadataOnly ? "" : article.content;
+		const frontmatterOnly = frontmatterOnlyOverride ?? this.settings.frontmatterOnly;
+		const noteContent = frontmatterOnly ? "" : article.content;
 		const content = `---\n${frontMatter}\n---\n\n${noteContent}`;
 
 		this.logger.debug("writing file...");

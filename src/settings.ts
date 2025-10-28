@@ -41,12 +41,12 @@ export class SlurpSettingsTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
-            .setName('Metadata only')
-            .setDesc("Only save frontmatter metadata, leaving the note content empty. Useful if you prefer to take notes directly on the web page rather than reading saved content.")
+            .setName('Frontmatter only')
+            .setDesc("Save only frontmatter, leaving note content empty.")
             .addToggle((toggle) => toggle
-                .setValue(this.plugin.settings.metadataOnly)
+                .setValue(this.plugin.settings.frontmatterOnly)
                 .onChange(async (val) => {
-                    this.plugin.settings.metadataOnly = val;
+                    this.plugin.settings.frontmatterOnly = val;
                     await this.plugin.saveSettings();
                 })
             );

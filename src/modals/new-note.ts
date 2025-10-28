@@ -31,7 +31,7 @@ export class SlurpNewNoteModal extends Modal {
     onOpen() {
         const { contentEl } = this;
         let slurpBtn: ButtonComponent;
-        let metadataOnlyValue = this.plugin.settings.metadataOnly;
+        let frontmatterOnlyValue = this.plugin.settings.frontmatterOnly;
 
         new Setting(contentEl)
             .setName("What would you like to slurp today?")
@@ -48,21 +48,20 @@ export class SlurpNewNoteModal extends Modal {
 
         urlField.inputEl.setCssProps({ "width": "100%" });
 
+        const progressBar = new BouncingProgressBarComponent(contentEl);
+
         new Setting(contentEl)
-            .setName("Metadata only")
-            .setDesc("Save only frontmatter metadata without page content")
+            .setName("Frontmatter only")
             .addToggle((toggle) => toggle
-                .setValue(this.plugin.settings.metadataOnly)
+                .setValue(this.plugin.settings.frontmatterOnly)
                 .onChange((value) => {
-                    metadataOnlyValue = value;
+                    frontmatterOnlyValue = value;
                 })
             );
 
-        const progressBar = new BouncingProgressBarComponent(contentEl);
-
         const doSlurp = () => {
             progressBar.start();
-            this.plugin.slurp(urlField.getValue(), metadataOnlyValue);
+            this.plugin.slurp(urlField.getValue(), frontmatterOnlyValue);
             progressBar.stop()
             this.close();
         }
