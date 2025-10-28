@@ -113,7 +113,7 @@ export default class SlurpPlugin extends Plugin {
 
 	displayError = (err: Error) => new Notice(`Slurp Error! ${err.message}. If this is a bug, please report it from plugin settings.`, 0);
 
-	async slurp(url: string): Promise<void> {
+	async slurp(url: string, metadataOnlyOverride?: boolean): Promise<void> {
 		this.logger.debug("slurping", {url});
 		try {
 			const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
@@ -139,18 +139,19 @@ export default class SlurpPlugin extends Plugin {
 				...mergedMetadata,
 				content: md,
 				link: url
-			});
+			}, metadataOnlyOverride);
 		} catch (err) {
             this.logger.error("Unable to Slurp page", {url, err: (err as Error).message});
 			this.displayError(err as Error);
 		}
 	}
 
-	async slurpNewNoteCallback(article: IArticle) {
+	async slurpNewNoteCallback(article: IArticle, metadataOnlyOverride?: boolean) {
 		const frontMatter = createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty);
 		this.logger.debug("created frontmatter", frontMatter);
 
-		const noteContent = this.settings.metadataOnly ? "" : article.content;
+		const metadataOnly = metadataOnlyOverride !== undefined ? metadataOnlyOverride : this.settings.metadataOnly;
+		const noteContent = metadataOnly ? "" : article.content;
 		const content = `---\n${frontMatter}\n---\n\n${noteContent}`;
 
 		this.logger.debug("writing file...");

@@ -40,4 +40,40 @@ describe('metadataOnly setting', () => {
         expect(content).toContain("This is some test content that should be included.");
         expect(noteContent).toBe(article.content);
     });
+
+    it('should use override value when provided', () => {
+        const settingsMetadataOnly = false;
+        const overrideMetadataOnly = true;
+        const article: IArticle = {
+            title: "Test Article",
+            content: "This is some test content.",
+            slurpedTime: new Date(),
+            tags: [],
+            link: "https://example.com"
+        };
+
+        const metadataOnly = overrideMetadataOnly !== undefined ? overrideMetadataOnly : settingsMetadataOnly;
+        const noteContent = metadataOnly ? "" : article.content;
+
+        expect(metadataOnly).toBe(true);
+        expect(noteContent).toBe("");
+    });
+
+    it('should use settings value when override is undefined', () => {
+        const settingsMetadataOnly = true;
+        const overrideMetadataOnly = undefined;
+        const article: IArticle = {
+            title: "Test Article",
+            content: "This is some test content.",
+            slurpedTime: new Date(),
+            tags: [],
+            link: "https://example.com"
+        };
+
+        const metadataOnly = overrideMetadataOnly !== undefined ? overrideMetadataOnly : settingsMetadataOnly;
+        const noteContent = metadataOnly ? "" : article.content;
+
+        expect(metadataOnly).toBe(true);
+        expect(noteContent).toBe("");
+    });
 });
