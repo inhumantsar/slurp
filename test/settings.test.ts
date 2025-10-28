@@ -7,8 +7,8 @@ describe('Settings', () => {
         expect(typeof DEFAULT_SETTINGS.extendShareMenu).toBe('boolean');
     });
 
-    it('should default extendShareMenu to false', () => {
-        expect(DEFAULT_SETTINGS.extendShareMenu).toBe(false);
+    it('should default extendShareMenu to true', () => {
+        expect(DEFAULT_SETTINGS.extendShareMenu).toBe(true);
     });
 
     it('should have proper settings structure', () => {

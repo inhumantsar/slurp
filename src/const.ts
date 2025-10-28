@@ -79,6 +79,7 @@ const FRONT_MATTER_ITEM_DEFAULT_SETTINGS = createFrontMatterPropSettings(createF
 export const DEFAULT_SETTINGS: ISettings = {
     settingsVersion: 1,
     defaultPath: "Slurped Pages",
+    extendShareMenu: true,
     fm: {
         includeEmpty: false,
         tags: {
@@ -88,6 +89,5 @@ export const DEFAULT_SETTINGS: ISettings = {
         },
         properties: FRONT_MATTER_ITEM_DEFAULT_SETTINGS
     },
-    logs: { logPath: "_slurplogs", debug: false },
-    extendShareMenu: false
+    logs: { logPath: "_slurplogs", debug: false }
 }
