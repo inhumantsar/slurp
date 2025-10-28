@@ -178,7 +178,8 @@ hookManager.clearHooks();
 ## Future Enhancements
 
 The hooks system is designed to be extensible. Future versions may include:
-- Hook priorities for better control over execution order
+- Hook priorities (numeric priority values) for explicit control over execution order beyond registration order
 - Async hook support
 - Hook configuration through settings UI
 - Pre-built hook libraries for popular sites
+

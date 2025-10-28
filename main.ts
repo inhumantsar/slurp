@@ -170,4 +170,3 @@ export default class SlurpPlugin extends Plugin {
 // Export hook manager and types for developers
 export { hookManager } from './src/hooks';
 export type { BeforeSimplificationHook, BeforeMarkdownConversionHook, AfterMarkdownConversionHook } from './src/hooks';
-
