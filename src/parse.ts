@@ -121,12 +121,27 @@ export const mergeMetadata = (article: IArticle, metadata: IArticleMetadata): IA
     return merged;
 };
 
+export const convertMathDelimiters = (markdown: string): string => {
+    // Convert LaTeX/MathJax inline math delimiters \(...\) to Obsidian format $...$
+    // Convert LaTeX/MathJax block math delimiters \[...\] to Obsidian format $$...$$
+    let result = markdown;
+    
+    // Convert block math first to avoid conflicts with inline math
+    // Using a function to avoid issues with $ in replacement strings
+    result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, p1) => `$$${p1}$$`);
+    
+    // Convert inline math
+    result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, p1) => `$${p1}$`);
+    
+    return result;
+};
+
 export const parseMarkdown = (content: string): string => {
     const md = htmlToMarkdown(sanitizeHTMLToDom(content));
     if (!md) {
         logger().error(`Parsed content resulted in falsey markdown: ${md}`);
         throw "Unable to convert content to Markdown.";
     }
-    return md;
+    return convertMathDelimiters(md);
 }
 
