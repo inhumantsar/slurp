@@ -160,8 +160,31 @@ export const extractDomain = (u: string) => {
 
 export const getErrorMessage = (err: Error): string => {
     const message = err.message ?? String(err);
-    if (message.includes('403')) {
+    
+    // Authentication/Authorization errors
+    if (message.includes('401') || message.includes('403')) {
         return "This site cannot be slurped as it requires a login.";
     }
+    
+    // Not found / Bad URL errors
+    if (message.includes('400') || message.includes('404')) {
+        return "Page not found. Please check the URL and try again.";
+    }
+    
+    // Rate limiting
+    if (message.includes('429')) {
+        return "Too many requests. Please wait a moment and try again.";
+    }
+    
+    // Server errors - suggest retry
+    if (message.includes('500') || message.includes('502') || message.includes('503') || message.includes('504') || message.includes('408')) {
+        return "The server encountered an error. Please try again later.";
+    }
+    
+    // Network/connection errors
+    if (message.toLowerCase().includes('network') || message.toLowerCase().includes('timeout') || message.toLowerCase().includes('connection')) {
+        return "A network error occurred. Please check your connection and try again.";
+    }
+    
     return `${message}. If this is a bug, please report it from plugin settings.`;
 };
