@@ -123,7 +123,15 @@ export default class SlurpPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	displayError = (err: Error) => new Notice(`Slurp Error! ${err.message}. If this is a bug, please report it from plugin settings.`, 0);
+	getErrorMessage = (err: Error): string => {
+		const message = err.message ?? String(err);
+		if (message.includes('403')) {
+			return "This site cannot be slurped as it requires a login.";
+		}
+		return `${message}. If this is a bug, please report it from plugin settings.`;
+	}
+
+	displayError = (err: Error) => new Notice(`Slurp Error! ${this.getErrorMessage(err)}`, 0);
 
 	async slurp(url: string, frontmatterOnlyOverride?: boolean): Promise<void> {
 		this.logger.debug("slurping", {url});
