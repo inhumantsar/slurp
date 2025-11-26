@@ -1,13 +1,6 @@
-describe('getErrorMessage', () => {
-    // Test the error message logic directly without needing the plugin instance
-    const getErrorMessage = (err: Error): string => {
-        const message = err.message ?? String(err);
-        if (message.includes('403')) {
-            return "This site cannot be slurped as it requires a login.";
-        }
-        return `${message}. If this is a bug, please report it from plugin settings.`;
-    };
+import { getErrorMessage } from '../src/lib/util';
 
+describe('getErrorMessage', () => {
     it('should return login required message for 403 errors', () => {
         const err = new Error('Request failed, status 403');
         const result = getErrorMessage(err);

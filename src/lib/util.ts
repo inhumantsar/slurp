@@ -157,3 +157,11 @@ export const extractDomain = (u: string) => {
 
     return null;
 };
+
+export const getErrorMessage = (err: Error): string => {
+    const message = err.message ?? String(err);
+    if (message.includes('403')) {
+        return "This site cannot be slurped as it requires a login.";
+    }
+    return `${message}. If this is a bug, please report it from plugin settings.`;
+};

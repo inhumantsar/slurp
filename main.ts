@@ -3,7 +3,7 @@ import { DEFAULT_SETTINGS } from './src/const';
 import { createFrontMatter, createFrontMatterPropSettings, createFrontMatterProps } from './src/frontmatter';
 import { getNewFilePath } from "./src/lib/files";
 import { Logger } from './src/lib/logger';
-import { removeTrailingSlash } from './src/lib/util';
+import { removeTrailingSlash, getErrorMessage } from './src/lib/util';
 import { SlurpNewNoteModal } from './src/modals/new-note';
 import { fetchHtml, mergeMetadata, parseMarkdown, parseMetadata, parsePage } from './src/parse';
 import { SlurpSettingsTab } from './src/settings';
@@ -123,15 +123,7 @@ export default class SlurpPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	getErrorMessage = (err: Error): string => {
-		const message = err.message ?? String(err);
-		if (message.includes('403')) {
-			return "This site cannot be slurped as it requires a login.";
-		}
-		return `${message}. If this is a bug, please report it from plugin settings.`;
-	}
-
-	displayError = (err: Error) => new Notice(`Slurp Error! ${this.getErrorMessage(err)}`, 0);
+	displayError = (err: Error) => new Notice(`Slurp Error! ${getErrorMessage(err)}`, 0);
 
 	async slurp(url: string, frontmatterOnlyOverride?: boolean): Promise<void> {
 		this.logger.debug("slurping", {url});
