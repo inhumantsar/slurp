@@ -21,14 +21,14 @@ describe('getErrorMessage', () => {
         });
     });
 
-    describe('URL/not found errors', () => {
-        it('should return check URL message for 400 errors', () => {
+    describe('URL/request errors', () => {
+        it('should return invalid request message for 400 errors', () => {
             const err = new Error('Request failed, status 400');
             const result = getErrorMessage(err);
-            expect(result).toBe("Page not found. Please check the URL and try again.");
+            expect(result).toBe("Invalid request. Please check the URL and try again.");
         });
 
-        it('should return check URL message for 404 errors', () => {
+        it('should return not found message for 404 errors', () => {
             const err = new Error('Request failed, status 404');
             const result = getErrorMessage(err);
             expect(result).toBe("Page not found. Please check the URL and try again.");

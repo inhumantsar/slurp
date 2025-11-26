@@ -166,8 +166,13 @@ export const getErrorMessage = (err: Error): string => {
         return "This site cannot be slurped as it requires a login.";
     }
     
-    // Not found / Bad URL errors
-    if (message.includes('400') || message.includes('404')) {
+    // Bad request - likely malformed URL
+    if (message.includes('400')) {
+        return "Invalid request. Please check the URL and try again.";
+    }
+    
+    // Not found
+    if (message.includes('404')) {
         return "Page not found. Please check the URL and try again.";
     }
     
@@ -177,7 +182,8 @@ export const getErrorMessage = (err: Error): string => {
     }
     
     // Server errors - suggest retry
-    if (message.includes('500') || message.includes('502') || message.includes('503') || message.includes('504') || message.includes('408')) {
+    const serverErrorCodes = ['500', '502', '503', '504', '408'];
+    if (serverErrorCodes.some(code => message.includes(code))) {
         return "The server encountered an error. Please try again later.";
     }
     
