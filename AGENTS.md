@@ -105,7 +105,7 @@ Guidance for agentic coding assistants working in this repo.
 - Confirm the release commit message format is `release: X.Y.Z` and the body lists recent commit messages (the script should add it, but sometimes misses).
 - Ensure the `X.Y.Z` tag points at the release commit.
 - After bumping, build and test before publishing: `npm run build` and `npm run test`.
-- Create the GitHub release via `gh release create X.Y.Z` with the release notes.
+- Push the tag; a GitHub Action creates the release automatically.
 
 ## Logging
 - Use `Logger` in `src/lib/logger.ts` for structured logs.
