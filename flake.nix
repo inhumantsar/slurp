@@ -27,6 +27,7 @@
             pkgs.nodePackages.typescript
             pkgs.nodePackages.typescript-language-server
 
+            pkgs.gh
             pkgs.opencode
           ];
         };
