@@ -121,18 +121,31 @@ export const mergeMetadata = (article: IArticle, metadata: IArticleMetadata): IA
     return merged;
 };
 
+const convertMathInSegment = (markdown: string): string => {
+    let result = markdown;
+    result = result.replace(/(^|\n)([\t ]*)\\\[([\s\S]*?)\\\][\t ]*(?=\n|$)/g, (match, leading, indent, content) => {
+        return `${leading}${indent}$$${content}$$`;
+    });
+    result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, content) => `$${content}$`);
+    return result;
+};
+
 export const convertMathDelimiters = (markdown: string): string => {
     // Convert LaTeX/MathJax inline math delimiters \(...\) to Obsidian format $...$
     // Convert LaTeX/MathJax block math delimiters \[...\] to Obsidian format $$...$$
-    let result = markdown;
-    
-    // Convert block math first to avoid conflicts with inline math
-    // Using a function to avoid issues with $ in replacement strings
-    result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, p1) => `$$${p1}$$`);
-    
-    // Convert inline math
-    result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, p1) => `$${p1}$`);
-    
+    // Skip code spans and code blocks, and only convert block math at line boundaries.
+    const codePattern = /```[\s\S]*?```|`[^`]*`/g;
+    let result = '';
+    let lastIndex = 0;
+
+    for (const match of markdown.matchAll(codePattern)) {
+        const start = match.index ?? 0;
+        result += convertMathInSegment(markdown.slice(lastIndex, start));
+        result += match[0];
+        lastIndex = start + match[0].length;
+    }
+
+    result += convertMathInSegment(markdown.slice(lastIndex));
     return result;
 };
 
