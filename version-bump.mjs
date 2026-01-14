@@ -28,6 +28,10 @@ switch (process.env.release_type?.toLowerCase()) {
         }
         break;
 
+    case "stable":
+        targetVerArr[2] = targetVerArr[2].split("b")[0];
+        break;
+
     default:
         console.error("No release type specified, cowardly refusing to continue.");
         process.exit(1);

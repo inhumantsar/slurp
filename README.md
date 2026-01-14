@@ -21,6 +21,12 @@ Slurps webpages, cleans off all the crud, and saves them to Obsidian as nice, ti
   * and more...
 * Works on desktop and mobile devices.
 
+## New!
+
+- Slurp only the frontmatter, useful for taking notes. Available as a permanent or per-slurp option.
+- Share pages with Obsidian from any mobile app and you'll get an option to slurp them.
+
+
 # Usage
 
 Detailed usage information can be found in the [documentation](https://inhumantsar.github.io/slurp).
@@ -31,7 +37,11 @@ Detailed usage information can be found in the [documentation](https://inhumants
 2. Select _Slurp: Create note from URL_
 3. Paste the URL and hit _Enter_ or tap the _Slurp_ button
 
-## Using Bookmarklets or the Browser Extension (Soon™️)
+## Using the "share" function on your device
+
+New in v0.2.0! On Android and iOS devices, you can share web pages with Obsidian. When Obsidian opens it will open a menu containing options for how to handle this URL. Tap the Slurp option and you're done!
+
+## Using Bookmarklets
 
 Slurp exposes a custom URI which can be used for one-click saves.
 
@@ -60,32 +70,6 @@ By default, Slurp will try to find relevant metadata and add it to new notes. Th
 
 For more information, check out the [documentation](https://inhumantsar.github.io/slurp).
 
-# Roadmap
-
-## Toward v1
-
-* [x] Add settings to customize and selectively disable properties.
-* [x] Improve documentation and project structure.
-* [x] Add setting for default [save location](https://github.com/inhumantsar/slurp/issues/9).
-* [ ] *IN PROGRESS* Browser extension for one-click slurps.
-* [ ] Offer tag parsing, tag prefix, and save location options at slurp-time.
-* [ ] Import Pocket saves, bookmarks, and more automagically
-* [ ] Support for multiple authors in the byline field.
-* [ ] Use a bit of custom parsing logic for popular sites to capture better data and tidy up results:
-  * [ ] arXiv: Authors, topics, arXiv IDs, dates, and cleaner formatting. Stretch goal: Grab the paper PDF and any code links as well.
-  * [ ] Medium: Clean up the author information captured, particularly the links which get spread across multiple lines currently. 
-
-## Beyond v1
-
-* [ ] Ensure video and other embeds are captured reliably
-* [ ] Integrate with an LLM to provide summaries and tag recommendations
-* [ ] Make sure Slurp plays nicely with other plugins, eg Dataview
-* [ ] Save PDF and/or HTML versions of the page with the Markdown versions
-* [ ] More custom parsing logic
-  * [ ] HackerNews: Map discussion threads to blockquote levels, capture both the HN URL and the article URL, use submitter name in the byline, ensure dates are reliably captured. Stretch goal: Scores, capture article along with the discussion.
-  * [ ] Reddit: Literally any actual content, plus everything mentioned for HN.
-
-
 # Beta Testing
 
 If you would like to help test new features before they are officially released:
@@ -105,45 +89,6 @@ Slurp does a couple things differently from the standard Obsidian plugin develop
 * The Typescript libraries have been updated to v5.4
 
 If you are a plugin developer already, using a separate environment for Slurp is recommended.
-
-## Code Style
-
-[The Zen of Python](https://peps.python.org/pep-0020/#the-zen-of-python) is a great styleguide for any language. 
-
-* Beautiful is better than ugly.
-* Explicit is better than implicit.
-* Simple is better than complex.
-* Complex is better than complicated.
-* Flat is better than nested.
-* Sparse is better than dense.
-* Readability counts.
-* Special cases aren't special enough to break the rules.
-* Although practicality beats purity.
-* Errors should never pass silently.
-* Unless explicitly silenced.
-* In the face of ambiguity, refuse the temptation to guess.
-* There should be one-- and preferably only one --obvious way to do it.
-* Although that way may not be obvious at first unless you're Dutch.
-* Now is better than never.
-* Although never is often better than *right* now.
-* If the implementation is hard to explain, it's a bad idea.
-* If the implementation is easy to explain, it may be a good idea.
-* Namespaces are one honking great idea -- let's do more of those!
-
-When it comes to Typescript specifically, I try to follow the guidelines below. Take these with a grain of salt though. I'm still new to Typescript though and I don't have a ton of professional experience with Javascript generally. If any of these are superdumb, please let me know!
-
-* Don't use `@ts-ignore` unless it's absolutely necessary.
-* Add interfaces whenever complex data types are passed between functions.
-* Prefer interfaces over types.
-* Prefix interface names with `I` and type names with `T`.
-* Compact structures and anonymous functions are preferred, eg: `map(...)` > `for (...) {}`.
-* Descriptive type, function, and variable names are preferred
-* 1-3 character names are fine in small scopes, eg: `(k, v) => {...}` and `for (let i in somevar)`.
-* KISS: Any function longer than 10-15 lines or with more than 1 or 2 levels of indentation should probably be broken down.
-* Lines over 140 characters long should be broken up. 
-
-Also:
-* Please don't use Prettier. 
 
 ## direnv
 

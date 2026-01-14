@@ -1,6 +1,6 @@
 {
   inputs = {
-    # nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     systems.url = "github:nix-systems/default";
   };
 
@@ -26,6 +26,8 @@
 
             pkgs.nodePackages.typescript
             pkgs.nodePackages.typescript-language-server
+
+            pkgs.opencode
           ];
         };
       });

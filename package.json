@@ -1,6 +1,6 @@
 {
 	"name": "slurp",
-	"version": "0.2.0b2",
+	"version": "0.2.0",
 	"description": "Slurps webpages and saves them as clean, uncluttered Markdown.",
 	"main": "main.js",
 	"scripts": {
@@ -10,7 +10,8 @@
 		"release-major": "release_type=major node version-bump.mjs",
 		"release-minor": "release_type=minor node version-bump.mjs",
 		"release-patch": "release_type=patch node version-bump.mjs",
-		"release-beta": "release_type=beta node version-bump.mjs"
+		"release-beta": "release_type=beta node version-bump.mjs",
+		"release-stable": "release_type=stable node version-bump.mjs"
 	},
 	"keywords": [
 		"html-to-markdown",
