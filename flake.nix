@@ -11,19 +11,6 @@
     in
     {
       devShells = eachSystem (pkgs: 
-      let 
-        beans = pkgs.buildGoModule rec {
-           pname = "beans";
-           version = "0.3.4";
-           src = pkgs.fetchFromGitHub {
-             owner = "hmans";
-             repo = "beans";
-             rev = "v${version}";
-             sha256 = "sha256-JDw7zz/ZQnBz7hb5DsuBFgeBJJCl8/EhVp9Z3//ky0Y=";
-           };
-           vendorHash = "sha256-6S+BihxnpZSifoR+JKhOomfGcPtgNc6XXoQhSmPRL2Q=";
-        };
-      in
       {
         default = pkgs.mkShell         
         {
@@ -43,8 +30,6 @@
             pkgs.nodePackages.typescript-language-server
 
             pkgs.gh
-            pkgs.opencode
-            beans
           ];
         };
       });
