@@ -21,8 +21,36 @@ export const fixRelativeLinks = (html: string, articleUrl: string) => {
         });
 };
 
+const decodeHtml = (buffer: ArrayBuffer, charset: string): string => {
+    try {
+        return new TextDecoder(charset, { ignoreBOM: false }).decode(buffer);
+    } catch {
+        return new TextDecoder('UTF-8', { ignoreBOM: false }).decode(buffer);
+    }
+};
+
+const extractCharset = (headers: Record<string, string>, buffer: ArrayBuffer): string => {
+    const contentType = Object.entries(headers).find(
+        ([key]) => key.toLowerCase() === 'content-type',
+    )?.[1] ?? '';
+    const headerMatch = /charset\s*=\s*([^\s;]+)/i.exec(contentType);
+    if (headerMatch) return headerMatch[1];
+
+    const head = new TextDecoder('latin1').decode(buffer.slice(0, 4096));
+    const metaMatch = /<meta[^>]+charset\s*=\s*["']?\s*([^"'\s;>]+)/i.exec(head);
+    if (metaMatch) return metaMatch[1];
+
+    const httpEquivMatch = /<meta[^>]+http-equiv\s*=\s*["']?\s*Content-Type\s*["']?[^>]*content\s*=\s*["'][^"']*charset\s*=\s*([^"'\s;>]+)/i.exec(head);
+    if (httpEquivMatch) return httpEquivMatch[1];
+
+    return 'UTF-8';
+};
+
 export const fetchHtml = async (url: string) => {
-    const html = await requestUrl(url).text;
+    const response = await requestUrl(url);
+    const charset = extractCharset(response.headers, response.arrayBuffer);
+    const html = decodeHtml(response.arrayBuffer, charset);
+
     if (!html) {
         logger().error(`Unable to fetch page from: ${url}.`);
         throw "Unable to fetch page.";
