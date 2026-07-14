@@ -1,4 +1,16 @@
-import { cleanTag, cleanTitle, updateStringCase } from "../src/lib/util";
+import { cleanTag, cleanTitle, parseOptionalBoolean, updateStringCase } from "../src/lib/util";
+
+describe('parseOptionalBoolean', () => {
+    it('should parse explicit boolean query parameters', () => {
+        expect(parseOptionalBoolean('true')).toBe(true);
+        expect(parseOptionalBoolean('false')).toBe(false);
+    });
+
+    it('should not override the setting for absent or invalid parameters', () => {
+        expect(parseOptionalBoolean()).toBeUndefined();
+        expect(parseOptionalBoolean('invalid')).toBeUndefined();
+    });
+});
 
 describe('cleanTag', () => {
     it('should replace invalid characters', () => {
@@ -35,4 +47,3 @@ describe('updateStringCase', () => {
         expect(updateStringCase(str, "snake_case")).toEqual("cheese_and_bacon");
     });
 });
-

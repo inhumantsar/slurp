@@ -3,7 +3,11 @@ import { DEFAULT_SETTINGS } from './src/const';
 import { createFrontMatter, createFrontMatterPropSettings, createFrontMatterProps } from './src/frontmatter';
 import { getNewFilePath } from "./src/lib/files";
 import { Logger } from './src/lib/logger';
-import { removeTrailingSlash, getErrorMessage } from './src/lib/util';
+import {
+	getErrorMessage,
+	parseOptionalBoolean,
+	removeTrailingSlash
+} from './src/lib/util';
 import { SlurpNewNoteModal } from './src/modals/new-note';
 import { fetchHtml, mergeMetadata, parseMarkdown, parseMetadata, parsePage } from './src/parse';
 import { SlurpSettingsTab } from './src/settings';
@@ -31,7 +35,7 @@ export default class SlurpPlugin extends Plugin {
 			if (!e.url || e.url === "") console.error("URI is empty or undefined");
 
 			try {
-				this.slurp(e.url);
+				await this.slurp(e.url, parseOptionalBoolean(e.frontmatterOnly));
 			} catch (err) { this.displayError(err as Error); }
 		});
 

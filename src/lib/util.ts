@@ -12,6 +12,12 @@ export const removeTrailingSlash = (str: string) =>
         ? str.substring(0, str.length - 1)
         : str;
 
+export const parseOptionalBoolean = (value?: string): boolean | undefined => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return undefined;
+};
+
 export const cleanTitle = (title: string) => {
     // disallowed characters: * " \ / < > : | ?
     return title
