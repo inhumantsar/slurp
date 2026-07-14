@@ -51,6 +51,12 @@ Bookmarklets are a simple option for those who prefer them. Simply create a new 
 javascript:(() => document.location.href=`obsidian://slurp?url=${document.URL}`)();
 ```
 
+To save only frontmatter for a capture, regardless of the global setting, use:
+
+```
+javascript:(() => document.location.href=`obsidian://slurp?url=${document.URL}&frontmatterOnly=true`)();
+```
+
 Browser extensions are also coming soon for Firefox and Chrome-compatible browsers. If you want to get started right away, they are currently in beta and can be manually installed. See https://github.com/inhumantsar/slurp-extension for details.
 
 # Settings
