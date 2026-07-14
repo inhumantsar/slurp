@@ -100,12 +100,14 @@ Guidance for agentic coding assistants working in this repo.
 
 ## Release Workflow
 - Use `npm run release-major`, `npm run release-minor`, `npm run release-patch`, `npm run release-beta`, or `npm run release-stable`.
-- Use `release-stable` to strip the beta suffix (e.g. `0.2.0b2` → `0.2.0`).
-- These scripts run `version-bump.mjs` and update the version for release.
-- Confirm the release commit message format is `release: X.Y.Z` and the body lists recent commit messages (the script should add it, but sometimes misses).
-- Ensure the `X.Y.Z` tag points at the release commit.
-- After bumping, build and test before publishing: `npm run build` and `npm run test`.
-- Push the tag; a GitHub Action creates the release automatically.
+- Beta releases are optional; simple changes and fixes can go directly to a stable major, minor, or patch release.
+- For a direct stable release, merge the plugin change, pull `main`, and run the appropriate `release-major`, `release-minor`, or `release-patch` command.
+- When a beta is warranted, commit the plugin change, set `package.json` to the next base version, then run `npm run release-beta` (e.g. `0.3.1` → `0.4.0b1`).
+- Confirm the generated `release: X.Y.Z` commit and tag, run `npm run build` and `npm run test`, then push the feature branch and beta tag and open a PR.
+- After a beta PR merges, switch to `main`, pull, and run `npm run release-stable` to strip the beta suffix (e.g. `0.4.0b1` → `0.4.0`).
+- Verify the stable release commit/tag and rerun build and tests before pushing `main` and the stable tag.
+- The tag starts the `Release Obsidian plugin` workflow, which creates a draft release. After it succeeds, add release notes and publish the draft as latest with `gh release edit X.Y.Z --draft=false --latest --notes ...`.
+- Do not version, tag, or release documentation-only changes.
 
 ## Logging
 - Use `Logger` in `src/lib/logger.ts` for structured logs.
