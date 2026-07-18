@@ -7,12 +7,14 @@ import { extractDomain } from "../lib/util";
 
 export class SlurpNewNoteModal extends Modal {
     private readonly plugin: SlurpPlugin;
+    private readonly initialUrl?: string;
     private readonly WARNING_CLS = "validation";
     private readonly URL_FORMAT_ERR = "Invalid URL format.";
 
-    constructor(app: App, plugin: SlurpPlugin) {
+    constructor(app: App, plugin: SlurpPlugin, initialUrl?: string) {
         super(app);
         this.plugin = plugin;
+        this.initialUrl = initialUrl;
     }
 
     private validateKnownBrokenDomains(url: string) {
@@ -77,6 +79,11 @@ export class SlurpNewNoteModal extends Modal {
             });
 
         contentEl.addEventListener("keypress", (k) => (k.key === "Enter") && doSlurp());
+
+        if (this.initialUrl) {
+            urlField.setValue(this.initialUrl);
+            urlField.validate();
+        }
     }
 
     onClose() {

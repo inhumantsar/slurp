@@ -27,7 +27,9 @@ export default class SlurpPlugin extends Plugin {
 			id: 'create-note-from-url',
 			name: 'Create note from URL',
 			callback: () => {
-				new SlurpNewNoteModal(this.app, this).open();
+				const initialUrl = this.app.workspace.getActiveViewOfType(MarkdownView)
+					?.editor?.getSelection()?.trim();
+				new SlurpNewNoteModal(this.app, this, initialUrl).open();
 			}
 		});
 
