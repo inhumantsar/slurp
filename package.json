@@ -1,6 +1,6 @@
 {
 	"name": "slurp",
-	"version": "0.5.0",
+	"version": "0.5.1",
 	"description": "Slurps webpages and saves them as clean, uncluttered Markdown.",
 	"main": "main.js",
 	"scripts": {
