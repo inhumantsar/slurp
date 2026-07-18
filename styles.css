@@ -22,3 +22,16 @@ ul.validation-error {
     padding: 0;
     margin: 0.5em 0.1em;
 }
+
+.slurp-url-input,
+.slurp-recent-logs-textarea {
+    width: 100%;
+}
+
+.slurp-recent-logs {
+    font-size: small;
+}
+
+.slurp-recent-logs-textarea {
+    height: 20em;
+}

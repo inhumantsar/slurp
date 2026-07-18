@@ -107,5 +107,16 @@ describe('getErrorMessage', () => {
             const result = getErrorMessage(err);
             expect(result).toBe("[object Object]. If this is a bug, please report it from plugin settings.");
         });
+
+        it.each([
+            'Cowardly refusing to increment past 100.',
+            'Unable to fetch page.',
+            'No title or content found.',
+            'Unable to convert content to Markdown.',
+        ])('preserves the notice text for %s', (message) => {
+            expect(`Slurp Error! ${getErrorMessage(new Error(message))}`).toBe(
+                `Slurp Error! ${message}. If this is a bug, please report it from plugin settings.`,
+            );
+        });
     });
 });

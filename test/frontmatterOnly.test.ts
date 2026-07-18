@@ -1,6 +1,8 @@
 import type { IArticle } from '../src/types';
 import * as parse from '../src/parse';
-import { JSDOM } from 'jsdom';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-var-requires --
+ * This isolated mock harness mirrors the plugin and CommonJS Jest APIs without loading Obsidian.
+ */
 
 // Mock the parse module
 jest.mock('../src/parse');

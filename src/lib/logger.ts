@@ -1,9 +1,10 @@
 import type SlurpPlugin from "main";
-import moment from "moment";
-import { normalizePath, type Vault } from "obsidian";
+import { moment, normalizePath, type Vault } from "obsidian";
 import { DEFAULT_SETTINGS } from "../const";
 import type { ILogSettings } from "../types";
 import { serialize } from "./util";
+
+const momentApi = moment as unknown as () => { format: (template: string) => string };
 
 interface LogMessage {
     msg: string;
@@ -62,6 +63,7 @@ export class Logger {
             plugin.registerInterval(window.setInterval(
                 () => this.flush(), 500));
 
+        // eslint-disable-next-line @typescript-eslint/no-this-alias -- expose the configured logger through the logger() helper.
         _logger = this;
     }
 
@@ -78,11 +80,15 @@ export class Logger {
 
     private getOrCreateLogFile = async () => {
         const folder = this.vault.getFolderByPath(this.settings.logPath) || await this.vault.createFolder(this.settings.logPath);
-        const file = normalizePath(`${folder.path}/slurp-${moment().format("YYYY-MM-DD")}.md`);
+        const file = normalizePath(`${folder.path}/slurp-${momentApi().format("YYYY-MM-DD")}.md`);
         return this.vault.getFileByPath(file) || await this.vault.create(file, `##### startup: ${new Date().toUTCString()}\n`);
     };
 
-    dump = (returnCallback = true, limit = Number.POSITIVE_INFINITY, format: "markdown" = "markdown"): { content: string, onComplete: null | (() => void); } => {
+    dump = (
+        returnCallback = true,
+        limit = Number.POSITIVE_INFINITY,
+        format: "markdown" = "markdown",
+    ): { content: string, onComplete: null | (() => void); } => {
         let content = "\n";
         const b = new Set(this.sortBuffer());
 
@@ -92,7 +98,7 @@ export class Logger {
             for (const i of msg.optionalParams || []) {
                 try {
                     optJson.push(JSON.stringify(serialize(i), undefined, 2));
-                } catch (err) {
+                } catch {
                     optJson.push(`Unable to stringify: ${i}`);
                 }
             }
@@ -100,14 +106,13 @@ export class Logger {
                 `- Caller: \`${msg.caller}\`\n\n`;
             if (optJson.length > 0)
                 content += `\`\`\`\n${optJson.join('\n')}\n\`\`\`\n\n`;
-        };
+        }
 
         return {
             content, onComplete: returnCallback
-                // biome-ignore lint/complexity/noForEach: <explanation>
                 ? () => b.forEach((msg) => this.buffer.remove(msg))
                 : null
-        };
+        }
     };
 
     flush = async () => {

@@ -48,7 +48,7 @@ export class SlurpNewNoteModal extends Modal {
                 slurpBtn.setDisabled(errs.length > 0 || urlField.getValue().length < 5);
             });
 
-        urlField.inputEl.setCssProps({ "width": "100%" });
+        urlField.inputEl.addClass('slurp-url-input');
 
         const progressBar = new BouncingProgressBarComponent(contentEl);
 
@@ -63,7 +63,7 @@ export class SlurpNewNoteModal extends Modal {
 
         const doSlurp = () => {
             progressBar.start();
-            this.plugin.slurp(urlField.getValue(), frontmatterOnlyValue);
+            void this.plugin.slurp(urlField.getValue(), frontmatterOnlyValue);
             progressBar.stop();
             this.close();
         }

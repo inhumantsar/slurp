@@ -1,10 +1,12 @@
 import type { StringCase } from "./string-case";
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export const isEmpty = (val: any): boolean => {
-    return !val
-        || (typeof val === 'string' && val.trim().length === 0)
-        || (typeof val[Symbol.iterator] === 'function' && val.length === 0);
+export const isEmpty = (val: unknown): boolean => {
+    if (!val) return true;
+    if (typeof val === 'string') return val.trim().length === 0;
+    if (typeof val !== 'object' && typeof val !== 'function') return false;
+
+    const iterable = val as { [Symbol.iterator]?: unknown; length?: number };
+    return typeof iterable[Symbol.iterator] === 'function' && iterable.length === 0;
 };
 
 export const removeTrailingSlash = (str: string) =>
@@ -25,17 +27,17 @@ export const cleanTitle = (title: string) => {
         //   OpenNeRF: Open Set 3D Neural Scene Segmentation...
         //   Local News | Botched home sale costs man his real estate license
         //   Blog|Some Title
-        .replace(/\s?[\|:]\s?/g, ' - ')
+        .replace(/\s?[|:]\s?/g, ' - ')
         // assume that quotes are used to enclose words/phrases
         // eg: Bitcoin prices edges lower after "Halving" concludes
         .replace('"', "'")
         // assume that others can simply be nuked
-        .replace(/[\*"\\/#<>:\?]/g, '');
+        .replace(/[*"\\/#<>:?]/g, '');
 
 };
 
 export const cleanTag = (text: string, tagCase: StringCase): string => {
-    const other = new RegExp(/[^\w\-\/]+/g);
+    const other = new RegExp(/[^\w\-/]+/g);
     const extraWhitespace = new RegExp(/\s{2,}/);
     return updateStringCase(
         text
@@ -68,8 +70,7 @@ export const updateStringCase = (text: string, targetCase: StringCase) => {
 };
 
 export const mapToObj = (m: Map<string, unknown>) => {
-    return Array.from(m).reduce((obj, [key, value]) => {
-        // @ts-ignore
+    return Array.from(m).reduce<Record<string, unknown>>((obj, [key, value]) => {
         obj[key] = value;
         return obj;
     }, {});
@@ -83,15 +84,13 @@ export const serialize = (val: unknown) => {
 
 // murmurhash3 is simple, fast, and doesn't have external dependencies.
 export const murmurhash3_32 = (key: string, seed: number = 0) => {
-    var remainder, bytes, h1, h1b, c1, c2, k1, i;
-
-    // Initialize the variables
-    remainder = key.length & 3; // key.length % 4
-    bytes = key.length - remainder;
-    h1 = seed;
-    c1 = 0xcc9e2d51;
-    c2 = 0x1b873593;
-    i = 0;
+    const remainder = key.length & 3; // key.length % 4
+    const bytes = key.length - remainder;
+    const c1 = 0xcc9e2d51;
+    const c2 = 0x1b873593;
+    let h1 = seed;
+    let k1 = 0;
+    let i = 0;
 
     // Process the input data in 4-byte chunks
     while (i < bytes) {
@@ -117,7 +116,7 @@ export const murmurhash3_32 = (key: string, seed: number = 0) => {
         h1 = (h1 << 13) | (h1 >>> 19);
         // mix the hash with magic constants to break up patterns and ensure each bit of 
         // input can influence the result
-        h1b = (((h1 & 0xffff) * 5) + ((((h1 >>> 16) * 5) & 0xffff) << 16)) & 0xffffffff;
+        const h1b = (((h1 & 0xffff) * 5) + ((((h1 >>> 16) * 5) & 0xffff) << 16)) & 0xffffffff;
         h1 = (((h1b & 0xffff) + 0x6b64) + ((((h1b >>> 16) + 0xe654) & 0xffff) << 16));
     }
 
@@ -125,7 +124,9 @@ export const murmurhash3_32 = (key: string, seed: number = 0) => {
     k1 = 0;
     switch (remainder) {
         case 3: k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
+            // falls through
         case 2: k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
+            // falls through
         case 1: k1 ^= (key.charCodeAt(i) & 0xff);
             k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
             k1 = (k1 << 15) | (k1 >>> 17);
@@ -157,7 +158,7 @@ export const extractDomain = (u: string) => {
             const domain = parts[parts.length - 2] + '.' + parts[parts.length - 1];
             if (!domain.startsWith(".") && !domain.endsWith(".")) return domain;
         }
-    } catch (err) {
+    } catch {
         // returning null after this anyway...
     }
 
@@ -194,7 +195,9 @@ export const getErrorMessage = (err: Error): string => {
     }
     
     // Network/connection errors
-    if (message.toLowerCase().includes('network') || message.toLowerCase().includes('timeout') || message.toLowerCase().includes('connection')) {
+    if (message.toLowerCase().includes('network')
+        || message.toLowerCase().includes('timeout')
+        || message.toLowerCase().includes('connection')) {
         return "A network error occurred. Please check your connection and try again.";
     }
     

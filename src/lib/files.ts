@@ -15,7 +15,7 @@ export const ensureFolderExists = async (vault: Vault, path: string) => {
 };
 
 const handleDuplicates = (vault: Vault, filename: string, retries: number, path: string): string => {
-    if (retries === 100) throw "Cowardly refusing to increment past 100.";
+    if (retries === 100) throw new Error("Cowardly refusing to increment past 100.");
 
     const suffix = retries > 0 ? ` (${retries}).md` : '.md';
     const fullPath = path !== ""

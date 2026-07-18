@@ -24,8 +24,6 @@ export class SlurpSettingsTab extends PluginSettingTab {
 
         containerEl.empty();
 
-        new Setting(containerEl).setName('General').setHeading();
-
         const saveLoc = new Setting(containerEl)
             .setName('Default save location')
             .setDesc("What directory should Slurp save pages to? Leave blank to save to the vault's main directory.");
@@ -88,15 +86,13 @@ export class SlurpSettingsTab extends PluginSettingTab {
 
             if (deleted.length > 0) {
                 logger().warn("removing note properties", deleted);
-                // biome-ignore lint/complexity/noForEach: <explanation>
                 deleted.forEach((id) => this.plugin.fmProps.delete(id));
             }
 
             // update the rest
-            // biome-ignore lint/complexity/noForEach: <explanation>
             props.forEach((prop) => this.plugin.fmProps.set(prop.id, prop));
 
-            this.plugin.saveSettings();
+            void this.plugin.saveSettings();
         };
 
         new FrontMatterSettings({
@@ -141,7 +137,7 @@ export class SlurpSettingsTab extends PluginSettingTab {
                 .addOptions(StringCaseOptions)
                 .setValue(this.plugin.settings.fm.tags.case)
                 .setDisabled(!this.plugin.settings.fm.tags.parse)
-                // @ts-ignore
+                // @ts-expect-error -- Obsidian's callback is typed as string, while these options are StringCase values.
                 .onChange(async (val: StringCase) => {
                     this.plugin.settings.fm.tags.case = val;
                     await this.plugin.saveSettings();
@@ -178,15 +174,10 @@ export class SlurpSettingsTab extends PluginSettingTab {
 
         if (!this.plugin.settings.logs.debug) {
             const recentLogs = containerEl.createDiv();
-            const recentLogsStyles: Record<string, string> = {};
-            recentLogsStyles["font-size"] = "small";
-            recentLogs.setCssProps(recentLogsStyles);
+            recentLogs.addClass('slurp-recent-logs');
 
             recentLogsText = containerEl.createEl("textarea");
-            const logsTextAreaStyles: Record<string, string> = {};
-            logsTextAreaStyles.width = "100%";
-            logsTextAreaStyles.height = "20em";
-            recentLogsText.setCssProps(logsTextAreaStyles);
+            recentLogsText.addClass('slurp-recent-logs-textarea');
             recentLogsText.setText(logger().dump(false, 25).content);
             recentLogs.appendChild(recentLogsText);
             containerEl.appendChild(recentLogs);

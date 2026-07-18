@@ -11,7 +11,9 @@ import {
 import { SlurpNewNoteModal } from './src/modals/new-note';
 import { fetchHtml, mergeMetadata, parseMarkdown, parseMetadata, parsePage } from './src/parse';
 import { SlurpSettingsTab } from './src/settings';
-import type { FormatterArgs, IArticle, IFrontMatterSettings, IFrontMatterTagSettings, ISettings, ISettingsV0, TFrontMatterProps } from './src/types';
+import type {
+	FormatterArgs, IArticle, IFrontMatterSettings, IFrontMatterTagSettings, ISettings, ISettingsV0, TFrontMatterProps
+} from './src/types';
 
 export default class SlurpPlugin extends Plugin {
 	settings!: ISettings;
@@ -42,13 +44,12 @@ export default class SlurpPlugin extends Plugin {
 		});
 
 		this.registerEvent(
-			//eslint-disable-next-line @typescript-eslint/ban-ts-comment
-			//@ts-ignore
+			// @ts-expect-error -- receive-text-menu is a mobile API missing from Obsidian's public typings.
 			this.app.workspace.on('receive-text-menu', (menu: Menu, shareText: string) => {
 				menu.addItem((item: MenuItem) => {
 					item.setTitle('Slurp');
 					item.setIcon('download');
-					item.onClick(() => this.slurp(shareText));
+					item.onClick(() => void this.slurp(shareText));
 				});
 			})
 		);
@@ -58,16 +59,16 @@ export default class SlurpPlugin extends Plugin {
 
 	migrateSettingsV0toV1(loadedSettings: ISettingsV0 | ISettings): ISettings {
 		// only v0 lacks the settingsVersion key
-		if (Object.keys(loadedSettings).contains("settingsVersion")) return loadedSettings as ISettings;
+		if (Object.keys(loadedSettings).includes("settingsVersion")) return loadedSettings as ISettings;
 		if (Object.keys(loadedSettings).length === 0) return DEFAULT_SETTINGS;
 
 		const v0 = loadedSettings as ISettingsV0;
 
-		const fmTags = {
+		const fmTags: IFrontMatterTagSettings = {
 			parse: v0.parseTags,
 			prefix: removeTrailingSlash(v0.tagPrefix),
 			case: v0.tagCase
-		} as IFrontMatterTagSettings;
+		};
 
 		const fm = {
 			includeEmpty: v0.showEmptyProps,
@@ -92,8 +93,7 @@ export default class SlurpPlugin extends Plugin {
 	}
 
 	migrateObjToMap<K, V>(obj: { [key: string]: V; }) {
-		// biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
-		if (!obj.hasOwnProperty('keys')) {
+		if (!Object.prototype.hasOwnProperty.call(obj, 'keys')) {
 			if (Object.keys(obj).length === 0)
 				return new Map<K, V>();
 		}
@@ -174,6 +174,6 @@ export default class SlurpPlugin extends Plugin {
 		this.logger.debug("writing file...");
 		const filePath = await getNewFilePath(this.app.vault, article.title, this.settings.defaultPath);
 		const newFile = await this.app.vault.create(filePath, content);
-		this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.openFile(newFile);
+		void this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.openFile(newFile);
 	}
 }

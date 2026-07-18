@@ -6,10 +6,10 @@ export interface IArticleMetadata {
     [property: string]: unknown;
     slurpedTime: Date;
     tags: Array<IArticleTags>;
-    excerpt?: string;
-    byline?: string;
-    siteName?: string;
-    publishedTime?: string | number;
+    excerpt?: string | null;
+    byline?: string | null;
+    siteName?: string | null;
+    publishedTime?: string | number | null;
     modifiedTime?: string | number;
     type?: string;
     twitter?: string;
@@ -51,7 +51,7 @@ export interface FormatterArgs { [s: string]: string; }
 
 
 export interface IFrontMatterProp {
-    [index: string]: string | number | string[] | boolean | IFrontMatterPropDefaultValue | undefined | object;
+    [index: string]: unknown;
 
     id: string;
     enabled: boolean;
@@ -80,7 +80,7 @@ export interface IFrontMatterPropDefault {
 }
 
 
-export type IFrontMatterPropDefaultValue = unknown | (() => unknown);
+export type IFrontMatterPropDefaultValue = unknown;
 
 export type TFrontMatterProps = Map<string, IFrontMatterProp>;
 export type TFrontMatterPropDefaults = Map<string, IFrontMatterPropDefault>;

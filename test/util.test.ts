@@ -1,4 +1,36 @@
-import { cleanTag, cleanTitle, parseOptionalBoolean, updateStringCase } from "../src/lib/util";
+import { cleanTag, cleanTitle, isEmpty, murmurhash3_32, parseOptionalBoolean, updateStringCase } from "../src/lib/util";
+
+describe('isEmpty', () => {
+    it.each([
+        [undefined, true],
+        [null, true],
+        [false, true],
+        [true, false],
+        [0, true],
+        [1, false],
+        ['', true],
+        ['  ', true],
+        ['value', false],
+        [[], true],
+        [[1], false],
+        [new Map(), false],
+        [new Set(), false],
+    ])('preserves the empty result for %p', (value, expected) => {
+        expect(isEmpty(value)).toBe(expected);
+    });
+});
+
+describe('murmurhash3_32', () => {
+    it.each([
+        ['', 0, 0],
+        ['hello', 0, 613153351],
+        ['foo', 0, 4138058784],
+        ['Slurp', 0, 129849195],
+        ['hello', 42, 3806057185],
+    ])('hashes %p with seed %i', (value, seed, expected) => {
+        expect(murmurhash3_32(value, seed)).toBe(expected);
+    });
+});
 
 describe('parseOptionalBoolean', () => {
     it('should parse explicit boolean query parameters', () => {

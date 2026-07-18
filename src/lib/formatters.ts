@@ -1,6 +1,10 @@
-import moment from "moment";
+import { moment } from "obsidian";
 import type { FormatterArgs } from "../types";
 import { logger } from "./logger";
+
+const momentApi = moment as unknown as (value?: Date) => {
+    locale: (locale: string) => { format: (template: string) => string };
+};
 
 export const format = (tmpl: string, val: unknown) => {
     switch (tmpl.substring(0, 2)) {
@@ -37,7 +41,7 @@ export const formatBoolean = (tmpl: string, val?: string | boolean) => {
 };
 
 export const formatDate = (t = "YYYY-MM-DDTHH:mm", v = new Date()) => {
-    const result = moment(v).format(t);
+    const result = momentApi(v).locale('en').format(t);
     return Number.isNaN(+result) ? result : +result;
 };
 
@@ -52,9 +56,9 @@ export const formatStrings = (tmpl: string, val: Iterable<FormatterArgs>): Array
         logger().debug("formatting string", { tmpl: tmpl, value: i });
         result.push(
             tmpl.replace(/\{(\w+)\}/g, (match, name) => {
-                // biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
-                logger().debug("match found", { match: match, name: name, value: i[name], iHasName: i.hasOwnProperty(name) });
-                return !i.hasOwnProperty(name)
+                const hasName = Object.prototype.hasOwnProperty.call(i, name);
+                logger().debug("match found", { match: match, name: name, value: i[name], iHasName: hasName });
+                return !hasName
                     ? match
                     : i[name] !== undefined
                         ? i[name]
@@ -64,4 +68,3 @@ export const formatStrings = (tmpl: string, val: Iterable<FormatterArgs>): Array
     }
     return result;
 }
-

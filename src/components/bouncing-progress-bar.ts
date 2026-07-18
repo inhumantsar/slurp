@@ -13,15 +13,14 @@ export class BouncingProgressBarComponent extends ProgressBarComponent {
     private update() {
         const cur = this.getValue();
         this.setValue(cur + (cur == 100 ? 1 : -1 ));
-    };
+    }
 
     start() {
         this.setDisabled(false);
         this.timerId = window.setInterval(this.update, 10);
-    };
+    }
 
     stop() {
         if (this.timerId > 0) window.clearInterval(this.timerId);
     }
 }
-

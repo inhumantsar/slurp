@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars --
+ * These declarations intentionally mirror Obsidian's loosely typed mock surface.
+ */
 //
 // This is an example copied from https://github.com/obsidian-tasks-group/obsidian-tasks
 //

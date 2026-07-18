@@ -9,7 +9,7 @@ import type {
 } from "./types";
 
 export class FrontMatterProp implements IFrontMatterProp {
-    [index: string]: string | number | string[] | boolean | IFrontMatterPropDefaultValue | undefined | object;
+    [index: string]: unknown;
 
     readonly id: string;
     public enabled = true;
@@ -64,7 +64,7 @@ export class FrontMatterProp implements IFrontMatterProp {
             e.push("All properties must have a key.");
         if (this._key?.match(/^[^\p{L}0-9]|[^\p{L}0-9]$/gu) !== null)
             e.push("Property keys must begin and end with alphanumeric characters.");
-        if (this._key?.match(/[^\p{L}0-9 ._\-]/gu) !== null)
+        if (this._key?.match(/[^\p{L}0-9 ._-]/gu) !== null)
             e.push("Property keys may only contain alphanumeric characters, spaces, dots, dashes, and underscores.");
         return e;
     };
@@ -131,7 +131,7 @@ export const validateFrontMatterProps = (props: FrontMatterProp[]): IFrontMatter
     return props.map((prop) => {
         const fmt = prop.validateFormat();
         const key = prop.validateKey();
-        return { format: fmt, key: key, hasErrors: fmt.length + key.length > 0 } as IFrontMatterValidationErrors;
+        return { format: fmt, key: key, hasErrors: fmt.length + key.length > 0 };
     });
 
 };
@@ -179,7 +179,7 @@ export const createFrontMatter = (article: IArticle, fmItems: TFrontMatterProps,
     // we want to sort by key not by id
     const keyIndex = new Map<string, number>();
 
-    for (const [k, v] of fmItems) {
+    for (const [, v] of fmItems) {
         if (v.enabled) {
             fm.set(v.key, getFrontMatterValue(v, article, showEmpty));
             keyIndex.set(v.key, v.idx);
@@ -189,4 +189,3 @@ export const createFrontMatter = (article: IArticle, fmItems: TFrontMatterProps,
     return getFrontMatterYaml(fm, keyIndex);
 };
 export const sortFrontMatterItems = (items: IFrontMatterProp[]) => items.sort((a, b) => a.idx - b.idx);
-

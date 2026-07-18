@@ -10,9 +10,9 @@ export const fixRelativeLinks = (html: string, articleUrl: string) => {
 
     return html
         // Handles absolute paths
-        .replace(/(href|src)="\/([^\/].*?)"/g, `$1="${url.origin}/$2"`)
+        .replace(/(href|src)="\/([^/].*?)"/g, `$1="${url.origin}/$2"`)
         // Handles relative paths
-        .replace(/(href|src)="([^\/].*?)"/g, (match, p1, p2) => {
+        .replace(/(href|src)="([^/].*?)"/g, (match, p1, p2) => {
             // Check if it's a protocol-relative URL (starts with //) or has a protocol
             if (/^\/\//.test(p2) || /^[a-z][a-z0-9+.-]*:/.test(p2)) {
                 return match; // return original if it's protocol-relative or has a protocol
@@ -40,7 +40,12 @@ const extractCharset = (headers: Record<string, string>, buffer: ArrayBuffer): s
     const metaMatch = /<meta[^>]+charset\s*=\s*["']?\s*([^"'\s;>]+)/i.exec(head);
     if (metaMatch) return metaMatch[1];
 
-    const httpEquivMatch = /<meta[^>]+http-equiv\s*=\s*["']?\s*Content-Type\s*["']?[^>]*content\s*=\s*["'][^"']*charset\s*=\s*([^"'\s;>]+)/i.exec(head);
+    const httpEquivPattern = new RegExp(
+        '<meta[^>]+http-equiv\\s*=\\s*["\']?\\s*Content-Type\\s*["\']?[^>]*content\\s*=\\s*["\']' +
+        '[^"\']*charset\\s*=\\s*([^"\'\\s;>]+)',
+        'i',
+    );
+    const httpEquivMatch = httpEquivPattern.exec(head);
     if (httpEquivMatch) return httpEquivMatch[1];
 
     return 'UTF-8';
@@ -53,19 +58,21 @@ export const fetchHtml = async (url: string) => {
 
     if (!html) {
         logger().error(`Unable to fetch page from: ${url}.`);
-        throw "Unable to fetch page.";
+        throw new Error("Unable to fetch page.");
     }
     return fixRelativeLinks(html, url);
 };
 
 export const parsePage = (doc: Document) => {
     const article = new Readability(doc).parse();
+    const title = article?.title;
+    const content = article?.content;
 
-    if (!article || !article.title || !article.content) {
+    if (!article || !title || !content) {
         logger().error("Parsed article missing critical content", article);
-        throw "No title or content found.";
+        throw new Error("No title or content found.");
     }
-    return article;
+    return Object.assign(article, { title, content });
 };
 
 export const parseMetadataTags = (elements: NodeListOf<HTMLMetaElement>, tagPrefix: string, tagCase: StringCase) => {
@@ -75,7 +82,6 @@ export const parseMetadataTags = (elements: NodeListOf<HTMLMetaElement>, tagPref
     //   - Nested tags are separated by forward slashes (/)
     //	 - Tags are case-insensitive 
     const tags = new Set<FormatterArgs>();
-    // biome-ignore lint/complexity/noForEach: <explanation>
     elements.forEach((e) => e.content
         .split(",")
         .forEach((text) => tags
@@ -117,7 +123,7 @@ export const parseMetadata = (doc: Document, fmProps: TFrontMatterProps, tagPref
                 metadata[prop.id] = elements[0].content;
             }
         }
-    };
+    }
 
     return metadata;
 };
@@ -181,8 +187,7 @@ export const parseMarkdown = (content: string): string => {
     const md = htmlToMarkdown(sanitizeHTMLToDom(content));
     if (!md) {
         logger().error(`Parsed content resulted in falsey markdown: ${md}`);
-        throw "Unable to convert content to Markdown.";
+        throw new Error("Unable to convert content to Markdown.");
     }
     return convertMathDelimiters(md);
 }
-

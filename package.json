@@ -30,7 +30,6 @@
 		"@types/sortablejs": "^1.15.8",
 		"@typescript-eslint/eslint-plugin": "^6.21.0",
 		"@typescript-eslint/parser": "^6.21.0",
-		"builtin-modules": "3.3.0",
 		"esbuild": "0.17.3",
 		"esbuild-jest": "^0.4.0",
 		"esbuild-svelte": "^0.8.0",
@@ -50,8 +49,8 @@
 		"typescript-eslint": "^7.6.0"
 	},
 	"dependencies": {
-		"@mozilla/readability": "^0.5.0",
+		"@mozilla/readability": "^0.6.0",
 		"obsidian-file-suggestion-component": "^1.0.0",
-		"yaml": "^2.4.1"
+		"yaml": "^2.8.3"
 	}
 }
