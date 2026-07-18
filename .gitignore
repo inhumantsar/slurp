@@ -12,6 +12,9 @@ node_modules
 # They should be uploaded to GitHub releases instead.
 main.js
 
+# Local release artifacts
+dist/
+
 # Exclude sourcemaps
 *.map
 
@@ -21,3 +24,6 @@ data.json
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store
 .direnv
+
+.opencode/
+.codegraph/

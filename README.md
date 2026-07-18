@@ -131,7 +131,7 @@ There is a symlink in the vault's [plugins directory](./test-resources/vault/.ob
 [Hot Reload](https://github.com/pjeby/hot-reload) is a commonly used plugin for Obsidian plugin development. It will watch for modified plugins and automatically reload it within a running Obsidian instance. It's included in the test vault as a submodule, so you will need to update it on first clone:
 
 ```
-git submodule update
+git submodule update --init
 ```
 
 # Testing

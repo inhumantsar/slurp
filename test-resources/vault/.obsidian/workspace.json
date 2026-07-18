@@ -11,13 +11,10 @@
             "id": "50580fd4fc0dea57",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Inbox/Slurped/Apple releases iOS 11.2 with Apple Pay Cash, fast wireless charging, and iPhone crash fix.md",
-                "mode": "source",
-                "backlinks": false,
-                "source": false
-              }
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
             }
           }
         ]
@@ -39,8 +36,11 @@
             "state": {
               "type": "file-explorer",
               "state": {
-                "sortOrder": "alphabetical"
-              }
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
             }
           },
           {
@@ -55,7 +55,9 @@
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical"
-              }
+              },
+              "icon": "lucide-search",
+              "title": "Search"
             }
           },
           {
@@ -63,7 +65,9 @@
             "type": "leaf",
             "state": {
               "type": "bookmarks",
-              "state": {}
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
             }
           }
         ]
@@ -86,7 +90,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Inbox/Slurped/Apple releases iOS 11.2 with Apple Pay Cash, fast wireless charging, and iPhone crash fix.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -94,7 +97,9 @@
                 "searchQuery": "",
                 "backlinkCollapsed": false,
                 "unlinkedCollapsed": true
-              }
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
             }
           },
           {
@@ -103,10 +108,11 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Inbox/Slurped/Apple releases iOS 11.2 with Apple Pay Cash, fast wireless charging, and iPhone crash fix.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
-              }
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
             }
           },
           {
@@ -116,8 +122,12 @@
               "type": "tag",
               "state": {
                 "sortOrder": "frequency",
-                "useHierarchy": true
-              }
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
             }
           },
           {
@@ -126,8 +136,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Inbox/Slurped/Apple releases iOS 11.2 with Apple Pay Cash, fast wireless charging, and iPhone crash fix.md"
-              }
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
             }
           }
         ]
@@ -139,6 +153,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "bases:Create new base": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
@@ -147,8 +162,10 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "5bc75bc3168bc2c6",
+  "active": "50580fd4fc0dea57",
   "lastOpenFiles": [
+    "Untitled.md",
+    "Slurped Pages/GitHub - pjebyhot-reload - Automatically reload Obsidian plugins in development when their files are changed.md",
     "Slurped Pages/Apple releases iOS 11.2 with Apple Pay Cash, fast wireless charging, and iPhone crash fix.md",
     "Inbox/Apple releases iOS 11.2 with Apple Pay Cash, fast wireless charging, and iPhone crash fix.md",
     "Inbox/Slurped/Apple releases iOS 11.2 with Apple Pay Cash, fast wireless charging, and iPhone crash fix (7).md",
