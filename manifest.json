@@ -1,7 +1,7 @@
 {
 	"id": "slurp",
 	"name": "Slurp",
-	"version": "0.5.1",
+	"version": "0.6.0",
 	"minAppVersion": "1.5.7",
 	"description": "Fetches webpages and saves them as clean, uncluttered Markdown.",
 	"author": "inhumantsar",
