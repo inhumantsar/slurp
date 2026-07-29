@@ -51,6 +51,8 @@ const extractCharset = (headers: Record<string, string>, buffer: ArrayBuffer): s
     return 'UTF-8';
 };
 
+export const parseHtml = (html: string): Document => new DOMParser().parseFromString(html, 'text/html');
+
 export const fetchHtml = async (url: string) => {
     const response = await requestUrl(url);
     const charset = extractCharset(response.headers, response.arrayBuffer);
@@ -189,5 +191,5 @@ export const parseMarkdown = (content: string): string => {
         logger().error(`Parsed content resulted in falsey markdown: ${md}`);
         throw new Error("Unable to convert content to Markdown.");
     }
-    return convertMathDelimiters(md);
+    return md;
 }

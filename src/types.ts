@@ -50,6 +50,29 @@ export interface SlurpUrlParams {
 export interface FormatterArgs { [s: string]: string; }
 
 
+
+export interface ISlurpProcessorContext {
+    readonly url: string;
+}
+
+export interface ISlurpProcessor<T> {
+    readonly id: string;
+    process(value: T, context: ISlurpProcessorContext): T | Promise<T>;
+}
+
+export interface ISlurpProcessors {
+    readonly document: readonly ISlurpProcessor<Document>[];
+    readonly article: readonly ISlurpProcessor<IArticle>[];
+    readonly markdown: readonly ISlurpProcessor<string>[];
+}
+
+export interface ISlurpPipelineOptions {
+    readonly fmProps: TFrontMatterProps;
+    readonly tagSettings: IFrontMatterTagSettings;
+    readonly frontmatterOnly: boolean;
+    readonly processors: ISlurpProcessors;
+}
+
 export interface IFrontMatterProp {
     [index: string]: unknown;
 

@@ -9,10 +9,11 @@ import {
 	removeTrailingSlash
 } from './src/lib/util';
 import { SlurpNewNoteModal } from './src/modals/new-note';
-import { fetchHtml, mergeMetadata, parseMarkdown, parseMetadata, parsePage } from './src/parse';
+import { slurpPipeline } from './src/pipeline';
+import { DEFAULT_SLURP_PROCESSORS } from './src/processors';
 import { SlurpSettingsTab } from './src/settings';
 import type {
-	FormatterArgs, IArticle, IFrontMatterSettings, IFrontMatterTagSettings, ISettings, ISettingsV0, TFrontMatterProps
+	IArticle, IFrontMatterSettings, IFrontMatterTagSettings, ISettings, ISettingsV0, TFrontMatterProps
 } from './src/types';
 
 export default class SlurpPlugin extends Plugin {
@@ -132,35 +133,12 @@ export default class SlurpPlugin extends Plugin {
 	displayError = (err: Error) => new Notice(`Slurp Error! ${getErrorMessage(err)}`, 0);
 
 	async slurp(url: string, frontmatterOnlyOverride?: boolean): Promise<void> {
-		this.logger.debug("slurping", {url});
 		try {
-			const doc = new DOMParser().parseFromString(await fetchHtml(url), 'text/html');
-
-			const article: IArticle = {
-				slurpedTime: new Date(),
-				tags: new Array<FormatterArgs>(),
-				...parsePage(doc)
-			};
-			this.logger.debug("parsed page", article);
-
-			// find metadata that readability doesn't pick up
-			const parsedMetadata = parseMetadata(doc, this.fmProps, this.settings.fm.tags.prefix, this.settings.fm.tags.case);
-			this.logger.debug("parsed metadata", parsedMetadata);
-
-			const mergedMetadata = mergeMetadata(article, parsedMetadata);
-			this.logger.debug("merged metadata", parsedMetadata);
-
 			const frontmatterOnly = frontmatterOnlyOverride ?? this.settings.frontmatterOnly;
-			const md = frontmatterOnly ? "" : parseMarkdown(article.content);
-			this.logger.debug(frontmatterOnly ? "skipping markdown conversion" : "converted page to markdown", md);
-
-			await this.slurpNewNoteCallback({
-				...mergedMetadata,
-				content: md,
-				link: url
-			});
+			const article = await slurpPipeline(url, { fmProps: this.fmProps, tagSettings: this.settings.fm.tags, frontmatterOnly, processors: DEFAULT_SLURP_PROCESSORS });
+			await this.slurpNewNoteCallback(article);
 		} catch (err) {
-            this.logger.error("Unable to Slurp page", {url, err: (err as Error).message});
+			this.logger.error("Unable to Slurp page", { url, err: (err as Error).message });
 			this.displayError(err as Error);
 		}
 	}
