@@ -3,15 +3,27 @@ import { logger } from "./logger";
 import { cleanTitle } from "./util";
 
 
-export const ensureFolderExists = async (vault: Vault, path: string) => {
-    const existingFolder = vault.getFolderByPath(normalizePath(path));
-    logger().debug(`getFolderByPath("${path}")`, existingFolder);
-    return existingFolder !== null
-        ? existingFolder.path
-        : path === ""
-            ? ""
-            : await (await vault.createFolder(path)).path;
+export const ensureFolderExists = async (vault: Vault, path: string): Promise<string> => {
+    if (path === "") return "";
 
+    const normalizedPath = normalizePath(path);
+    const segments = normalizedPath.split("/").filter(Boolean);
+    let currentPath = "";
+
+    for (const segment of segments) {
+        currentPath = currentPath === "" ? segment : `${currentPath}/${segment}`;
+        const existingFolder = vault.getFolderByPath(currentPath);
+        logger().debug(`getFolderByPath("${currentPath}")`, existingFolder);
+        if (existingFolder !== null) continue;
+
+        try {
+            await vault.createFolder(currentPath);
+        } catch (err) {
+            if (vault.getFolderByPath(currentPath) === null) throw err;
+        }
+    }
+
+    return normalizedPath;
 };
 
 const handleDuplicates = (vault: Vault, filename: string, retries: number, path: string): string => {

@@ -1,3 +1,5 @@
+import type { Vault } from "obsidian";
+
 import type { StringCase } from "./lib/string-case";
 
 export interface IArticleTags { [s: string]: string; }
@@ -72,6 +74,18 @@ export interface ISlurpPipelineOptions {
     readonly frontmatterOnly: boolean;
     readonly processors: ISlurpProcessors;
 }
+export interface IPostProcessorContext {
+    readonly article: IArticle;
+    readonly filePath: string;
+    readonly settings: ISettings;
+    readonly vault: Vault;
+}
+
+export interface IPostProcessor {
+    readonly id: string;
+    process(markdown: string, context: IPostProcessorContext): string | Promise<string>;
+}
+
 
 export interface IFrontMatterProp {
     [index: string]: unknown;
@@ -115,10 +129,16 @@ export interface IFrontMatterValidationErrors {
 }
 
 
+export interface IImageSettings {
+    saveLocally: boolean;
+    folder: string;
+}
+
 export interface ISettings {
     settingsVersion: number;
     defaultPath: string;
     frontmatterOnly: boolean;
+    images: IImageSettings;
     fm: IFrontMatterSettings;
     logs: ILogSettings;
 }

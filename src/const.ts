@@ -80,6 +80,10 @@ export const DEFAULT_SETTINGS: ISettings = {
     settingsVersion: 1,
     defaultPath: "Slurped Pages",
     frontmatterOnly: false,
+    images: {
+        saveLocally: false,
+        folder: '_files'
+    },
     fm: {
         includeEmpty: false,
         tags: {

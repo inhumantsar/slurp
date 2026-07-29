@@ -11,6 +11,7 @@ import {
 import { SlurpNewNoteModal } from './src/modals/new-note';
 import { slurpPipeline } from './src/pipeline';
 import { DEFAULT_SLURP_PROCESSORS } from './src/processors';
+import { DEFAULT_POST_PROCESSORS, runPostProcessors } from './src/postprocessors';
 import { SlurpSettingsTab } from './src/settings';
 import type {
 	IArticle, IFrontMatterSettings, IFrontMatterTagSettings, ISettings, ISettingsV0, TFrontMatterProps
@@ -91,6 +92,10 @@ export default class SlurpPlugin extends Plugin {
 			this.settings.defaultPath = DEFAULT_SETTINGS.defaultPath;
 		if (this.settings.frontmatterOnly === undefined)
 			this.settings.frontmatterOnly = DEFAULT_SETTINGS.frontmatterOnly;
+		this.settings.images = {
+			...DEFAULT_SETTINGS.images,
+			...(this.settings.images ?? {})
+		};
 	}
 
 	migrateObjToMap<K, V>(obj: { [key: string]: V; }) {
@@ -135,7 +140,12 @@ export default class SlurpPlugin extends Plugin {
 	async slurp(url: string, frontmatterOnlyOverride?: boolean): Promise<void> {
 		try {
 			const frontmatterOnly = frontmatterOnlyOverride ?? this.settings.frontmatterOnly;
-			const article = await slurpPipeline(url, { fmProps: this.fmProps, tagSettings: this.settings.fm.tags, frontmatterOnly, processors: DEFAULT_SLURP_PROCESSORS });
+			const article = await slurpPipeline(url, {
+				fmProps: this.fmProps,
+				tagSettings: this.settings.fm.tags,
+				frontmatterOnly,
+				processors: DEFAULT_SLURP_PROCESSORS
+			});
 			await this.slurpNewNoteCallback(article);
 		} catch (err) {
 			this.logger.error("Unable to Slurp page", { url, err: (err as Error).message });
@@ -144,13 +154,19 @@ export default class SlurpPlugin extends Plugin {
 	}
 
 	async slurpNewNoteCallback(article: IArticle) {
+		const filePath = await getNewFilePath(this.app.vault, article.title, this.settings.defaultPath);
+		const processedMarkdown = await runPostProcessors(article.content, DEFAULT_POST_PROCESSORS, {
+			article,
+			filePath,
+			settings: this.settings,
+			vault: this.app.vault
+		});
+
 		const frontMatter = createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty);
 		this.logger.debug("created frontmatter", frontMatter);
-
-		const content = `---\n${frontMatter}\n---\n\n${article.content}`;
+		const content = `---\n${frontMatter}\n---\n\n${processedMarkdown}`;
 
 		this.logger.debug("writing file...");
-		const filePath = await getNewFilePath(this.app.vault, article.title, this.settings.defaultPath);
 		const newFile = await this.app.vault.create(filePath, content);
 		void this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.openFile(newFile);
 	}

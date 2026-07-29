@@ -1,5 +1,5 @@
 import type SlurpPlugin from "main";
-import { PluginSettingTab, Setting, type App, type TAbstractFile } from "obsidian";
+import { PluginSettingTab, Setting, type App, type TAbstractFile, type TextComponent } from "obsidian";
 import { FileSuggestionComponent } from "obsidian-file-suggestion-component";
 import FrontMatterSettings from "./components/frontmatter-prop-settings.svelte";
 import { DEFAULT_SETTINGS } from "./const";
@@ -48,6 +48,36 @@ export class SlurpSettingsTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 })
             );
+        new Setting(containerEl).setName('Images').setHeading();
+
+        const saveImagesSetting = new Setting(containerEl)
+            .setName('Save images locally')
+            .setDesc("Download remote images and replace their Markdown destinations with vault-local paths.");
+
+        let imageFolderText: TextComponent;
+        new Setting(containerEl)
+            .setName('Image folder')
+            .setDesc("Folder relative to each saved note's directory. Leave blank to save beside the note.")
+            .addText((text) => {
+                imageFolderText = text
+                    .setValue(this.plugin.settings.images.folder)
+                    .setPlaceholder(DEFAULT_SETTINGS.images.folder)
+                    .setDisabled(!this.plugin.settings.images.saveLocally)
+                    .onChange(async (val) => {
+                        this.plugin.settings.images.folder = val;
+                        await this.plugin.saveSettings();
+                    });
+            });
+
+        saveImagesSetting.addToggle((toggle) => toggle
+            .setValue(this.plugin.settings.images.saveLocally)
+            .onChange(async (val) => {
+                this.plugin.settings.images.saveLocally = val;
+                imageFolderText.setDisabled(!val);
+                await this.plugin.saveSettings();
+            })
+        );
+
 
         new Setting(containerEl).setName('Properties').setHeading();
 
