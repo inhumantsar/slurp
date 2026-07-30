@@ -1,5 +1,6 @@
-import { createFrontMatterPropSettings, createFrontMatterProps } from "./frontmatter";
-import type { IFrontMatterPropDefault, ISettings, TFrontMatterPropDefaults } from "./types";
+import type {
+    IFrontMatterPropDefault, IFrontMatterPropSetting, ISettings, TFrontMatterPropDefaults
+} from "./types";
 
 export const KNOWN_BROKEN_DOMAINS = new Map<string, string|null>([
     ["fastcompany.com", "Fast Company prevents programs like Slurp from accessing their articles."],
@@ -74,7 +75,19 @@ export const FRONT_MATTER_ITEM_DEFAULTS: TFrontMatterPropDefaults = new Map<stri
     },
 ].map((item) => [item.id, item]));
 
-const FRONT_MATTER_ITEM_DEFAULT_SETTINGS = createFrontMatterPropSettings(createFrontMatterProps());
+const FRONT_MATTER_ITEM_DEFAULT_SETTINGS = Object.fromEntries(
+    Array.from(FRONT_MATTER_ITEM_DEFAULTS.values()).map((item): [string, IFrontMatterPropSetting] => [
+        item.id,
+        {
+            id: item.id,
+            key: item.defaultKey,
+            idx: item.defaultIdx,
+            format: item.defaultFormat,
+            enabled: true,
+            custom: false,
+        },
+    ]),
+);
 
 export const DEFAULT_SETTINGS: ISettings = {
     settingsVersion: 1,
@@ -82,7 +95,8 @@ export const DEFAULT_SETTINGS: ISettings = {
     frontmatterOnly: false,
     images: {
         saveLocally: false,
-        folder: '_files'
+        folder: '_files',
+        setBanner: false
     },
     fm: {
         includeEmpty: false,

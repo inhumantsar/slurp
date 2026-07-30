@@ -211,9 +211,15 @@ const parseImageAt = (markdown: string, start: number): IImageDestination | null
     };
 };
 
+const findMarkdownBodyStart = (markdown: string): number => {
+    if (!markdown.startsWith("---\n")) return 0;
+    const frontMatterEnd = markdown.indexOf("\n---\n", 4);
+    return frontMatterEnd === -1 ? 0 : frontMatterEnd + 5;
+};
+
 const scanImageDestinations = (markdown: string): IImageDestination[] => {
     const destinations: IImageDestination[] = [];
-    let cursor = 0;
+    let cursor = findMarkdownBodyStart(markdown);
     while (cursor < markdown.length) {
         if (cursor === 0 || markdown[cursor - 1] === "\n") {
             const fence = fenceAt(markdown, cursor);
@@ -252,6 +258,11 @@ const unescapeDestination = (destination: string): string => destination.replace
     /\\([\s\S])/g,
     (match, character: string) => isAsciiPunctuation(character) ? character : match,
 );
+export const getFirstImageDestination = (markdown: string): string | undefined => {
+    const destination = scanImageDestinations(markdown)[0]?.destination;
+    return destination === undefined ? undefined : unescapeDestination(destination);
+};
+
 
 const resolveImages = (destinations: IImageDestination[], articleLink: string): IResolvedImage[] => {
     const byUrl = new Map<string, IResolvedImage>();
@@ -338,6 +349,7 @@ const saveImage = async (
     headers: Record<string, string>,
     owners: Map<string, string>,
 ): Promise<string> => {
+    const vault = context.plugin.app.vault;
     const basename = imageBasename(image.parsedUrl, headers);
     const imageHash = murmurhash3_32(image.url).toString(16).padStart(8, "0");
     for (const candidate of candidateNames(articleHash, imageHash, basename)) {
@@ -345,21 +357,21 @@ const saveImage = async (
         const owner = owners.get(targetPath);
         if (owner !== undefined && owner !== image.url) continue;
 
-        const existing = context.vault.getFileByPath(targetPath);
+        const existing = vault.getFileByPath(targetPath);
         if (existing !== null) {
-            if (!buffersEqual(await context.vault.readBinary(existing), buffer)) continue;
+            if (!buffersEqual(await vault.readBinary(existing), buffer)) continue;
             owners.set(targetPath, image.url);
             return targetPath;
         }
 
         try {
-            await context.vault.createBinary(targetPath, buffer);
+            await vault.createBinary(targetPath, buffer);
             owners.set(targetPath, image.url);
             return targetPath;
         } catch (err) {
-            const racedFile = context.vault.getFileByPath(targetPath);
+            const racedFile = vault.getFileByPath(targetPath);
             if (racedFile === null) throw err;
-            if (!buffersEqual(await context.vault.readBinary(racedFile), buffer)) continue;
+            if (!buffersEqual(await vault.readBinary(racedFile), buffer)) continue;
             owners.set(targetPath, image.url);
             return targetPath;
         }
@@ -383,6 +395,8 @@ const relativeMarkdownPath = (targetPath: string, filePath: string): string => {
 const failureMessage = (error: unknown): string => error instanceof Error ? error.message : String(error);
 
 export async function saveImagesLocally(markdown: string, context: IPostProcessorContext): Promise<string> {
+    const { settings } = context.plugin;
+    const vault = context.plugin.app.vault;
     const destinations = scanImageDestinations(markdown);
     if (destinations.length === 0) return markdown;
 
@@ -395,16 +409,16 @@ export async function saveImagesLocally(markdown: string, context: IPostProcesso
     const images = resolveImages(destinations, articleLink);
     if (images.length === 0) return markdown;
 
-    const directory = resolveStorageDirectory(context.filePath, context.settings.images.folder);
+    const directory = resolveStorageDirectory(context.filePath, settings.images.folder);
     if (directory === null) {
         logger().warn("Unable to save images locally because the image folder escapes the note directory.", {
-            folder: context.settings.images.folder,
+            folder: settings.images.folder,
         });
         return markdown;
     }
 
     try {
-        await ensureFolderExists(context.vault, directory);
+        await ensureFolderExists(vault, directory);
     } catch (err) {
         logger().warn("Unable to create the local image folder.", { directory, error: failureMessage(err) });
         return markdown;

@@ -1,6 +1,6 @@
 import { MarkdownView, Menu, MenuItem, Notice, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS } from './src/const';
-import { createFrontMatter, createFrontMatterPropSettings, createFrontMatterProps } from './src/frontmatter';
+import { createFrontMatterPropSettings, createFrontMatterProps } from './src/frontmatter';
 import { getNewFilePath } from "./src/lib/files";
 import { Logger } from './src/lib/logger';
 import {
@@ -158,9 +158,7 @@ export default class SlurpPlugin extends Plugin {
 		const content = await runPostProcessors(article.content, DEFAULT_POST_PROCESSORS, {
 			article,
 			filePath,
-			createFrontMatter: () => createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty),
-			settings: this.settings,
-			vault: this.app.vault
+			plugin: this
 		});
 
 		this.logger.debug("writing file...");

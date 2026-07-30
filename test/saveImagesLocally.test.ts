@@ -12,7 +12,8 @@ jest.mock('../src/lib/logger', () => ({
 
 import { requestUrl, type RequestUrlParam } from 'obsidian';
 
-import { saveImagesLocally } from '../src/lib/images';
+import type SlurpPlugin from '../main';
+import { getFirstImageDestination, saveImagesLocally } from '../src/lib/images';
 import { murmurhash3_32 } from '../src/lib/util';
 import type { IPostProcessorContext, ISettings } from '../src/types';
 
@@ -66,7 +67,7 @@ const makeSettings = (folder = '_files'): ISettings => ({
     settingsVersion: 1,
     defaultPath: 'Slurped Pages',
     frontmatterOnly: false,
-    images: { saveLocally: true, folder },
+    images: { saveLocally: true, folder, setBanner: false },
     fm: {
         includeEmpty: false,
         tags: { parse: true, prefix: '', case: 'iKebab-case' },
@@ -82,9 +83,10 @@ const makeContext = (
 ): IPostProcessorContext => ({
     article: { title: 'Article', content: 'original', link: articleLink ?? undefined, slurpedTime: new Date(), tags: [] },
     filePath: NOTE_PATH,
-    createFrontMatter: jest.fn(),
-    settings: makeSettings(folder),
-    vault: vault as never,
+    plugin: {
+        app: { vault },
+        settings: makeSettings(folder),
+    } as unknown as SlurpPlugin,
 });
 
 const requestUrlMock = requestUrl as jest.MockedFunction<typeof requestUrl>;
@@ -96,6 +98,28 @@ const requestedUrl = (request: string | RequestUrlParam): string =>
 beforeEach(() => {
     jest.clearAllMocks();
     requestUrlMock.mockResolvedValue(response() as never);
+});
+
+describe('getFirstImageDestination', () => {
+    it('returns the first parsed image destination', () => {
+        const markdown = [
+            '![first](https://example.com/first.jpg)',
+            '![second](https://example.com/second.jpg)',
+        ].join('\n');
+
+        expect(getFirstImageDestination(markdown)).toBe('https://example.com/first.jpg');
+    });
+
+    it('ignores image syntax in frontmatter', () => {
+        const markdown = [
+            '---',
+            'excerpt: "![not-content](https://example.com/frontmatter.jpg)"',
+            '---',
+            '![first](https://example.com/first.jpg)',
+        ].join('\n');
+
+        expect(getFirstImageDestination(markdown)).toBe('https://example.com/first.jpg');
+    });
 });
 
 describe('saveImagesLocally', () => {

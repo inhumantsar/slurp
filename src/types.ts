@@ -1,5 +1,4 @@
-import type { Vault } from "obsidian";
-
+import type SlurpPlugin from "../main";
 import type { StringCase } from "./lib/string-case";
 
 export interface IArticleTags { [s: string]: string; }
@@ -77,9 +76,7 @@ export interface ISlurpPipelineOptions {
 export interface IPostProcessorContext {
     readonly article: IArticle;
     readonly filePath: string;
-    readonly createFrontMatter: () => string | undefined;
-    readonly settings: ISettings;
-    readonly vault: Vault;
+    readonly plugin: SlurpPlugin;
 }
 
 export interface IPostProcessor {
@@ -133,6 +130,7 @@ export interface IFrontMatterValidationErrors {
 export interface IImageSettings {
     saveLocally: boolean;
     folder: string;
+    setBanner: boolean;
 }
 
 export interface ISettings {

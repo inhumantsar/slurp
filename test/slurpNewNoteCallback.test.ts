@@ -12,7 +12,7 @@ jest.mock('../src/const', () => ({
         settingsVersion: 1,
         defaultPath: 'Slurped Pages',
         frontmatterOnly: false,
-        images: { saveLocally: false, folder: '_files' },
+        images: { saveLocally: false, folder: '_files', setBanner: false },
         fm: { includeEmpty: false, tags: { parse: true, prefix: '', case: 'iKebab-case' }, properties: {} },
         logs: { debug: false, logPath: '_logs' },
     },
@@ -54,11 +54,11 @@ const ARTICLE: IArticle = {
     tags: [],
 };
 
-const settings = (saveLocally: boolean): ISettings => ({
+const settings = (saveLocally: boolean, setBanner = false): ISettings => ({
     settingsVersion: 1,
     defaultPath: 'Slurped Pages',
     frontmatterOnly: false,
-    images: { saveLocally, folder: '_files' },
+    images: { saveLocally, folder: '_files', setBanner },
     fm: {
         includeEmpty: false,
         tags: { parse: true, prefix: '', case: 'iKebab-case' },
@@ -93,7 +93,7 @@ const makeVault = () => {
     };
 };
 
-const makePlugin = (saveLocally: boolean) => {
+const makePlugin = (saveLocally: boolean, setBanner = false) => {
     const vault = makeVault();
     const openFile = jest.fn();
     const plugin = Object.create(SlurpPlugin.prototype) as SlurpPlugin;
@@ -102,7 +102,7 @@ const makePlugin = (saveLocally: boolean) => {
             vault,
             workspace: { getActiveViewOfType: jest.fn(() => ({ leaf: { openFile } })) },
         },
-        settings: settings(saveLocally),
+        settings: settings(saveLocally, setBanner),
         fmProps: new Map(),
         logger: { debug: jest.fn(), warn: jest.fn(), error: jest.fn() },
     });
@@ -129,17 +129,15 @@ describe('SlurpPlugin.slurpNewNoteCallback', () => {
         expect(runner).toHaveBeenCalledWith(ARTICLE.content, postprocessors.DEFAULT_POST_PROCESSORS, {
             article: ARTICLE,
             filePath: 'Slurped Pages/Article.md',
-            createFrontMatter: expect.any(Function),
-            settings: plugin.settings,
-            vault,
+            plugin,
         });
         expect(createFrontMatterMock).not.toHaveBeenCalled();
         expect(vault.create).toHaveBeenCalledWith('Slurped Pages/Article.md', 'processed note');
         runner.mockRestore();
     });
 
-    it('runs the registered image processor and writes the rewritten note after the binary', async () => {
-        const { plugin, vault } = makePlugin(true);
+    it('sets the banner to the localized first image before writing the note', async () => {
+        const { plugin, vault } = makePlugin(true, true);
         const imageBytes = new Uint8Array([1, 2, 3]).buffer;
         requestUrlMock.mockResolvedValue({
             status: 200,
@@ -153,7 +151,7 @@ describe('SlurpPlugin.slurpNewNoteCallback', () => {
         expect(vault.createBinary).toHaveBeenCalledWith(binaryPath, imageBytes);
         expect(vault.create).toHaveBeenCalledWith(
             'Slurped Pages/Article.md',
-            '---\ntitle: Article\n---\n\n![hero](_files/ae4b222a_mootoothree.jpg)',
+            '---\ntitle: Article\nbanner: _files/ae4b222a_mootoothree.jpg\n---\n\n![hero](_files/ae4b222a_mootoothree.jpg)',
         );
         expect(vault.createBinary.mock.invocationCallOrder[0]).toBeLessThan(vault.create.mock.invocationCallOrder[0]);
     });

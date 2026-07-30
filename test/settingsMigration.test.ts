@@ -10,7 +10,7 @@ jest.mock('../src/const', () => ({
         settingsVersion: 1,
         defaultPath: '',
         frontmatterOnly: false,
-        images: { saveLocally: false, folder: '_files' },
+        images: { saveLocally: false, folder: '_files', setBanner: false },
         fm: { includeEmpty: false, tags: { parse: true, prefix: '', case: 'iKebab-case' }, properties: {} },
         logs: { debug: true, logPath: 'slurp-logs' },
     },
@@ -61,7 +61,7 @@ describe('settings migration', () => {
         });
     });
 
-    it('patches both image defaults into settings that predate the group', () => {
+    it('patches all image defaults into settings that predate the group', () => {
         const plugin = Object.create(SlurpPlugin.prototype) as SlurpPlugin;
         const legacySettings = {
             settingsVersion: 1,
@@ -74,7 +74,7 @@ describe('settings migration', () => {
 
         plugin.patchInDefaults();
 
-        expect(plugin.settings.images).toEqual({ saveLocally: false, folder: '_files' });
+        expect(plugin.settings.images).toEqual({ saveLocally: false, folder: '_files', setBanner: false });
         expect(plugin.settings.settingsVersion).toBe(1);
     });
 
@@ -92,23 +92,23 @@ describe('settings migration', () => {
 
         plugin.patchInDefaults();
 
-        expect(plugin.settings.images).toEqual({ saveLocally: true, folder: '_files' });
+        expect(plugin.settings.images).toEqual({ saveLocally: true, folder: '_files', setBanner: false });
     });
 
-    it('preserves both explicitly stored image values', () => {
+    it('preserves explicitly stored image values', () => {
         const plugin = Object.create(SlurpPlugin.prototype) as SlurpPlugin;
         plugin.settings = {
             settingsVersion: 1,
             defaultPath: 'Saved',
             frontmatterOnly: false,
-            images: { saveLocally: true, folder: 'assets' },
+            images: { saveLocally: true, folder: 'assets', setBanner: true },
             fm: {} as never,
             logs: {} as never,
         };
 
         plugin.patchInDefaults();
 
-        expect(plugin.settings.images).toEqual({ saveLocally: true, folder: 'assets' });
+        expect(plugin.settings.images).toEqual({ saveLocally: true, folder: 'assets', setBanner: true });
         expect(plugin.settings.settingsVersion).toBe(1);
     });
 });

@@ -77,6 +77,16 @@ export class SlurpSettingsTab extends PluginSettingTab {
                 await this.plugin.saveSettings();
             })
         );
+        new Setting(containerEl)
+            .setName('Set banner frontmatter')
+            .setDesc("Set the banner property to the first image's URL or saved path.")
+            .addToggle((toggle) => toggle
+                .setValue(this.plugin.settings.images.setBanner)
+                .onChange(async (val) => {
+                    this.plugin.settings.images.setBanner = val;
+                    await this.plugin.saveSettings();
+                })
+            );
 
 
         new Setting(containerEl).setName('Properties').setHeading();
