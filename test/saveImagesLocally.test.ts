@@ -82,6 +82,7 @@ const makeContext = (
 ): IPostProcessorContext => ({
     article: { title: 'Article', content: 'original', link: articleLink ?? undefined, slurpedTime: new Date(), tags: [] },
     filePath: NOTE_PATH,
+    createFrontMatter: jest.fn(),
     settings: makeSettings(folder),
     vault: vault as never,
 });

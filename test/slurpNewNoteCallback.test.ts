@@ -120,23 +120,21 @@ beforeEach(() => {
 });
 
 describe('SlurpPlugin.slurpNewNoteCallback', () => {
-    it('passes the body and resolved path context to post-processing before writing its result', async () => {
+    it('writes the complete post-processor result', async () => {
         const { plugin, vault } = makePlugin(false);
-        const runner = jest.spyOn(postprocessors, 'runPostProcessors').mockResolvedValue('processed body');
+        const runner = jest.spyOn(postprocessors, 'runPostProcessors').mockResolvedValue('processed note');
 
         await plugin.slurpNewNoteCallback(ARTICLE);
 
         expect(runner).toHaveBeenCalledWith(ARTICLE.content, postprocessors.DEFAULT_POST_PROCESSORS, {
             article: ARTICLE,
             filePath: 'Slurped Pages/Article.md',
+            createFrontMatter: expect.any(Function),
             settings: plugin.settings,
             vault,
         });
-        expect(createFrontMatterMock).toHaveBeenCalledWith(ARTICLE, plugin.fmProps, false);
-        expect(vault.create).toHaveBeenCalledWith(
-            'Slurped Pages/Article.md',
-            '---\ntitle: Article\n---\n\nprocessed body',
-        );
+        expect(createFrontMatterMock).not.toHaveBeenCalled();
+        expect(vault.create).toHaveBeenCalledWith('Slurped Pages/Article.md', 'processed note');
         runner.mockRestore();
     });
 

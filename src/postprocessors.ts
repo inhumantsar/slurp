@@ -17,6 +17,14 @@ export async function runPostProcessors(
 
 export const DEFAULT_POST_PROCESSORS: readonly IPostProcessor[] = [
     {
+        id: "create-frontmatter",
+        process: (markdown, context) => {
+            const frontMatter = context.createFrontMatter();
+            logger().debug("created frontmatter", frontMatter);
+            return `---\n${frontMatter}\n---\n\n${markdown}`;
+        },
+    },
+    {
         id: "save-images-locally",
         process: (markdown, context) => context.settings.images.saveLocally
             ? saveImagesLocally(markdown, context)

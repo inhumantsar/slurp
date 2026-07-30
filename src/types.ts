@@ -77,6 +77,7 @@ export interface ISlurpPipelineOptions {
 export interface IPostProcessorContext {
     readonly article: IArticle;
     readonly filePath: string;
+    readonly createFrontMatter: () => string | undefined;
     readonly settings: ISettings;
     readonly vault: Vault;
 }

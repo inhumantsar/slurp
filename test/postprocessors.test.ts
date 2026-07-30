@@ -20,6 +20,7 @@ const settings = (saveLocally: boolean): ISettings => ({
 const makeContext = (saveLocally = false): IPostProcessorContext => ({
     article: { title: 'Article', content: 'article body', link: 'https://example.com', slurpedTime: new Date(), tags: [] },
     filePath: 'Slurped Pages/Article.md',
+    createFrontMatter: jest.fn(() => 'title: Article'),
     settings: settings(saveLocally),
     vault: {} as never,
 });
@@ -62,9 +63,13 @@ describe('runPostProcessors', () => {
         expect(later).not.toHaveBeenCalled();
     });
 
-    it('registers the image processor under its stable ID and is a no-op while disabled', async () => {
-        expect(DEFAULT_POST_PROCESSORS.map((processor) => processor.id)).toEqual(['save-images-locally']);
-        await expect(runPostProcessors('body', DEFAULT_POST_PROCESSORS, makeContext(false))).resolves.toBe('body');
+    it('registers frontmatter before the image processor and skips image saving while disabled', async () => {
+        expect(DEFAULT_POST_PROCESSORS.map((processor) => processor.id)).toEqual([
+            'create-frontmatter',
+            'save-images-locally',
+        ]);
+        await expect(runPostProcessors('body', DEFAULT_POST_PROCESSORS, makeContext(false)))
+            .resolves.toBe('---\ntitle: Article\n---\n\nbody');
         expect(saveImagesLocally).not.toHaveBeenCalled();
     });
 
@@ -74,7 +79,7 @@ describe('runPostProcessors', () => {
         const prepend: IPostProcessor = { id: 'prepend', process: (markdown) => `new ${markdown}` };
 
         await expect(runPostProcessors('image', [prepend, ...DEFAULT_POST_PROCESSORS], context)).resolves.toBe('localized');
-        expect(saveImagesLocally).toHaveBeenCalledWith('new image', context);
+        expect(saveImagesLocally).toHaveBeenCalledWith('---\ntitle: Article\n---\n\nnew image', context);
         expect(saveImagesLocally).not.toHaveBeenCalledWith(context.article.content, expect.anything());
     });
 });

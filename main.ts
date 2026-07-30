@@ -155,16 +155,13 @@ export default class SlurpPlugin extends Plugin {
 
 	async slurpNewNoteCallback(article: IArticle) {
 		const filePath = await getNewFilePath(this.app.vault, article.title, this.settings.defaultPath);
-		const processedMarkdown = await runPostProcessors(article.content, DEFAULT_POST_PROCESSORS, {
+		const content = await runPostProcessors(article.content, DEFAULT_POST_PROCESSORS, {
 			article,
 			filePath,
+			createFrontMatter: () => createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty),
 			settings: this.settings,
 			vault: this.app.vault
 		});
-
-		const frontMatter = createFrontMatter(article, this.fmProps, this.settings.fm.includeEmpty);
-		this.logger.debug("created frontmatter", frontMatter);
-		const content = `---\n${frontMatter}\n---\n\n${processedMarkdown}`;
 
 		this.logger.debug("writing file...");
 		const newFile = await this.app.vault.create(filePath, content);
