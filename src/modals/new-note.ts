@@ -1,6 +1,6 @@
 import type SlurpPlugin from "main";
 import { App, ButtonComponent, Modal, Setting } from "obsidian";
-import { t } from "../i18n";
+import { t, translateText } from "../i18n";
 import { BouncingProgressBarComponent } from "../components/bouncing-progress-bar";
 import { ValidatedTextComponent } from "../components/validated-text";
 import { KNOWN_BROKEN_DOMAINS } from "../const";
@@ -23,7 +23,7 @@ export class SlurpNewNoteModal extends Modal {
         const defaultReason = t("incompatibleSite");
 
         return KNOWN_BROKEN_DOMAINS.has(domain) 
-            ? KNOWN_BROKEN_DOMAINS.get(domain) || defaultReason
+            ? translateText(KNOWN_BROKEN_DOMAINS.get(domain) || defaultReason)
             : null;
     }
 

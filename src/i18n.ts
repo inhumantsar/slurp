@@ -1,4 +1,4 @@
-import { moment } from "obsidian";
+import * as obsidian from "obsidian";
 
 const en = {
   commandName: "Create note from URL",
@@ -35,7 +35,62 @@ const en = {
   slurpButton: "Slurp",
   invalidUrl: "Invalid URL format.",
   incompatibleSite: "This site is known to be incompatible with Slurp.",
-  errorPrefix: "Slurp Error!"
+  errorPrefix: "Slurp Error!",
+  manageProperties: "Manage properties",
+  managePropertiesDesc: "Define how properties are ordered, formatted, and written.",
+  enableProperty: "Enable property",
+  enablePropertyDesc: "Turning this property off will prevent Slurp from parsing and writing it to new notes.",
+  includeProperty: "Check to include this property",
+  ignoreProperty: "Uncheck to ignore this property",
+  edit: "Edit",
+  close: "Close",
+  propertyKey: "Property key",
+  propertyKeyDesc: "Property name saved to notes.",
+  propertyDefault: " Default: {key}",
+  formatTemplate: "Format template",
+  formatTemplateDesc: 'String templates start with "s|" and use {s} as replacement placeholders. ' +
+    'Date templates start with "d|" and use Moment.js formatting. ' +
+    'Booleans properties can be created with either "b|true" or "b|false".',
+  addFormat: "Add format",
+  description: "Description",
+  descriptionDesc: "Helpful text to display in settings. Not written to notes.",
+  deleteProperty: "Delete property",
+  deletePropertyDesc: "Existing notes will not be affected.",
+  delete: "Delete",
+  newProperty: "New Property",
+  linkDesc: "Page URL provided or a permalink discovered in metadata.",
+  bylineDesc: "Name of the primary author or the first author detected.",
+  siteNameDesc: "Website or publication name.",
+  publishedTimeDesc: "Date/time that the page was initially published.",
+  modifiedTimeDesc: "Date/time that the page was last modified, if available.",
+  typeDesc: 'Type of publication, eg: "page", "post", "article".',
+  excerptDesc: "Often used for subtitles, excerpts, descriptions, and abstracts.",
+  twitterDesc: "Twitter/X link for the author or site.",
+  tagsDesc: "Tags and keywords present in the page's metadata.",
+  onionDesc: "Link to a mirror of the content on Tor.",
+  slurpedDesc: "Date/time that the page was accessed by Slurp.",
+  titleDesc: "Page title as seen in the browser, falling back to the title presented in metadata.",
+  propertyKeyRequired: "All properties must have a key.",
+  propertyKeyBoundary: "Property keys must begin and end with alphanumeric characters.",
+  propertyKeyCharacters: "Property keys may only contain alphanumeric characters, spaces, dots, dashes, and underscores.",
+  multiStringSupported: "Multi-string formats can only be used with supported properties.",
+  multiStringPrefix: "The format string for this property must start with 'S|'.",
+  multiStringPlaceholders: "This format string must contain at least one of {placeholders}.",
+  booleanFormat: "Boolean formats must be either 'true' or 'false'.",
+  formatType: "Format strings must begin with a type identifier: 'b|' for booleans, 'd|' for dates, or 's|' for strings.",
+  stringPlaceholder: "String formats must contain at least one replacement placeholder '{s}'",
+  fetchFailed: "Unable to fetch page.",
+  missingContent: "No title or content found.",
+  markdownFailed: "Unable to convert content to Markdown.",
+  fastCompanyReason: "Fast Company prevents programs like Slurp from accessing their articles.",
+  loginRequired: "This site cannot be slurped as it requires a login.",
+  invalidRequest: "Invalid request. Please check the URL and try again.",
+  pageNotFound: "Page not found. Please check the URL and try again.",
+  tooManyRequests: "Too many requests. Please wait a moment and try again.",
+  serverError: "The server encountered an error. Please try again later.",
+  networkError: "A network error occurred. Please check your connection and try again.",
+  reportError: "If this is a bug, please report it from plugin settings.",
+  originalError: "Original error: {message}"
 } as const;
 
 type Key = keyof typeof en;
@@ -75,14 +130,79 @@ const zh: Record<Key, string> = {
   slurpButton: "抓取",
   invalidUrl: "URL 格式无效。",
   incompatibleSite: "已知此网站与 Slurp 不兼容。",
-  errorPrefix: "Slurp 错误！"
+  errorPrefix: "Slurp 错误！",
+  manageProperties: "管理属性",
+  managePropertiesDesc: "设置属性的顺序、格式和写入方式。",
+  enableProperty: "启用属性",
+  enablePropertyDesc: "关闭此属性后，Slurp 不会再解析该属性，也不会将其写入新笔记。",
+  includeProperty: "勾选以包含此属性",
+  ignoreProperty: "取消勾选以忽略此属性",
+  edit: "编辑",
+  close: "关闭",
+  propertyKey: "属性键",
+  propertyKeyDesc: "写入笔记的属性名称。",
+  propertyDefault: " 默认值：{key}",
+  formatTemplate: "格式模板",
+  formatTemplateDesc: '字符串模板以 "s|" 开头，使用 {s} 作为替换占位符。日期模板以 "d|" 开头，使用 Moment.js 格式。布尔属性可使用 "b|true" 或 "b|false" 创建。',
+  addFormat: "添加格式",
+  description: "说明",
+  descriptionDesc: "显示在设置中的说明文字，不会写入笔记。",
+  deleteProperty: "删除属性",
+  deletePropertyDesc: "不会影响已有笔记。",
+  delete: "删除",
+  newProperty: "新建属性",
+  linkDesc: "输入的网页 URL 或从元数据中发现的永久链接。",
+  bylineDesc: "主要作者或首位检测到的作者姓名。",
+  siteNameDesc: "网站或出版物名称。",
+  publishedTimeDesc: "网页首次发布的日期和时间。",
+  modifiedTimeDesc: "网页最后修改的日期和时间（若可获取）。",
+  typeDesc: '出版物类型，例如 "page"、"post"、"article"。',
+  excerptDesc: "通常用于副标题、摘录、说明和摘要。",
+  twitterDesc: "作者或网站的 Twitter/X 链接。",
+  tagsDesc: "网页元数据中的标签和关键词。",
+  onionDesc: "内容在 Tor 上的镜像链接。",
+  slurpedDesc: "Slurp 访问网页的日期和时间。",
+  titleDesc: "浏览器中的网页标题，无法获取时使用元数据中的标题。",
+  propertyKeyRequired: "所有属性都必须有属性键。",
+  propertyKeyBoundary: "属性键必须以字母或数字开头和结尾。",
+  propertyKeyCharacters: "属性键只能包含字母、数字、空格、点号、连字符和下划线。",
+  multiStringSupported: "多字符串格式只能用于支持它的属性。",
+  multiStringPrefix: "此属性的格式字符串必须以 'S|' 开头。",
+  multiStringPlaceholders: "此格式字符串必须至少包含以下占位符之一：{placeholders}。",
+  booleanFormat: "布尔格式必须为 'true' 或 'false'。",
+  formatType: "格式字符串必须以类型标识开头：布尔值用 'b|'，日期用 'd|'，字符串用 's|'。",
+  stringPlaceholder: "字符串格式必须至少包含一个替换占位符 '{s}'",
+  fetchFailed: "无法抓取网页。",
+  missingContent: "未找到标题或正文内容。",
+  markdownFailed: "无法将内容转换为 Markdown。",
+  fastCompanyReason: "Fast Company 禁止 Slurp 等程序访问其文章。",
+  loginRequired: "此网站需要登录，无法抓取。",
+  invalidRequest: "请求无效，请检查 URL 后重试。",
+  pageNotFound: "未找到网页，请检查 URL 后重试。",
+  tooManyRequests: "请求过多，请稍等片刻后重试。",
+  serverError: "服务器发生错误，请稍后重试。",
+  networkError: "发生网络错误，请检查网络连接后重试。",
+  reportError: "如果这是程序缺陷，请从插件设置中报告。",
+  originalError: "原始错误：{message}"
 };
 
-function hasChineseLanguage (): boolean {
-  const locale = (moment.locale() || "en").replace("_", "-").toLowerCase();
+export function hasChineseLanguage (): boolean {
+  const language = typeof obsidian.getLanguage === "function"
+    ? obsidian.getLanguage()
+    : globalThis.localStorage?.getItem("language") || "en";
+  const locale = language.replace("_", "-").toLowerCase();
   return locale === "zh" || locale.startsWith("zh-");
 }
 
-export function t (key: Key): string {
-  return (hasChineseLanguage() ? zh : en)[key];
+export function t (key: Key, values: Record<string, string> = {}): string {
+  return (hasChineseLanguage() ? zh : en)[key].replace(
+    /\{(\w+)\}/g,
+    (placeholder, name: string) => values[name] ?? placeholder
+  );
+}
+
+// Translate built-in display text without changing stored values or custom text.
+export function translateText (text: string): string {
+  const key = (Object.keys(en) as Key[]).find((key) => en[key] === text);
+  return key ? t(key) : text;
 }

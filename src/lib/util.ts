@@ -1,3 +1,4 @@
+import { hasChineseLanguage, t, translateText } from "../i18n";
 import type { StringCase } from "./string-case";
 
 export const isEmpty = (val: unknown): boolean => {
@@ -167,39 +168,45 @@ export const extractDomain = (u: string) => {
 
 export const getErrorMessage = (err: Error): string => {
     const message = err.message ?? String(err);
+    const withOriginal = (description: string) => hasChineseLanguage()
+        ? `${description}\n${t("originalError", { message })}`
+        : description;
     
     // Authentication/Authorization errors
     if (message.includes('401') || message.includes('403')) {
-        return "This site cannot be slurped as it requires a login.";
+        return withOriginal(t("loginRequired"));
     }
     
     // Bad request - likely malformed URL
     if (message.includes('400')) {
-        return "Invalid request. Please check the URL and try again.";
+        return withOriginal(t("invalidRequest"));
     }
     
     // Not found
     if (message.includes('404')) {
-        return "Page not found. Please check the URL and try again.";
+        return withOriginal(t("pageNotFound"));
     }
     
     // Rate limiting
     if (message.includes('429')) {
-        return "Too many requests. Please wait a moment and try again.";
+        return withOriginal(t("tooManyRequests"));
     }
     
     // Server errors - suggest retry
     const serverErrorCodes = ['500', '502', '503', '504', '408'];
     if (serverErrorCodes.some(code => message.includes(code))) {
-        return "The server encountered an error. Please try again later.";
+        return withOriginal(t("serverError"));
     }
     
     // Network/connection errors
     if (message.toLowerCase().includes('network')
         || message.toLowerCase().includes('timeout')
         || message.toLowerCase().includes('connection')) {
-        return "A network error occurred. Please check your connection and try again.";
+        return withOriginal(t("networkError"));
     }
     
-    return `${message}. If this is a bug, please report it from plugin settings.`;
+    const translated = translateText(message);
+    return hasChineseLanguage()
+        ? `${translated !== message ? withOriginal(translated) : message}\n${t("reportError")}`
+        : `${message}. ${t("reportError")}`;
 };

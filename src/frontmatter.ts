@@ -1,5 +1,6 @@
 import { stringify, type Pair, type Scalar } from "yaml";
 import { FRONT_MATTER_ITEM_DEFAULTS } from "./const";
+import { t } from "./i18n";
 import { format } from "./lib/formatters";
 import { logger } from "./lib/logger";
 import { isEmpty } from "./lib/util";
@@ -61,11 +62,11 @@ export class FrontMatterProp implements IFrontMatterProp {
     public validateKey = (): string[] => {
         const e = new Array<string>();
         if (!this._key)
-            e.push("All properties must have a key.");
+            e.push(t("propertyKeyRequired"));
         if (this._key?.match(/^[^\p{L}0-9]|[^\p{L}0-9]$/gu) !== null)
-            e.push("Property keys must begin and end with alphanumeric characters.");
+            e.push(t("propertyKeyBoundary"));
         if (this._key?.match(/[^\p{L}0-9 ._-]/gu) !== null)
-            e.push("Property keys may only contain alphanumeric characters, spaces, dots, dashes, and underscores.");
+            e.push(t("propertyKeyCharacters"));
         return e;
     };
 
@@ -77,15 +78,15 @@ export class FrontMatterProp implements IFrontMatterProp {
         const reqMultiString = def?.startsWith("S|");
 
         if (isMultiString && !reqMultiString)
-            e.push("Multi-string formats can only be used with supported properties.");
+            e.push(t("multiStringSupported"));
 
         if (!isMultiString && reqMultiString)
-            e.push("The format string for this property must start with 'S|'.");
+            e.push(t("multiStringPrefix"));
 
         if (isMultiString && reqMultiString) {
             const matches = def?.match(/(\{\w+\})/g);
             if (!matches?.some((val) => fmt?.contains(val)))
-                e.push(`This format string must contain at least one of ${matches?.join(", ")}.`);
+                e.push(t("multiStringPlaceholders", { placeholders: String(matches?.join(", ")) }));
         }
         return e;
     };
@@ -94,7 +95,7 @@ export class FrontMatterProp implements IFrontMatterProp {
         if (!this._format?.startsWith('b|')) return [];
 
         if (!['b|true', 'b|false'].contains(this._format.toLowerCase()))
-            return ["Boolean formats must be either 'true' or 'false'."];
+            return [t("booleanFormat")];
 
         return [];
     };
@@ -106,10 +107,10 @@ export class FrontMatterProp implements IFrontMatterProp {
         if (!fmt) return [];
 
         if (fmt?.match(/^[dbsS]\|/) === null)
-            e.push("Format strings must begin with a type identifier: 'b|' for booleans, 'd|' for dates, or 's|' for strings.");
+            e.push(t("formatType"));
 
         if (fmt?.startsWith("s|") && !fmt?.contains("{s}"))
-            e.push("String formats must contain at least one replacement placeholder '{s}'");
+            e.push(t("stringPlaceholder"));
 
         return [...e, ...this.validateFormatMultiString(), ...this.validateFormatBoolean()];
     };
