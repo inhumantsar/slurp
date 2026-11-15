@@ -13,6 +13,7 @@ import { slurpPipeline } from './src/pipeline';
 import { DEFAULT_SLURP_PROCESSORS } from './src/processors';
 import { DEFAULT_POST_PROCESSORS, runPostProcessors } from './src/postprocessors';
 import { SlurpSettingsTab } from './src/settings';
+import { t } from './src/i18n';
 import type {
 	IArticle, IFrontMatterSettings, IFrontMatterTagSettings, ISettings, ISettingsV0, TFrontMatterProps
 } from './src/types';
@@ -29,7 +30,7 @@ export default class SlurpPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'create-note-from-url',
-			name: 'Create note from URL',
+			name: t('commandName'),
 			callback: () => {
 				const initialUrl = this.app.workspace.getActiveViewOfType(MarkdownView)
 					?.editor?.getSelection()?.trim();
@@ -49,7 +50,7 @@ export default class SlurpPlugin extends Plugin {
 			// @ts-expect-error -- receive-text-menu is a mobile API missing from Obsidian's public typings.
 			this.app.workspace.on('receive-text-menu', (menu: Menu, shareText: string) => {
 				menu.addItem((item: MenuItem) => {
-					item.setTitle('Slurp');
+					item.setTitle(t('menuTitle'));
 					item.setIcon('download');
 					item.onClick(() => void this.slurp(shareText));
 				});
@@ -135,7 +136,7 @@ export default class SlurpPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	displayError = (err: Error) => new Notice(`Slurp Error! ${getErrorMessage(err)}`, 0);
+	displayError = (err: Error) => new Notice(`${t('errorPrefix')} ${getErrorMessage(err)}`, 0);
 
 	async slurp(url: string, frontmatterOnlyOverride?: boolean): Promise<void> {
 		try {

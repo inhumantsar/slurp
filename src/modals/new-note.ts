@@ -1,5 +1,6 @@
 import type SlurpPlugin from "main";
 import { App, ButtonComponent, Modal, Setting } from "obsidian";
+import { t } from "../i18n";
 import { BouncingProgressBarComponent } from "../components/bouncing-progress-bar";
 import { ValidatedTextComponent } from "../components/validated-text";
 import { KNOWN_BROKEN_DOMAINS } from "../const";
@@ -9,7 +10,7 @@ export class SlurpNewNoteModal extends Modal {
     private readonly plugin: SlurpPlugin;
     private readonly initialUrl?: string;
     private readonly WARNING_CLS = "validation";
-    private readonly URL_FORMAT_ERR = "Invalid URL format.";
+    private readonly URL_FORMAT_ERR = t("invalidUrl");
 
     constructor(app: App, plugin: SlurpPlugin, initialUrl?: string) {
         super(app);
@@ -19,7 +20,7 @@ export class SlurpNewNoteModal extends Modal {
 
     private validateKnownBrokenDomains(url: string) {
         const domain = extractDomain(url) || "";
-        const defaultReason = "This site is known to be incompatible with Slurp.";
+        const defaultReason = t("incompatibleSite");
 
         return KNOWN_BROKEN_DOMAINS.has(domain) 
             ? KNOWN_BROKEN_DOMAINS.get(domain) || defaultReason
@@ -36,11 +37,11 @@ export class SlurpNewNoteModal extends Modal {
         let frontmatterOnlyValue = this.plugin.settings.frontmatterOnly;
 
         new Setting(contentEl)
-            .setName("What would you like to slurp today?")
+            .setName(t("modalHeading"))
             .setHeading();
 
         const urlField = new ValidatedTextComponent(contentEl)
-            .setPlaceholder("https://www.somesite.com/...")
+            .setPlaceholder(t("urlPlaceholder"))
             .setMinimumLength(5)
             .addValidator((url: string) => this.validateUrlFormat(url))
             .addValidator((url: string) => this.validateKnownBrokenDomains(url))
@@ -53,7 +54,7 @@ export class SlurpNewNoteModal extends Modal {
         const progressBar = new BouncingProgressBarComponent(contentEl);
 
         new Setting(contentEl)
-            .setName("Frontmatter only")
+            .setName(t("frontmatterOnly"))
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.frontmatterOnly)
                 .onChange((value) => {
@@ -70,7 +71,7 @@ export class SlurpNewNoteModal extends Modal {
 
         new Setting(contentEl)
             .addButton((btn) => {
-                btn.setButtonText("Slurp")
+                btn.setButtonText(t("slurpButton"))
                     .setCta()
                     .setDisabled(true)
                     .onClick(doSlurp);
