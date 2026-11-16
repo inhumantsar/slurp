@@ -2,6 +2,7 @@
 	import { flip } from "svelte/animate";
 	import { quintOut } from "svelte/easing";
 	import { crossfade } from "svelte/transition";
+	import { t, translateText } from "../i18n";
 	import {
 		FrontMatterProp,
 		sortFrontMatterItems,
@@ -30,8 +31,8 @@
 
 	$: tooltips = props.map((prop) => {
 		return {
-			enabled: `${prop.enabled ? "Check to include" : "Uncheck to ignore"} this property`,
-			key: `Property name saved to notes.${prop.defaultKey ? " Default: " + prop.defaultKey : ""}`,
+			enabled: prop.enabled ? t("ignoreProperty") : t("includeProperty"),
+			key: t("propertyKeyDesc") + (prop.defaultKey ? t("propertyDefault", { key: prop.defaultKey }) : ""),
 		};
 	});
 
@@ -97,9 +98,9 @@
 
 <div class="setting-item">
 	<div class="setting-item-info">
-		<div class="setting-item-name">Manage properties</div>
+		<div class="setting-item-name">{t("manageProperties")}</div>
 		<div class="setting-item-description">
-			Define how properties are ordered, formatted, and written.
+			{t("managePropertiesDesc")}
 		</div>
 	</div>
 </div>
@@ -134,18 +135,18 @@
 					{prop.key}
 				</div>
 				<div class="setting-item-description {getDisabledClass(idx)}">
-					{prop.description || ""}
+					{prop.custom ? prop.description || "" : translateText(prop.description || "")}
 				</div>
 			</div>
 
 			<!-- Edit/Close buttons -->
 			<button
 				class="edit {inputsVisible[idx] ? 'mod-cta' : ''}"
-				title={inputsVisible[idx] ? "Close" : "Edit"}
+				title={inputsVisible[idx] ? t("close") : t("edit")}
 				disabled={getValidationErrors(idx).length > 0}
 				on:click={() => toggleInputVisibility(idx)}
 			>
-				{inputsVisible[idx] ? "Close" : "Edit"}
+				{inputsVisible[idx] ? t("close") : t("edit")}
 			</button>
 		</div>
 
@@ -163,10 +164,9 @@
 			<!-- Enable -->
 			<div class="setting-item mod-toggle">
 				<div class="setting-item-info">
-					<div class="setting-item-name">Enable property</div>
+					<div class="setting-item-name">{t("enableProperty")}</div>
 					<div class="setting-item-description">
-						Turning this property off will prevent Slurp from
-						parsing and writing it to new notes.
+						{t("enablePropertyDesc")}
 					</div>
 				</div>
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -176,6 +176,7 @@
 						class="checkbox-container {prop.enabled
 							? 'is-enabled'
 							: ''}"
+						title={tooltips[idx].enabled}
 						on:click={() => toggleEnabled(idx)}
 					>
 						<input type="checkbox" id={prop.id} />
@@ -186,7 +187,7 @@
 			<!-- Key -->
 			<div class="setting-item">
 				<div class="setting-item-info">
-					<div class="setting-item-name">Property key</div>
+					<div class="setting-item-name">{t("propertyKey")}</div>
 					<div class="setting-item-description">
 						{tooltips[idx].key}
 					</div>
@@ -208,14 +209,11 @@
 			<!-- Format -->
 			<div class="setting-item">
 				<div class="setting-item-info">
-					<div class="setting-item-name">Format template</div>
+					<div class="setting-item-name">{t("formatTemplate")}</div>
 					<div class="setting-item-description">
 						<!-- {getInvalidClass(idx)} -->
 						<!-- {getFormatDescription(idx)} -->
-						String templates start with "s|" and use {"{"}s{"}"}
-						as replacement placeholders. Date templates start with "d|"
-						and use Moment.js formatting. Booleans properties can be
-						created with either "b|true" or "b|false".
+						{t("formatTemplateDesc")}
 					</div>
 				</div>
 
@@ -224,7 +222,7 @@
 						id="prop-format-{prop.id}"
 						type="text"
 						class="prop-input {getInvalidClass(idx)}"
-						placeholder={prop.defaultFormat || "Add format"}
+						placeholder={prop.defaultFormat || t("addFormat")}
 						disabled={prop.enabled === false}
 						bind:value={prop.format}
 					/>
@@ -234,10 +232,9 @@
 			{#if prop.custom}
 				<div class="setting-item">
 					<div class="setting-item-info">
-						<div class="setting-item-name">Description</div>
+						<div class="setting-item-name">{t("description")}</div>
 						<div class="setting-item-description">
-							Helpful text to display in settings. Not written to
-							notes.
+							{t("descriptionDesc")}
 						</div>
 					</div>
 					<div class="setting-item-control">
@@ -253,9 +250,9 @@
 
 				<div class="setting-item">
 					<div class="setting-item-info">
-						<div class="setting-item-name">Delete property</div>
+						<div class="setting-item-name">{t("deleteProperty")}</div>
 						<div class="setting-item-description">
-							Existing notes will not be affected.
+							{t("deletePropertyDesc")}
 						</div>
 					</div>
 					<div class="setting-item-control">
@@ -263,7 +260,7 @@
 							class="mod-warning"
 							on:click={() => deleteItem(idx)}
 						>
-							Delete
+							{t("delete")}
 						</button>
 					</div>
 				</div>
@@ -274,8 +271,8 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div id="new-property" title="New Property" on:click={addItem}>
-	<span style="margin-right:0.6em">New Property</span>
+<div id="new-property" title={t("newProperty")} on:click={addItem}>
+	<span style="margin-right:0.6em">{t("newProperty")}</span>
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
 		width="18"

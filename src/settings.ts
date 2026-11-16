@@ -1,6 +1,7 @@
 import type SlurpPlugin from "main";
 import { PluginSettingTab, Setting, type App, type TAbstractFile, type TextComponent } from "obsidian";
 import { FileSuggestionComponent } from "obsidian-file-suggestion-component";
+import { t } from "./i18n";
 import FrontMatterSettings from "./components/frontmatter-prop-settings.svelte";
 import { DEFAULT_SETTINGS } from "./const";
 import { sortFrontMatterItems, type FrontMatterProp } from "./frontmatter";
@@ -25,8 +26,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
         containerEl.empty();
 
         const saveLoc = new Setting(containerEl)
-            .setName('Default save location')
-            .setDesc("What directory should Slurp save pages to? Leave blank to save to the vault's main directory.");
+            .setName(t('defaultSaveLocation'))
+            .setDesc(t('defaultSaveLocationDesc'));
 
         new FileSuggestionComponent(saveLoc.controlEl, this.app)
             .setValue(this.plugin.settings.defaultPath)
@@ -39,8 +40,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
-            .setName('Frontmatter only')
-            .setDesc("Save only frontmatter, leaving note content empty.")
+            .setName(t('frontmatterOnly'))
+            .setDesc(t('frontmatterOnlyDesc'))
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.frontmatterOnly)
                 .onChange(async (val) => {
@@ -48,16 +49,16 @@ export class SlurpSettingsTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 })
             );
-        new Setting(containerEl).setName('Images').setHeading();
+        new Setting(containerEl).setName(t('images')).setHeading();
 
         const saveImagesSetting = new Setting(containerEl)
-            .setName('Save images locally')
-            .setDesc("Download remote images and replace their Markdown destinations with vault-local paths.");
+            .setName(t('saveImagesLocally'))
+            .setDesc(t('saveImagesLocallyDesc'));
 
         let imageFolderText: TextComponent;
         new Setting(containerEl)
-            .setName('Image folder')
-            .setDesc("Folder relative to each saved note's directory. Leave blank to save beside the note.")
+            .setName(t('imageFolder'))
+            .setDesc(t('imageFolderDesc'))
             .addText((text) => {
                 imageFolderText = text
                     .setValue(this.plugin.settings.images.folder)
@@ -78,8 +79,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
             })
         );
         new Setting(containerEl)
-            .setName('Set banner frontmatter')
-            .setDesc("Set the banner property to the first image's URL or saved path.")
+            .setName(t('bannerFrontmatter'))
+            .setDesc(t('bannerFrontmatterDesc'))
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.images.setBanner)
                 .onChange(async (val) => {
@@ -89,11 +90,11 @@ export class SlurpSettingsTab extends PluginSettingTab {
             );
 
 
-        new Setting(containerEl).setName('Properties').setHeading();
+        new Setting(containerEl).setName(t('properties')).setHeading();
 
         new Setting(containerEl)
-            .setName('Show empty properties')
-            .setDesc("Should Slurp add all note properties even if they are empty?")
+            .setName(t('showEmptyProperties'))
+            .setDesc(t('showEmptyPropertiesDesc'))
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.fm.includeEmpty)
                 .onChange(async (val) => {
@@ -142,14 +143,11 @@ export class SlurpSettingsTab extends PluginSettingTab {
             }
         });
 
-        new Setting(containerEl).setName('Tags').setHeading();
+        new Setting(containerEl).setName(t('tags')).setHeading();
 
         new Setting(containerEl)
-            .setName('Parse tags')
-            .setDesc("Use the tags and keywords discovered in slurped page metadata? " +
-                "WARNING: May result in a large number of new tags, prefixes are highly recommended. " +
-                "Some sites put entire sentences into the fields meant for comma-separated keywords. " +
-                "Yes, abc7news.com, I'm talking about you. ")
+            .setName(t('parseTags'))
+            .setDesc(t('parseTagsDesc'))
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.fm.tags.parse)
                 .onChange(async (val) => {
@@ -159,8 +157,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('Tag prefix')
-            .setDesc("Apply this prefix to all tags.")
+            .setName(t('tagPrefix'))
+            .setDesc(t('tagPrefixDesc'))
             .addText((text) => text
                 .setValue(this.plugin.settings.fm.tags.prefix)
                 .setDisabled(!this.plugin.settings.fm.tags.parse)
@@ -171,8 +169,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('Tag case')
-            .setDesc("Format multi-word tags using this style. iKebab-case will replace spaces with hyphens without changing case.")
+            .setName(t('tagCase'))
+            .setDesc(t('tagCaseDesc'))
             .addDropdown((dropdown) => dropdown
                 .addOptions(StringCaseOptions)
                 .setValue(this.plugin.settings.fm.tags.case)
@@ -187,13 +185,13 @@ export class SlurpSettingsTab extends PluginSettingTab {
 
         // TODO: make a component for everything below
         new Setting(containerEl)
-            .setName("Report an Issue")
+            .setName(t('reportIssue'))
             .setHeading()
-            .setDesc("Visit github.com/inhumantsar/slurp/issues/new to report a bug or request a feature.");
+            .setDesc(t('reportIssueDesc'));
 
         new Setting(containerEl)
-            .setName("Debug mode")
-            .setDesc("Write debug messages to console and slurp.log.")
+            .setName(t('debugMode'))
+            .setDesc(t('debugModeDesc'))
             .addToggle((toggle) => toggle
                 .setValue(this.plugin.settings.logs.debug)
                 .onChange(async (val) => {
@@ -205,11 +203,8 @@ export class SlurpSettingsTab extends PluginSettingTab {
         let recentLogsText: HTMLTextAreaElement;
 
         new Setting(containerEl)
-            .setName("Recent Logs")
-            .setDesc(
-                "Copy+Paste these when opening a new GitHub issue. Not available when debug mode is enabled. " +
-                "Attach the most recent log file to the GitHub issue instead."
-            )
+            .setName(t('recentLogs'))
+            .setDesc(t('recentLogsDesc'))
             .setDisabled(this.plugin.settings.logs.debug)
 
         if (!this.plugin.settings.logs.debug) {
