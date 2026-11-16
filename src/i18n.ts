@@ -186,10 +186,18 @@ const zh: Record<Key, string> = {
   originalError: "原始错误：{message}"
 };
 
+function getStoredLanguage (): string {
+  try {
+    return globalThis.localStorage?.getItem("language") || "en";
+  } catch {
+    return "en";
+  }
+}
+
 export function hasChineseLanguage (): boolean {
   const language = typeof obsidian.getLanguage === "function"
     ? obsidian.getLanguage()
-    : globalThis.localStorage?.getItem("language") || "en";
+    : getStoredLanguage();
   const locale = language.replace("_", "-").toLowerCase();
   return locale === "zh" || locale.startsWith("zh-");
 }
